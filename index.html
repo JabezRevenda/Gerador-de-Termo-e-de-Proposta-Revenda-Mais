@@ -627,6 +627,41 @@ footer {
 .pp-mod.on .pp-mod-d b { color: #E8003D; font-weight: 700; }
 .pp-pay { display: flex; justify-content: space-between; background: #f8f9fa; border-radius: 8px; padding: 10px 18px; margin-bottom: 14px; font-size: 10.5px; color: #4b5563; font-weight: 500; }
 .pp-pay b { color: #111827; font-weight: 700; }
+.pp-mod-de { font-size: 10px; color: #9ca3af; text-decoration: line-through; margin-bottom: 1px; }
+.pp-mod-cut { color: #9ca3af; text-decoration: line-through; font-weight: 600; margin-right: 5px; font-size: 13px; }
+.pp-mod-desc-tag { display: inline-block; margin-top: 4px; font-size: 8.5px; font-weight: 800; letter-spacing: 0.06em; color: #fff; background: #E8003D; border-radius: 4px; padding: 2px 7px; }
+
+/* ── Tipo de Proposta / fluxo avulso (CRM ou Nota Fiscal) ── */
+.tipo-toggle { display: flex; gap: 8px; grid-column: span 2; }
+.tipo-btn {
+  flex: 1; font-family: 'Poppins', sans-serif; font-size: 12.5px; font-weight: 700;
+  color: var(--text-muted); background: #f2f3f5; border: 1.5px solid var(--border);
+  border-radius: 8px; padding: 12px; cursor: pointer; transition: all 0.15s; text-align: center;
+}
+.tipo-btn.active { background: var(--red-light); border-color: var(--red); color: var(--red); }
+.readonly-row {
+  display: flex; align-items: center; justify-content: space-between;
+  border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; grid-column: span 2;
+}
+.readonly-row .rr-label { font-size: 13px; font-weight: 600; color: var(--text-heading); }
+.readonly-row .rr-desc { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+.readonly-row .rr-val { font-size: 14px; font-weight: 700; color: var(--text-heading); white-space: nowrap; }
+.readonly-row .rr-val small { display: block; font-size: 9.5px; font-weight: 500; color: var(--text-dim); text-decoration: line-through; }
+.mini-num {
+  width: 70px !important; margin-top: 0 !important; padding: 7px 8px !important;
+  text-align: center; font-size: 13px !important;
+}
+.price-stack { text-align: right; }
+.price-stack .ps-de { display: block; font-size: 9.5px; font-weight: 500; color: var(--text-dim); text-decoration: line-through; margin-bottom: 1px; }
+.price-stack .ps-final { font-size: 14px; font-weight: 700; color: var(--text-heading); white-space: nowrap; }
+.rr-tipo-select {
+  margin: 0 !important; padding: 6px 24px 6px 10px !important; font-size: 12px !important;
+  width: auto !important; display: inline-block;
+}
+.crm-nested {
+  display: flex; align-items: center; gap: 8px; margin-top: 8px;
+  font-size: 12px; color: var(--text-muted); font-weight: 500;
+}
 .pp-inv { border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; margin-bottom: 12px; }
 .pp-row { display: flex; justify-content: space-between; padding: 9px 18px; font-size: 11.5px; border-bottom: 1px solid #f2f2f2; }
 .pp-row span:first-child { color: #4b5563; font-weight: 500; }
@@ -875,36 +910,69 @@ footer {
         <span class="card-title">Solução Contratada</span>
       </div>
       <div class="card-body">
-        <div class="field">
-          <label>Plano Principal</label>
-          <select id="p_plano">
-            <option value="0.5">Plano 0.5</option>
-            <option value="1.0" selected>Plano 1.0</option>
-            <option value="2.0">Plano 2.0</option>
-          </select>
+        <div class="tipo-toggle">
+          <button type="button" class="tipo-btn active" id="tipoBtnSoftware" onclick="setTipoProposta('software')">Software Gerencial</button>
+          <button type="button" class="tipo-btn" id="tipoBtnAvulso" onclick="setTipoProposta('avulso')">CRM ou Nota Fiscal avulso</button>
         </div>
-        <div class="field">
-          <label>Selo de Destaque</label>
-          <select id="p_selo">
-            <option value="Melhor custo-benefício">Melhor custo-benefício</option>
-            <option value="Recomendado">Recomendado</option>
-            <option value="Mais completo">Mais completo</option>
-            <option value="">Sem selo</option>
-          </select>
+
+        <!-- ═══ Bloco: Software Gerencial ═══ -->
+        <div id="blocoSoftware" style="display:contents">
+          <div class="field">
+            <label>Plano Principal</label>
+            <select id="p_plano">
+              <option value="0.5">Plano 0.5</option>
+              <option value="1.0" selected>Plano 1.0</option>
+              <option value="2.0">Plano 2.0</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Selo de Destaque</label>
+            <select id="p_selo">
+              <option value="Melhor custo-benefício">Melhor custo-benefício</option>
+              <option value="Recomendado">Recomendado</option>
+              <option value="Mais completo">Mais completo</option>
+              <option value="">Sem selo</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Nº de Veículos</label>
+            <input id="p_veiculos" type="number" min="1" placeholder="Ex: 50"/>
+          </div>
+          <div class="field">
+            <label>Nº de Usuários</label>
+            <input id="p_usuarios" type="number" min="1" placeholder="Ex: 3"/>
+          </div>
+          <div class="hint">Recursos inclusos — já vêm todos marcados. Desmarque apenas o que não entra na negociação.</div>
+          <div class="chk-grid" id="p_recursos"></div>
+          <div class="chk-actions">
+            <button type="button" onclick="pMarcarRecursos(true)">Marcar todos</button>
+            <button type="button" onclick="pMarcarRecursos(false)">Desmarcar todos</button>
+          </div>
         </div>
-        <div class="field">
-          <label>Nº de Veículos</label>
-          <input id="p_veiculos" type="number" min="1" placeholder="Ex: 50"/>
-        </div>
-        <div class="field">
-          <label>Nº de Usuários</label>
-          <input id="p_usuarios" type="number" min="1" placeholder="Ex: 3"/>
-        </div>
-        <div class="hint">Recursos inclusos — já vêm todos marcados. Desmarque apenas o que não entra na negociação.</div>
-        <div class="chk-grid" id="p_recursos"></div>
-        <div class="chk-actions">
-          <button type="button" onclick="pMarcarRecursos(true)">Marcar todos</button>
-          <button type="button" onclick="pMarcarRecursos(false)">Desmarcar todos</button>
+
+        <!-- ═══ Bloco: CRM ou Nota Fiscal avulso ═══ -->
+        <div id="blocoAvulso" class="hidden" style="display:contents">
+          <div class="field span2">
+            <label>Plano Principal</label>
+            <select id="av_plano" onchange="onAvPlanoChange()">
+              <option value="crm">CRM</option>
+              <option value="nf" selected>Nota Fiscal</option>
+            </select>
+          </div>
+
+          <!-- Sub-bloco CRM como plano principal -->
+          <div id="avBlocoCrm" class="hidden" style="display:contents">
+            <div class="field">
+              <label>Nº de Usuários</label>
+              <input id="av_crm_usuarios" type="number" min="1" value="3"/>
+            </div>
+            <div class="hint">3 usuários inclusos na base. A partir do 4º, R$ 100,00/usuário. Pagamento pós-pago, exclusivamente via boleto.</div>
+          </div>
+
+          <!-- Sub-bloco Nota Fiscal como plano principal -->
+          <div id="avBlocoNf" style="display:contents">
+            <div class="hint">Valores de tabela — mensal, trimestral e anual. Use o desconto no card de Investimento para negociar.</div>
+          </div>
         </div>
       </div>
     </div>
@@ -916,48 +984,106 @@ footer {
         <span class="card-title">Investimento</span>
       </div>
       <div class="card-body">
-        <div class="hint">Preenchido automaticamente pelo plano: trimestral igual ao mensal e anual R$ 50,00 menor. Edite livremente se a negociação pedir.</div>
-        <div id="p_modalidades" style="grid-column:span 2;display:flex;flex-direction:column;gap:10px">
 
-          <div class="addon on">
-            <div class="addon-main">
-              <div class="addon-nome">Mensal</div>
-              <div class="addon-desc">Adesão de R$ 1.000,00</div>
+        <!-- ═══ Investimento: Software Gerencial ═══ -->
+        <div id="blocoInvSoftware" style="display:contents">
+          <div class="hint">Valores de tabela do plano, não editáveis. Use o desconto abaixo para negociar — ele abate igualmente do mensal, trimestral e anual, e não afeta a adesão.</div>
+          <div style="grid-column:span 2;display:flex;flex-direction:column;gap:10px">
+            <div class="readonly-row">
+              <div><div class="rr-label">Mensal</div><div class="rr-desc">Adesão de R$ 1.000,00</div></div>
+              <div class="price-stack">
+                <small class="ps-de hidden" id="p_mensalDe"></small>
+                <span class="ps-final" id="p_mensalView">R$ 0,00</span>
+              </div>
             </div>
-            <div class="addon-tipo"><span class="addon-fix">por mês</span></div>
-            <div class="addon-val"><input id="p_mensalidade" class="money" type="text" placeholder="0,00"/></div>
+            <div class="readonly-row">
+              <div><div class="rr-label">Trimestral</div><div class="rr-desc">Sem adesão</div></div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <select id="p_tipoTri" class="rr-tipo-select">
+                  <option value="parcelado" selected>3x de</option>
+                  <option value="vista">À vista</option>
+                </select>
+                <div class="price-stack">
+                  <small class="ps-de hidden" id="p_triDe"></small>
+                  <span class="ps-final" id="p_triView">R$ 0,00</span>
+                </div>
+              </div>
+            </div>
+            <div class="readonly-row">
+              <div><div class="rr-label">Anual</div><div class="rr-desc">Sem adesão</div></div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <select id="p_tipoAnual" class="rr-tipo-select">
+                  <option value="parcelado" selected>12x de</option>
+                  <option value="vista">À vista</option>
+                </select>
+                <div class="price-stack">
+                  <small class="ps-de hidden" id="p_anualDe"></small>
+                  <span class="ps-final" id="p_anualView">R$ 0,00</span>
+                </div>
+              </div>
+            </div>
           </div>
-
-          <div class="addon on">
-            <div class="addon-main">
-              <div class="addon-nome">Trimestral</div>
-              <div class="addon-desc">Sem adesão</div>
-            </div>
-            <div class="addon-tipo">
-              <select id="p_tipoTri">
-                <option value="parcelado" selected>3x de</option>
-                <option value="vista">À vista</option>
-              </select>
-            </div>
-            <div class="addon-val"><input id="p_vTri" class="money" type="text" placeholder="0,00"/></div>
+          <div class="field">
+            <label>Desconto (R$)</label>
+            <input id="p_desconto" class="money" type="text" placeholder="0,00"/>
           </div>
-
-          <div class="addon on">
-            <div class="addon-main">
-              <div class="addon-nome">Anual</div>
-              <div class="addon-desc">Sem adesão</div>
-            </div>
-            <div class="addon-tipo">
-              <select id="p_tipoAnual">
-                <option value="parcelado" selected>12x de</option>
-                <option value="vista">À vista</option>
-              </select>
-            </div>
-            <div class="addon-val"><input id="p_vAnual" class="money" type="text" placeholder="0,00"/></div>
-          </div>
-
         </div>
-        <div class="field span2">
+
+        <!-- ═══ Investimento: CRM ou Nota Fiscal avulso ═══ -->
+        <div id="blocoInvAvulso" class="hidden" style="display:contents">
+
+          <!-- CRM: base + extras + setup, sem modalidades -->
+          <div id="avBlocoInvCrm" class="hidden" style="display:contents">
+            <div class="readonly-row">
+              <div>
+                <div class="rr-label">Mensalidade calculada</div>
+                <div class="rr-desc" id="av_crm_calcDesc">R$ 500,00 (3 usuários) + R$ 0,00 (0 extra)</div>
+              </div>
+              <div class="price-stack">
+                <small class="ps-de hidden" id="av_crm_calcDe"></small>
+                <span class="ps-final" id="av_crm_calcVal">R$ 500,00</span>
+              </div>
+            </div>
+            <div class="readonly-row">
+              <div>
+                <div class="rr-label">Taxa de Setup</div>
+                <div class="rr-desc">Pago uma única vez — não entra no desconto</div>
+              </div>
+              <div class="rr-val">R$ 390,00</div>
+            </div>
+            <div class="field">
+              <label>Desconto (R$)</label>
+              <input id="av_crm_desconto" class="money" type="text" placeholder="0,00"/>
+            </div>
+            <div class="hint">O desconto abate apenas do valor mensal calculado — não afeta o setup.</div>
+          </div>
+
+          <!-- Nota Fiscal: tabela fixa nas 3 modalidades -->
+          <div id="avBlocoInvNf" style="display:contents">
+            <div class="hint">Valores de tabela, não editáveis. Use o desconto abaixo para negociar — ele abate igualmente do mensal, trimestral e anual, e também dos adicionais marcados.</div>
+            <div style="grid-column:span 2;display:flex;flex-direction:column;gap:10px">
+              <div class="readonly-row">
+                <div><div class="rr-label">Mensal</div><div class="rr-desc">Tabela</div></div>
+                <div class="price-stack"><small class="ps-de hidden" id="av_nfMensalDe"></small><span class="ps-final" id="av_nfMensalView">R$ 400,00</span></div>
+              </div>
+              <div class="readonly-row">
+                <div><div class="rr-label">Trimestral</div><div class="rr-desc">3x de (tabela)</div></div>
+                <div class="price-stack"><small class="ps-de hidden" id="av_nfTriDe"></small><span class="ps-final" id="av_nfTriView">R$ 400,00</span></div>
+              </div>
+              <div class="readonly-row">
+                <div><div class="rr-label">Anual</div><div class="rr-desc">12x de (tabela)</div></div>
+                <div class="price-stack"><small class="ps-de hidden" id="av_nfAnualDe"></small><span class="ps-final" id="av_nfAnualView">R$ 350,00</span></div>
+              </div>
+            </div>
+            <div class="field">
+              <label>Desconto (R$)</label>
+              <input id="av_nf_desconto" class="money" type="text" placeholder="0,00"/>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ Campos compartilhados ═══ -->
+        <div class="field span2" id="campoFormaWrap">
           <label>Forma de Pagamento</label>
           <select id="p_forma">
             <option value="Cartão de crédito">Cartão de crédito</option>
@@ -965,13 +1091,80 @@ footer {
             <option value="Cartão de crédito ou Boleto / PIX" selected>Cartão ou Boleto / PIX</option>
           </select>
         </div>
+        <div class="hint hidden" id="campoFormaFixa">Forma de pagamento: pós-pago, exclusivamente via boleto.</div>
         <div class="field span2">
           <label>Condições Especiais</label>
           <textarea id="p_condicoes" placeholder="Ex: 1º mês de cortesia. Implantação parcelada em 3x.&#10;Use Enter para novas linhas. Deixe vazio para ocultar do documento."></textarea>
         </div>
+      </div>
+    </div>
+
+    <!-- Card 4 -->
+    <div class="card" id="cardAddons">
+      <div class="card-header">
+        <div class="card-num">04</div>
+        <span class="card-title">Produtos Adicionais</span>
+      </div>
+      <div class="card-body">
+
+        <!-- ═══ Adicionais: Software Gerencial ═══ -->
+        <div id="blocoAddonsSoftware" style="display:contents">
+          <div class="hint">Marque apenas os opcionais contratados. Os valores entram no total das três modalidades — exceto o CRM, cobrado à parte.</div>
+          <div id="p_addons" style="grid-column:span 2;display:flex;flex-direction:column;gap:10px"></div>
+          <div id="p_notas"></div>
+          <button type="button" class="btn-ghost" onclick="pAddCustom()">+ Adicionar outro módulo</button>
+        </div>
+
+        <!-- ═══ Adicionais: CRM avulso → só NF-e ═══ -->
+        <div id="avAddonsCrm" class="hidden" style="display:contents">
+          <div class="hint">Adicional disponível para quem já contratou o CRM.</div>
+          <div class="addon" id="av_row_nfe">
+            <input type="checkbox" id="av_ck_nfe" onchange="onAvAddonChange()"/>
+            <div class="addon-main">
+              <div class="addon-nome">NF-e</div>
+              <div class="addon-desc">Valor de tabela — mensal</div>
+            </div>
+            <div class="addon-val"><span class="addon-fix">R$ 400,00</span></div>
+          </div>
+        </div>
+
+        <!-- ═══ Adicionais: Nota Fiscal avulso → RENAVE e/ou CRM ═══ -->
+        <div id="avAddonsNf" class="hidden" style="display:contents">
+          <div class="hint">Adicionais disponíveis para quem contratou a Nota Fiscal.</div>
+          <div class="addon" id="av_row_renave">
+            <input type="checkbox" id="av_ck_renave" onchange="onAvAddonChange()"/>
+            <div class="addon-main">
+              <div class="addon-nome">RENAVE</div>
+              <div class="addon-desc">Valor fixo mensal, independente da modalidade</div>
+            </div>
+            <div class="addon-val"><span class="addon-fix">R$ 30,00</span></div>
+          </div>
+          <div class="addon" id="av_row_crm">
+            <input type="checkbox" id="av_ck_crm" onchange="onAvAddonChange()"/>
+            <div class="addon-main">
+              <div class="addon-nome">CRM</div>
+              <div class="addon-desc" id="av_crm_addon_desc">3 usuários inclusos + R$ 390,00 de setup (à parte)</div>
+              <div class="crm-nested">
+                Usuários: <input id="av_crm_addon_usuarios" class="mini-num" type="number" min="1" value="3" onchange="onAvAddonChange()" oninput="onAvAddonChange()"/>
+              </div>
+            </div>
+            <div class="addon-val"><span class="addon-fix" id="av_crm_addon_val">R$ 500,00</span></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Card 5: Total (soma Plano Principal + Adicionais) -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-num">05</div>
+        <span class="card-title">Total</span>
+      </div>
+      <div class="card-body">
         <div class="total-box">
           <div>
-            <div class="tb-l">Mensal</div>
+            <div class="tb-l" id="p_totalLabel">Mensal</div>
             <div class="tb-v" id="p_totalView">R$ 0,00</div>
           </div>
           <div class="tb-sub" id="p_totalSub">Trimestral e anual sem adesão</div>
@@ -979,24 +1172,10 @@ footer {
       </div>
     </div>
 
-    <!-- Card 4 -->
+    <!-- Card 6 -->
     <div class="card">
       <div class="card-header">
-        <div class="card-num">04</div>
-        <span class="card-title">Produtos Adicionais</span>
-      </div>
-      <div class="card-body">
-        <div class="hint">Marque apenas os opcionais contratados. Os valores entram no total das três modalidades — exceto o CRM, cobrado à parte.</div>
-        <div id="p_addons" style="grid-column:span 2;display:flex;flex-direction:column;gap:10px"></div>
-        <div id="p_notas"></div>
-        <button type="button" class="btn-ghost" onclick="pAddCustom()">+ Adicionar outro módulo</button>
-      </div>
-    </div>
-
-    <!-- Card 5 -->
-    <div class="card">
-      <div class="card-header">
-        <div class="card-num">05</div>
+        <div class="card-num">06</div>
         <span class="card-title">Pré-visualização</span>
       </div>
       <div class="preview-wrap">
@@ -1487,6 +1666,63 @@ const PLANOS = {
   '2.0': { veiculos: 100, usuarios: 15, valor: '1.000,00', desmarcados: [] }
 };
 
+// ── Tipo de Proposta: Software Gerencial (acima) ou CRM/Nota Fiscal avulso ──
+let tipoProposta = 'software'; // 'software' | 'avulso'
+
+// Tabela de preços fixa do fluxo avulso — não editável na tela, só via desconto
+const AV_TABELA = {
+  crmBase: 500, crmInclusos: 3, crmExtra: 100, crmSetup: 390,
+  nfMensal: 400, nfTrimestral: 400, nfAnual: 350,
+  renave: 30
+};
+function avCrmCalc(usuarios) {
+  const u = Math.max(0, parseInt(usuarios, 10) || 0);
+  const extra = Math.max(0, u - AV_TABELA.crmInclusos);
+  return { usuarios: u, extra: extra, valor: AV_TABELA.crmBase + extra * AV_TABELA.crmExtra };
+}
+
+function setTipoProposta(tipo) {
+  tipoProposta = tipo;
+  document.getElementById('tipoBtnSoftware').classList.toggle('active', tipo === 'software');
+  document.getElementById('tipoBtnAvulso').classList.toggle('active', tipo === 'avulso');
+  document.getElementById('blocoSoftware').classList.toggle('hidden', tipo !== 'software');
+  document.getElementById('blocoAvulso').classList.toggle('hidden', tipo !== 'avulso');
+  document.getElementById('blocoInvSoftware').classList.toggle('hidden', tipo !== 'software');
+  document.getElementById('blocoInvAvulso').classList.toggle('hidden', tipo !== 'avulso');
+  document.getElementById('blocoAddonsSoftware').classList.toggle('hidden', tipo !== 'software');
+  if (tipo === 'avulso') {
+    onAvPlanoChange();
+  } else {
+    document.getElementById('avAddonsCrm').classList.add('hidden');
+    document.getElementById('avAddonsNf').classList.add('hidden');
+    document.getElementById('campoFormaWrap').classList.remove('hidden');
+    document.getElementById('campoFormaFixa').classList.add('hidden');
+  }
+  pRender();
+}
+
+function onAvPlanoChange() {
+  const plano = document.getElementById('av_plano').value; // 'crm' | 'nf'
+  document.getElementById('avBlocoCrm').classList.toggle('hidden', plano !== 'crm');
+  document.getElementById('avBlocoNf').classList.toggle('hidden', plano !== 'nf');
+  document.getElementById('avBlocoInvCrm').classList.toggle('hidden', plano !== 'crm');
+  document.getElementById('avBlocoInvNf').classList.toggle('hidden', plano !== 'nf');
+  document.getElementById('avAddonsCrm').classList.toggle('hidden', plano !== 'crm');
+  document.getElementById('avAddonsNf').classList.toggle('hidden', plano !== 'nf');
+  document.getElementById('campoFormaWrap').classList.toggle('hidden', plano === 'crm');
+  document.getElementById('campoFormaFixa').classList.toggle('hidden', plano !== 'crm');
+  pRender();
+}
+
+function onAvAddonChange() {
+  const c = avCrmCalc(document.getElementById('av_crm_addon_usuarios').value);
+  document.getElementById('av_crm_addon_val').textContent = pBRL(c.valor);
+  document.getElementById('av_crm_addon_desc').textContent = c.extra > 0
+    ? (c.usuarios + ' usuários (3 inclusos + ' + c.extra + ' extra) + R$ 390,00 de setup (à parte)')
+    : '3 usuários inclusos + R$ 390,00 de setup (à parte)';
+  pRender();
+}
+
 // Produtos adicionais — para incluir um novo módulo fixo, basta acrescentar aqui
 const ADICIONAIS = [
   { id: 'crm',      nome: 'CRM com WhatsApp',     desc: '3 usuários inclusos', fora: true,
@@ -1504,6 +1740,21 @@ let customSeq = 0;
 /* ── Helpers ─────────────────────────────────────────────────────── */
 function pBRL(v) {
   return 'R$ ' + (v || 0).toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+// Atualiza um par "de/por" em tempo real no formulário (tabela riscada + valor final)
+function setPriceStack(idFinal, idDe, tabela, final) {
+  const elFinal = document.getElementById(idFinal);
+  const elDe = document.getElementById(idDe);
+  if (!elFinal) return;
+  elFinal.textContent = pBRL(final);
+  if (!elDe) return;
+  if (final < tabela) {
+    elDe.textContent = 'De ' + pBRL(tabela);
+    elDe.classList.remove('hidden');
+  } else {
+    elDe.textContent = '';
+    elDe.classList.add('hidden');
+  }
 }
 function pParse(txt) {
   return parseFloat(String(txt || '').replace(/\./g, '').replace(',', '.')) || 0;
@@ -1537,9 +1788,7 @@ function pAplicarPlano() {
   if (!cfg) return;
   document.getElementById('p_veiculos').value = cfg.veiculos;
   document.getElementById('p_usuarios').value = cfg.usuarios;
-  document.getElementById('p_mensalidade').value = cfg.valor;
   pRenderRecursos();
-  pSyncModalidades(true);
 }
 function pToggleRecurso(el) {
   el.closest('.chk').classList.toggle('off', !el.checked);
@@ -1598,16 +1847,7 @@ function pSyncAddon(id) {
   }
   pRender();
 }
-// Plano: trimestral = mensal, anual = mensal − R$ 50 (mesma regra)
-function pSyncModalidades(forcar) {
-  const mensal = pParse(document.getElementById('p_mensalidade').value);
-  const tri = document.getElementById('p_vTri');
-  const anual = document.getElementById('p_vAnual');
-  if (forcar) { delete tri.dataset.touched; delete anual.dataset.touched; }
-  if (!tri.dataset.touched) pSetMoney('p_vTri', mensal);
-  if (!anual.dataset.touched) pSetMoney('p_vAnual', Math.max(0, mensal - DESCONTO_ANUAL));
-  pRender();
-}
+// Plano: trimestral = mensal, anual = mensal − R$ 50 (mesma regra) — mantido só para os adicionais dual (NF)
 function pToggleAddon(id) {
   const on = document.getElementById('ck_' + id).checked;
   document.getElementById('row_' + id).classList.toggle('on', on);
@@ -1649,12 +1889,19 @@ function pColetar() {
     document.querySelectorAll('.rec-chk:checked'), function (c) { return c.value; }
   );
 
-  const mensalidade = pParse(document.getElementById('p_mensalidade').value);
+  // Valores de tabela do plano (não editáveis) + desconto único em R$, travado em R$ 0,00
+  const cfg = PLANOS[document.getElementById('p_plano').value] || { valor: '0,00' };
+  const mensalTabela = pParse(cfg.valor);
+  const triTabela = mensalTabela;
+  const anualTabela = Math.max(0, mensalTabela - DESCONTO_ANUAL);
+  const desconto = pParse(document.getElementById('p_desconto').value);
+  const mensalidade = Math.max(0, mensalTabela - Math.min(desconto, mensalTabela));
+  const vTri = Math.max(0, triTabela - Math.min(desconto, triTabela));
+  const vAnual = Math.max(0, anualTabela - Math.min(desconto, anualTabela));
+
   // O CRM (fora: true) é cobrado à parte e não entra em nenhum total
   const somaAdd = selecionados.reduce(function (s, a) { return s + (a.fora ? 0 : a.valor); }, 0);
   const somaAddAnual = selecionados.reduce(function (s, a) { return s + (a.fora ? 0 : a.valorAnual); }, 0);
-  const vTri = pParse(document.getElementById('p_vTri').value);
-  const vAnual = pParse(document.getElementById('p_vAnual').value);
   const tipoTri = document.getElementById('p_tipoTri').value;
   const tipoAnual = document.getElementById('p_tipoAnual').value;
 
@@ -1675,22 +1922,35 @@ function pColetar() {
     usuarios: document.getElementById('p_usuarios').value.trim(),
     recursos: recursos,
     adicionais: selecionados,
+    mensalTabela: mensalTabela, triTabela: triTabela, anualTabela: anualTabela, desconto: desconto,
     mensalidade: mensalidade,
     adesao: ADESAO_FIXA,
     somaAdd: somaAdd,
     somaAddAnual: somaAddAnual,
     vTri: vTri, tipoTri: tipoTri,
     vAnual: vAnual, tipoAnual: tipoAnual,
-    // Totais: plano + adicionais (CRM fora). No à vista, os adicionais entram pelo período cheio
+    // Totais: plano (já descontado) + adicionais (CRM fora). No à vista, os adicionais entram pelo período cheio
     total:      mensalidade + somaAdd,
-    totalTri:   vTri   ? vTri   + (tipoTri   === 'vista' ? somaAdd * 3       : somaAdd)      : 0,
-    totalAnual: vAnual ? vAnual + (tipoAnual === 'vista' ? somaAddAnual * 12 : somaAddAnual) : 0,
+    totalTri:   vTri   + (tipoTri   === 'vista' ? somaAdd * 3       : somaAdd),
+    totalAnual: vAnual + (tipoAnual === 'vista' ? somaAddAnual * 12 : somaAddAnual),
     forma: document.getElementById('p_forma').value,
     condicoes: document.getElementById('p_condicoes').value.trim()
   };
 }
 
 /* ── Montagem do documento ───────────────────────────────────────── */
+// Card de preço estilo "De/Por" — usado tanto no Software Gerencial quanto no fluxo avulso
+function precoCard(titulo, tabela, final, detalhe, destaque) {
+  const temDesc = final < tabela;
+  return '<div class="pp-mod' + (destaque ? ' on' : '') + '">' +
+    '<div class="pp-mod-t">' + titulo + '</div>' +
+    (temDesc ? '<div class="pp-mod-de">De ' + pBRL(tabela) + '</div>' : '') +
+    '<div class="pp-mod-v">' + pBRL(final) + '</div>' +
+    '<div class="pp-mod-d">' + detalhe + '</div>' +
+    (temDesc ? '<div class="pp-mod-desc-tag">− ' + pBRL(tabela - final) + '</div>' : '') +
+  '</div>';
+}
+
 function pMontarPapel(d) {
   const feats = d.recursos.map(function (r) {
     return '<div class="pp-feat"><b>&#10003;</b><span>' + esc(r) + '</span></div>';
@@ -1711,23 +1971,17 @@ function pMontarPapel(d) {
       }).join('')
     : '';
 
-  function mod(titulo, valorTxt, detalhe, destaque) {
-    return '<div class="pp-mod' + (destaque ? ' on' : '') + '">' +
-      '<div class="pp-mod-t">' + titulo + '</div>' +
-      '<div class="pp-mod-v">' + valorTxt + '</div>' +
-      '<div class="pp-mod-d">' + detalhe + '</div>' +
-    '</div>';
+  function parcelaTxt(tipo, n) {
+    return tipo === 'vista' ? '(por mês, à vista)' : n + 'x de (por mês)';
   }
-  function parcelaTxt(valor, tipo, n) {
-    if (!valor) return '<small>a combinar</small>';
-    return tipo === 'vista' ? pBRL(valor) + ' <small>à vista</small>' : n + 'x de ' + pBRL(valor);
-  }
+  const mensalBruto = d.mensalTabela + d.somaAdd;
+  const triBruto = d.triTabela + (d.tipoTri === 'vista' ? d.somaAdd * 3 : d.somaAdd);
+  const anualBruto = d.anualTabela + (d.tipoAnual === 'vista' ? d.somaAddAnual * 12 : d.somaAddAnual);
   const detAdd = d.somaAdd ? '<br/>Já inclui os adicionais' : '';
   const modalidades = '<div class="pp-mods">' +
-    mod('Mensal', d.total ? pBRL(d.total) + ' <small>/mês</small>' : '<small>a combinar</small>',
-        'Adesão de <b>' + pBRL(d.adesao) + '</b>' + detAdd, false) +
-    mod('Trimestral', parcelaTxt(d.totalTri, d.tipoTri, 3), 'Sem adesão' + detAdd, false) +
-    mod('Anual', parcelaTxt(d.totalAnual, d.tipoAnual, 12), 'Sem adesão' + detAdd, true) +
+    precoCard('Mensal', mensalBruto, d.total, 'Adesão de <b>' + pBRL(d.adesao) + '</b>' + detAdd, false) +
+    precoCard('Trimestral', triBruto, d.totalTri, 'Sem adesão · ' + parcelaTxt(d.tipoTri, 3) + detAdd, false) +
+    precoCard('Anual', anualBruto, d.totalAnual, 'Sem adesão · ' + parcelaTxt(d.tipoAnual, 12) + detAdd, true) +
   '</div>';
 
   const condicoes = d.condicoes
@@ -1787,6 +2041,161 @@ function pMontarPapel(d) {
   '<div class="pp-foot"><span>Revenda Mais  ·  revendamais.com.br/planos</span><span>Página 1 | 1</span></div>';
 }
 
+/* ── Coleta (fluxo avulso: CRM ou Nota Fiscal) ──────────────────────── */
+function avColetar() {
+  const plano = document.getElementById('av_plano').value;
+  const dataIso = document.getElementById('p_data').value;
+  const dt = dataIso ? new Date(dataIso + 'T12:00:00') : new Date();
+  const base = {
+    __avulso: true,
+    avPlano: plano,
+    cliente: document.getElementById('p_cliente').value.trim(),
+    fone: document.getElementById('p_fone').value.trim(),
+    numero: document.getElementById('p_numero').value.trim(),
+    consultor: document.getElementById('p_consultor').value.trim(),
+    consultorContato: document.getElementById('p_consultorContato').value.trim(),
+    data: dt.toLocaleDateString('pt-BR'),
+    validade: document.getElementById('p_validade').value || '7',
+    forma: document.getElementById('p_forma').value,
+    condicoes: document.getElementById('p_condicoes').value.trim()
+  };
+
+  if (plano === 'crm') {
+    const calc = avCrmCalc(document.getElementById('av_crm_usuarios').value);
+    const nfeOn = document.getElementById('av_ck_nfe').checked;
+    const somaAdd = nfeOn ? AV_TABELA.nfMensal : 0;
+    const bruto = calc.valor + somaAdd;
+    // Desconto abate só o valor mensal calculado (nunca o setup), travando em R$ 0,00
+    const desconto = Math.min(pParse(document.getElementById('av_crm_desconto').value), bruto);
+    const total = Math.max(0, bruto - desconto);
+    return Object.assign(base, {
+      crmUsuarios: calc.usuarios, crmExtra: calc.extra, crmBaseCalc: calc.valor,
+      crmSetup: AV_TABELA.crmSetup,
+      nfeOn: nfeOn, somaAdd: somaAdd,
+      bruto: bruto, desconto: desconto, total: total,
+      mensalidade: total
+    });
+  }
+
+  const renaveOn = document.getElementById('av_ck_renave').checked;
+  const crmOn = document.getElementById('av_ck_crm').checked;
+  const crmCalc = crmOn ? avCrmCalc(document.getElementById('av_crm_addon_usuarios').value) : { usuarios: 0, extra: 0, valor: 0 };
+  const somaAdd = (renaveOn ? AV_TABELA.renave : 0) + (crmOn ? crmCalc.valor : 0);
+  const crmSetupShown = crmOn ? AV_TABELA.crmSetup : 0;
+  const descontoInput = pParse(document.getElementById('av_nf_desconto').value);
+
+  const mensalBruto = AV_TABELA.nfMensal + somaAdd;
+  const triBruto = AV_TABELA.nfTrimestral + somaAdd;
+  const anualBruto = AV_TABELA.nfAnual + somaAdd;
+  // Desconto único em R$, travado em R$ 0,00 em cada modalidade — também abate o total dos adicionais
+  const totalMensal = Math.max(0, mensalBruto - Math.min(descontoInput, mensalBruto));
+  const totalTri = Math.max(0, triBruto - Math.min(descontoInput, triBruto));
+  const totalAnual = Math.max(0, anualBruto - Math.min(descontoInput, anualBruto));
+
+  return Object.assign(base, {
+    renaveOn: renaveOn, crmOn: crmOn, crmUsuarios: crmCalc.usuarios, crmExtra: crmCalc.extra, crmAddonValor: crmCalc.valor,
+    crmSetupShown: crmSetupShown,
+    somaAdd: somaAdd, desconto: descontoInput,
+    nfMensalTabela: AV_TABELA.nfMensal, nfTriTabela: AV_TABELA.nfTrimestral, nfAnualTabela: AV_TABELA.nfAnual,
+    mensalBruto: mensalBruto, triBruto: triBruto, anualBruto: anualBruto,
+    totalMensal: totalMensal, totalTri: totalTri, totalAnual: totalAnual,
+    mensalidade: totalMensal
+  });
+}
+
+/* ── Montagem do documento (fluxo avulso) ───────────────────────────── */
+function avMontarPapel(d) {
+  const condicoes = d.condicoes
+    ? '<div class="pp-cond"><div class="l">Condições Especiais</div>' +
+      d.condicoes.split('\n').map(function (l) { return '<p>' + esc(l) + '</p>'; }).join('') + '</div>'
+    : '';
+
+  let secaoPlano, secaoInvestimento, addonsHtml = '', notasHtml = '';
+
+  if (d.avPlano === 'crm') {
+    secaoPlano =
+      '<div class="pp-sec">Solução Contratada</div>' +
+      '<div class="pp-plan"><div><div class="pp-plan-n">CRM</div>' +
+      '<div class="pp-plan-s">' + d.crmUsuarios + ' usuário' + (d.crmUsuarios === 1 ? '' : 's') +
+      (d.crmExtra > 0 ? ' (3 inclusos + ' + d.crmExtra + ' extra)' : ' (3 inclusos)') + '</div></div></div>';
+
+    const linhas =
+      '<div class="pp-row"><span>Base CRM (3 usuários)</span><span>' + pBRL(AV_TABELA.crmBase) + '</span></div>' +
+      (d.crmExtra > 0 ? '<div class="pp-row"><span>' + d.crmExtra + ' usuário(s) adicional(is) × ' + pBRL(AV_TABELA.crmExtra) + '</span><span>' + pBRL(d.crmExtra * AV_TABELA.crmExtra) + '</span></div>' : '') +
+      (d.nfeOn ? '<div class="pp-row"><span>NF-e (adicional)</span><span>' + pBRL(d.somaAdd) + '</span></div>' : '') +
+      (d.desconto > 0 ? '<div class="pp-row desc"><span>Desconto comercial</span><span>− ' + pBRL(d.desconto) + '</span></div>' : '') +
+      '<div class="pp-row"><span><b>Valor mensal</b></span><span><b>' + pBRL(d.total) + '</b></span></div>' +
+      '<div class="pp-row"><span>Taxa de Setup (pagamento único)</span><span>' + pBRL(d.crmSetup) + '</span></div>';
+
+    secaoInvestimento =
+      '<div class="pp-sec">Investimento</div><div class="pp-inv">' + linhas + '</div>' +
+      '<div class="pp-pay"><span>Forma de pagamento: <b>Pós-pago, exclusivamente via boleto</b></span></div>';
+    notasHtml = '<div class="pp-note"><b>CRM:</b> cobrado separadamente, via boleto, na virada de cada mês, pois a cobrança é pós-paga.</div>';
+  } else {
+    secaoPlano =
+      '<div class="pp-sec">Solução Contratada</div>' +
+      '<div class="pp-plan"><div><div class="pp-plan-n">Nota Fiscal</div>' +
+      '<div class="pp-plan-s">Emissão de NF-e — mensal, trimestral ou anual</div></div></div>';
+
+    const modalidades = '<div class="pp-mods">' +
+      precoCard('Mensal', d.mensalBruto, d.totalMensal, 'por mês', false) +
+      precoCard('Trimestral', d.triBruto, d.totalTri, '3x de (por mês)', false) +
+      precoCard('Anual', d.anualBruto, d.totalAnual, '12x de (por mês)', true) +
+    '</div>';
+
+    secaoInvestimento =
+      '<div class="pp-sec">Investimento</div>' + modalidades +
+      '<div class="pp-pay"><span>Forma de pagamento: <b>' + esc(d.forma) + '</b></span>' +
+      (d.desconto > 0 ? '<span>Desconto de ' + pBRL(d.desconto) + ' aplicado em todas as modalidades</span>' : '<span>Valores de tabela</span>') +
+      '</div>';
+
+    const itensAdd = [];
+    if (d.renaveOn) itensAdd.push({ nome: 'RENAVE', desc: 'Valor fixo mensal, independente da modalidade', valor: AV_TABELA.renave });
+    if (d.crmOn) itensAdd.push({ nome: 'CRM', desc: d.crmUsuarios + ' usuário' + (d.crmUsuarios === 1 ? '' : 's') + (d.crmExtra > 0 ? ' (3 inclusos + ' + d.crmExtra + ' extra)' : ' (3 inclusos)'), valor: d.crmAddonValor });
+    if (itensAdd.length) {
+      addonsHtml = '<div class="pp-sec">Produtos Adicionais</div><div class="pp-addons">' +
+        itensAdd.map(function (a) {
+          return '<div class="pp-add"><div><div class="pp-add-n">' + esc(a.nome) + '</div><div class="pp-add-d">' + esc(a.desc) + '</div></div>' +
+            '<div class="pp-add-v">' + pBRL(a.valor) + ' /mês</div></div>';
+        }).join('') + '</div>';
+    }
+    if (d.crmOn) {
+      notasHtml = '<div class="pp-note"><b>CRM:</b> cobrado separadamente, via boleto, na virada de cada mês (pós-pago). Taxa de setup de ' + pBRL(d.crmSetupShown) + ' paga uma única vez, à parte.</div>';
+    }
+  }
+
+  return '' +
+  '<div class="pp-top">' +
+    '<img src="data:image/png;base64,' + LOGO_LIGHT_B64 + '"/>' +
+    '<div style="text-align:right">' +
+      '<div class="pp-kicker">Revenda Mais</div>' +
+      '<div class="pp-doc">Proposta Comercial</div>' +
+    '</div>' +
+  '</div>' +
+  '<div class="pp-accent"></div>' +
+  '<div class="pp-body">' +
+    '<div class="pp-meta">' +
+      '<div><div class="l">Cliente</div><div class="v">' + (esc(d.cliente) || '—') + '</div></div>' +
+      '<div><div class="l">Telefone</div><div class="v">' + (esc(d.fone) || '—') + '</div></div>' +
+      '<div><div class="l">Consultor</div><div class="v">' + (esc(d.consultor) || '—') +
+        (d.consultorContato ? '<br/><span style="font-weight:400;font-size:10px;color:#6b7280">' + esc(d.consultorContato) + '</span>' : '') + '</div></div>' +
+      '<div><div class="l">Proposta nº</div><div class="v">' + (esc(d.numero) || '—') +
+        '<br/><span style="font-weight:400;font-size:10px;color:#6b7280">' + d.data + '</span></div></div>' +
+    '</div>' +
+    secaoPlano +
+    secaoInvestimento +
+    addonsHtml +
+    notasHtml +
+    condicoes +
+    '<div class="pp-fine">' +
+      '<b>Condições gerais:</b> proposta válida por ' + esc(d.validade) + ' dias a contar de ' + d.data + '. ' +
+      'Não serão considerados acordos verbais, apenas os formalizados por escrito. ' +
+      'É de responsabilidade do cliente conferir todas as especificações desta proposta antes da aprovação.' +
+    '</div>' +
+  '</div>' +
+  '<div class="pp-foot"><span>Revenda Mais  ·  revendamais.com.br/planos</span><span>Página 1 | 1</span></div>';
+}
+
 /* ── Preview ─────────────────────────────────────────────────────── */
 function pAjustarEscala() {
   const stage = document.getElementById('p_stage');
@@ -1805,9 +2214,54 @@ function pRenderNotas(d) {
 }
 
 function pRender() {
-  const d = pColetar();
-  pRenderNotas(d);
-  document.getElementById('p_paper').innerHTML = pMontarPapel(d);
+  const d = tipoProposta === 'avulso' ? avColetar() : pColetar();
+
+  if (tipoProposta === 'software') {
+    pRenderNotas(d);
+    // Preview "De/Por" em tempo real no card de Investimento
+    setPriceStack('p_mensalView', 'p_mensalDe', d.mensalTabela, d.mensalidade);
+    setPriceStack('p_triView', 'p_triDe', d.triTabela, d.vTri);
+    setPriceStack('p_anualView', 'p_anualDe', d.anualTabela, d.vAnual);
+  } else if (document.getElementById('p_notas')) {
+    document.getElementById('p_notas').innerHTML = '';
+  }
+
+  if (tipoProposta === 'avulso' && d.avPlano === 'crm') {
+    document.getElementById('av_crm_calcDesc').textContent =
+      pBRL(AV_TABELA.crmBase) + ' (3 usuários)' +
+      (d.crmExtra > 0 ? ' + ' + pBRL(d.crmExtra * AV_TABELA.crmExtra) + ' (' + d.crmExtra + ' extra)' : '');
+    setPriceStack('av_crm_calcVal', 'av_crm_calcDe', d.crmBaseCalc,
+      Math.max(0, d.crmBaseCalc - Math.min(d.desconto, d.crmBaseCalc)));
+  }
+  if (tipoProposta === 'avulso' && d.avPlano === 'nf') {
+    setPriceStack('av_nfMensalView', 'av_nfMensalDe', AV_TABELA.nfMensal,
+      Math.max(0, AV_TABELA.nfMensal - Math.min(d.desconto, AV_TABELA.nfMensal)));
+    setPriceStack('av_nfTriView', 'av_nfTriDe', AV_TABELA.nfTrimestral,
+      Math.max(0, AV_TABELA.nfTrimestral - Math.min(d.desconto, AV_TABELA.nfTrimestral)));
+    setPriceStack('av_nfAnualView', 'av_nfAnualDe', AV_TABELA.nfAnual,
+      Math.max(0, AV_TABELA.nfAnual - Math.min(d.desconto, AV_TABELA.nfAnual)));
+  }
+
+  document.getElementById('p_paper').innerHTML = tipoProposta === 'avulso' ? avMontarPapel(d) : pMontarPapel(d);
+
+  if (tipoProposta === 'avulso') {
+    document.getElementById('p_totalLabel').textContent = 'Mensal';
+    if (d.avPlano === 'crm') {
+      document.getElementById('p_totalView').textContent = pBRL(d.total);
+      document.getElementById('p_totalSub').innerHTML =
+        'Setup de ' + pBRL(d.crmSetup) + ' (pagamento único)' +
+        (d.desconto > 0 ? '<br/>Desconto de ' + pBRL(d.desconto) + ' aplicado' : '');
+    } else {
+      document.getElementById('p_totalView').textContent = pBRL(d.totalMensal);
+      document.getElementById('p_totalSub').innerHTML =
+        'Trimestral: 3x de ' + pBRL(d.totalTri) + '  ·  Anual: 12x de ' + pBRL(d.totalAnual) +
+        (d.desconto > 0 ? '<br/>Desconto de ' + pBRL(d.desconto) + ' aplicado em todas as modalidades' : '');
+    }
+    pAjustarEscala();
+    return;
+  }
+
+  document.getElementById('p_totalLabel').textContent = 'Mensal';
   document.getElementById('p_totalView').textContent = pBRL(d.total);
   function resumoMod(v, tipo, n) {
     if (!v) return '—';
@@ -1824,13 +2278,12 @@ function pRender() {
 /* ── Validação ───────────────────────────────────────────────────── */
 function pValidar(d) {
   if (!d.cliente) { showToast('Preencha: Nome do Cliente', 'error'); document.getElementById('p_cliente').focus(); return false; }
-  if (!d.mensalidade) { showToast('Preencha: Mensalidade do Plano', 'error'); document.getElementById('p_mensalidade').focus(); return false; }
-  return true;
+  return true; // mensalidade agora vem sempre da tabela do plano, nada obrigatório digitar
 }
 
 /* ── Geração PDF / PNG ───────────────────────────────────────────── */
 async function gerarProposta(tipo) {
-  const d = pColetar();
+  const d = tipoProposta === 'avulso' ? avColetar() : pColetar();
   if (!pValidar(d)) return;
 
   const btn = document.getElementById(tipo === 'pdf' ? 'btnPropPdf' : 'btnPropPng');
@@ -1841,7 +2294,7 @@ async function gerarProposta(tipo) {
   const div = document.createElement('div');
   div.className = 'paper';
   div.style.cssText = 'position:fixed;left:-9999px;top:0;width:794px;background:#fff';
-  div.innerHTML = pMontarPapel(d);
+  div.innerHTML = tipoProposta === 'avulso' ? avMontarPapel(d) : pMontarPapel(d);
   document.body.appendChild(div);
 
   const base = 'Proposta_' + (d.cliente.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '').slice(0, 30) || 'Cliente');
@@ -1897,10 +2350,6 @@ async function gerarProposta(tipo) {
 
   document.querySelectorAll('#viewProposta input.money').forEach(pMask);
   document.getElementById('p_plano').addEventListener('change', pAplicarPlano);
-  document.getElementById('p_mensalidade').addEventListener('input', function () { pSyncModalidades(false); });
-  ['p_vTri', 'p_vAnual'].forEach(function (id) {
-    document.getElementById(id).addEventListener('input', function () { this.dataset.touched = 1; });
-  });
   document.querySelectorAll('#viewProposta input, #viewProposta select, #viewProposta textarea').forEach(function (el) {
     el.addEventListener('input', pRender);
     el.addEventListener('change', pRender);
@@ -1908,6 +2357,7 @@ async function gerarProposta(tipo) {
 
   pRenderAddons();
   pAplicarPlano();
+  onAvAddonChange();
   window.addEventListener('resize', pAjustarEscala);
 })();
 
