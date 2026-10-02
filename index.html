@@ -369,7 +369,7 @@ footer {
    ══════════════════════════════════════════════════════════ */
 .tabs {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 6px;
   background: #e6e8ec;
   border: 1px solid var(--border);
@@ -696,8 +696,39 @@ footer {
   font-size: 9px; color: #9ca3af; font-weight: 500;
 }
 
+/* ══════════════════════════════════════════════════════════
+   TERMO DE ADESÃO IA (folha A4 — 794px, espelho do modelo Word)
+   ══════════════════════════════════════════════════════════ */
+.chk-line {
+  grid-column: span 2; display: flex; align-items: center; gap: 10px;
+  font-size: 13.5px; font-weight: 500; color: var(--text); cursor: pointer; user-select: none;
+}
+.chk-line input[type=checkbox] {
+  appearance: checkbox; -webkit-appearance: checkbox; width: 17px; height: 17px;
+  margin: 0; padding: 0; accent-color: var(--red); cursor: pointer;
+}
+.ta-stack { display: flex; flex-direction: column; gap: 18px; transform-origin: top left; }
+.ta-page {
+  width: 794px; min-height: 1123px; background: #fff; color: #000;
+  font-family: Calibri, Carlito, 'Segoe UI', Arial, sans-serif; font-size: 14.67px; line-height: 1.22;
+  padding: 18px 62px 60px 76px; box-sizing: border-box;
+}
+.preview-stage .ta-page { box-shadow: 0 6px 24px rgba(0,0,0,0.13); }
+.ta-logo { height: 42px; width: auto; display: block; margin-bottom: 24px; }
+.ta-title { text-align: center; font-weight: 700; margin: 0 0 30px; }
+.ta-h { font-weight: 700; margin: 22px 0 1px; }
+.ta-h.first { margin-top: 0; }
+.ta-p { margin: 0 0 6px; text-align: justify; }
+.ta-ul { margin: 0 0 4px; padding: 0; list-style: none; }
+.ta-ul li { position: relative; padding-left: 48px; text-align: justify; margin: 0; }
+.ta-ul li::before { content: '•'; position: absolute; left: 26px; }
+.ta-date { margin: 26px 0 0; }
+.ta-sign { text-align: center; margin-top: 52px; }
+.ta-sign .ln { width: 470px; margin: 0 auto 2px; border-bottom: 1px solid #000; height: 1px; }
+.ta-sign p { margin: 0; }
+
 @media (max-width: 600px) {
-  .chk-grid, .addon, .btn-ghost, .total-box, .hint { grid-column: span 1; }
+  .chk-grid, .addon, .btn-ghost, .total-box, .hint, .chk-line { grid-column: span 1; }
   .chk-grid { grid-template-columns: 1fr; }
   .addon { flex-wrap: wrap; }
   .addon-val, .addon-tipo { width: 100%; }
@@ -727,6 +758,10 @@ footer {
     <button class="tab" id="tabProposta" onclick="trocarAba('proposta')">
       <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
       Proposta Comercial
+    </button>
+    <button class="tab" id="tabTermoIa" onclick="trocarAba('termoIa')">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+      Termo de Adesão IA
     </button>
   </nav>
 
@@ -1254,6 +1289,102 @@ footer {
     </div>
   </section>
 
+  <!-- ══════════ TERMO DE ADESÃO IA ══════════ -->
+  <section id="viewTermoIa" class="hidden">
+    <div class="page-header">
+      <div class="page-eyebrow">Revenda Mais</div>
+      <h1 class="page-title">Termo de<br/><span>Adesão IA</span></h1>
+    </div>
+
+    <!-- Card 1 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-num">01</div>
+        <span class="card-title">Dados do Contratante</span>
+      </div>
+      <div class="card-body">
+        <div class="field span2">
+          <label>Nome Empresarial / Nome</label>
+          <input id="ta_nome" type="text" placeholder="Razão social ou nome completo"/>
+        </div>
+        <div class="field span2">
+          <label>CNPJ / CPF</label>
+          <input id="ta_doc" type="text" placeholder="00.000.000/0001-00 ou 000.000.000-00"/>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 2 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-num">02</div>
+        <span class="card-title">Condição Especial de Lançamento</span>
+      </div>
+      <div class="card-body">
+        <div class="hint">Preço de tabela fixo no termo: R$ 996,00/mês para até 500 leads e R$ 5,00 por lead excedente.</div>
+        <label class="chk-line"><input type="checkbox" id="ta_promoOn" checked/> Incluir condição especial de lançamento no item 5</label>
+        <div class="field" id="ta_promoDescWrap">
+          <label>Desconto (%)</label>
+          <input id="ta_promoDesc" type="number" min="1" max="100" value="50"/>
+        </div>
+        <div class="field" id="ta_promoMesesWrap">
+          <label>Válido nos meses</label>
+          <input id="ta_promoMeses" type="text" placeholder="Ex: Agosto e Setembro/2026"/>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 3 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-num">03</div>
+        <span class="card-title">Data do Documento</span>
+      </div>
+      <div class="card-body">
+        <div class="field">
+          <label>Cidade</label>
+          <input id="ta_cidade" type="text" value="Curitiba"/>
+        </div>
+        <div class="field">
+          <label>Dia</label>
+          <input id="ta_dia" type="text" maxlength="2"/>
+        </div>
+        <div class="field">
+          <label>Mês (por extenso)</label>
+          <input id="ta_mes" type="text" placeholder="Ex: Setembro"/>
+        </div>
+        <div class="field">
+          <label>Ano</label>
+          <input id="ta_ano" type="text" maxlength="4"/>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 4 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-num">04</div>
+        <span class="card-title">Pré-visualização</span>
+      </div>
+      <div class="preview-wrap">
+        <div class="preview-stage" id="ta_stage">
+          <div class="ta-stack" id="ta_paper"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-docx" id="btnTaDocx" onclick="gerarTermoIa('docx')">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        Gerar Word
+      </button>
+      <button class="btn btn-pdf" id="btnTaPdf" onclick="gerarTermoIa('pdf')">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+        Gerar PDF
+      </button>
+    </div>
+  </section>
+
 </main>
 
 <footer>
@@ -1684,15 +1815,18 @@ async function gerarDocumento(tipo) {
    ABAS
    ══════════════════════════════════════════════════════════════════ */
 function trocarAba(aba) {
-  const ehTermo = aba === 'termo';
-  document.getElementById('viewTermo').classList.toggle('hidden', !ehTermo);
-  document.getElementById('viewProposta').classList.toggle('hidden', ehTermo);
-  document.getElementById('tabTermo').classList.toggle('active', ehTermo);
-  document.getElementById('tabProposta').classList.toggle('active', !ehTermo);
-  document.getElementById('headerSub').textContent = ehTermo ? 'Gerador de Termos' : 'Gerador de Propostas';
-  document.title = (ehTermo ? 'Gerador de Termos' : 'Gerador de Propostas') + ' Revenda Mais';
+  const ehProposta = aba === 'proposta';
+  document.getElementById('viewTermo').classList.toggle('hidden', aba !== 'termo');
+  document.getElementById('viewProposta').classList.toggle('hidden', !ehProposta);
+  document.getElementById('viewTermoIa').classList.toggle('hidden', aba !== 'termoIa');
+  document.getElementById('tabTermo').classList.toggle('active', aba === 'termo');
+  document.getElementById('tabProposta').classList.toggle('active', ehProposta);
+  document.getElementById('tabTermoIa').classList.toggle('active', aba === 'termoIa');
+  document.getElementById('headerSub').textContent = ehProposta ? 'Gerador de Propostas' : 'Gerador de Termos';
+  document.title = (ehProposta ? 'Gerador de Propostas' : 'Gerador de Termos') + ' Revenda Mais';
   window.scrollTo({ top: 0, behavior: 'smooth' });
-  if (!ehTermo) setTimeout(pAjustarEscala, 30);
+  if (ehProposta) setTimeout(pAjustarEscala, 30);
+  if (aba === 'termoIa') setTimeout(taAjustarEscala, 30);
 }
 
 /* ══════════════════════════════════════════════════════════════════
@@ -2500,6 +2634,304 @@ async function gerarProposta(tipo) {
   pAplicarPlano();
   onAvCnpjQtdChange();   // preenche o valor de tabela do CNPJ adicional e recalcula tudo
   window.addEventListener('resize', pAjustarEscala);
+})();
+
+/* ══════════════════════════════════════════════════════════════════
+   TERMO DE ADESÃO IA — texto fiel ao modelo; só os campos do formulário variam
+   ══════════════════════════════════════════════════════════════════ */
+const MESES_CAP = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+// Conteúdo do termo. Cada trecho é [texto, negrito, itálico].
+// Blocos: h = título de seção, p = parágrafo, li = item com marcador.
+// 'pagina2: true' marca onde o modelo vira para a 2ª folha.
+function taConteudo(d) {
+  const preco = [
+    { t: 'h', r: [[d.promoOn ? '5. PREÇO E CONDIÇÃO ESPECIAL DE LANÇAMENTO' : '5. PREÇO', true]] },
+    { t: 'p', r: [['O preço da IA SDR é de '], ['R$ 996,00 (Novecentos e noventa e seis reais)', true], [' mensal, para '],
+                  ['franquia de até 500 leads', true], ['. Após este número, terá o custo de '], ['R$ 5,00 (Cinco reais)', true],
+                  [', por lead excedente.']] }
+  ];
+  if (d.promoOn) preco.push({ t: 'p', r: [['Na promoção de lançamento da ferramenta, a loja obteve um desconto de ' + d.promoDesc +
+                  '%, que é válido apenas nos meses ' + d.promoMeses]] });
+
+  return [
+    { t: 'h', first: true, r: [['1. DO OBJETO', true]] },
+    { t: 'p', r: [['O presente termo define o escopo de atuação, limitações e responsabilidades referentes à implementação do Agente de Inteligência Artificial (IA) para atendimento via WhatsApp.']] },
+
+    { t: 'h', r: [['2. ESCOPO DE ATUAÇÃO (O QUE O AGENTE FAZ)', true]] },
+    { t: 'p', r: [['O Agente de IA é uma ferramenta de automação e triagem projetada para as seguintes funções:']] },
+    { t: 'li', r: [['Disponibilidade:', true], [' Atendimento ininterrupto (24 horas por dia, 7 dias por semana).']] },
+    { t: 'li', r: [['Agilidade:', true], [' Respostas imediatas às interações iniciadas no WhatsApp.']] },
+    { t: 'li', r: [['Suporte Básico:', true], [' Esclarecimento de dúvidas frequentes e informações preliminares.']] },
+    { t: 'li', r: [['Qualificação de Leads:', true], [' Coleta ativa de dados estratégicos, incluindo intenção de forma de pagamento e informações sobre veículos para troca.']] },
+    { t: 'li', r: [['Transição de Atendimento:', true], [' Encaminhamento formal para consultores humanos durante o horário comercial após a triagem inicial.']] },
+    { t: 'li', r: [['Otimização:', true], [' Foco na melhoria da velocidade de resposta e na organização do fluxo de entrada de clientes.']] },
+    { t: 'li', r: [['Franquia:', true], [' Atendimento de '], ['até 500 leads no mês', true], ['. Após este número, terá o '], ['custo de R$5,00 por lead excedente', true], ['.']] },
+
+    { t: 'h', r: [['3. LIMITAÇÕES DE SERVIÇO (O QUE O AGENTE NÃO FAZ)', true]] },
+    { t: 'p', r: [['Fica estabelecido que a tecnologia de IA possui fronteiras operacionais específicas:']] },
+    { t: 'li', r: [['Qualidade de Leads:', true], [' A ferramenta não altera a natureza ou a origem dos contatos; leads qualificados ou desqualificados continuarão mantendo seu perfil original.']] },
+    { t: 'li', r: [['Conversão Final:', true], [' O agente não efetua a venda de veículos, sendo essa uma atribuição exclusiva do corpo comercial humano.']] },
+    { t: 'li', r: [['Garantia de Resultados:', true], [' A implementação do serviço não implica em aumento garantido de vendas ou resultados extraordinários ("milagres").']] },
+
+    { t: 'h', r: [['4. TERMO DE RESPONSABILIDADE E RISCOS', true]] },
+    { t: 'p', r: [['Ao contratar o serviço de '], ['Agente de Pré-Vendas', true], [', o contratante declara estar ciente e concordar com os seguintes pontos:']] },
+    { t: 'p', r: [['Isenção de Responsabilidade:', true], [' O '], ['Revenda Mais', true], [' não se responsabiliza por quaisquer prejuízos, diretos ou indiretos, causados por respostas imprecisas ou divergentes geradas pelo Agente de IA.']] },
+    { t: 'p', r: [['Natureza da Tecnologia:', true], [' O contratante reconhece que, devido à natureza dos modelos de linguagem em larga escala (LLMs), não existe controle técnico absoluto sobre todas as variações de respostas, apesar da aplicação de protocolos rigorosos de engenharia de '], ['prompts', false, true], [' e segurança.']] }
+  ].concat(preco, [
+    { t: 'h', r: [['6. POLÍTICA DE CANCELAMENTO', true]] },
+    { t: 'p', r: [['Este serviço pode ser cancelado a qualquer momento, sem existência de fidelidade, com aviso formal via chamado dentro do sistema e será desligado no último dia do mês da solicitação do cancelamento, ou seja, será cobrado o mês integral do pedido do cancelamento.']] },
+
+    { t: 'h', first: true, pagina2: true, r: [['7. ACEITE E CIÊNCIA', true]] },
+    { t: 'p', r: [['Ao assinar este documento, o cliente confirma que compreende as capacidades e as limitações técnicas da ferramenta apresentada.']] }
+  ]);
+}
+
+function taColetar() {
+  const mes = document.getElementById('ta_mes').value.trim();
+  return {
+    nome: document.getElementById('ta_nome').value.trim(),
+    doc: document.getElementById('ta_doc').value.trim(),
+    promoOn: document.getElementById('ta_promoOn').checked,
+    promoDesc: document.getElementById('ta_promoDesc').value.trim(),
+    promoMeses: document.getElementById('ta_promoMeses').value.trim(),
+    cidade: document.getElementById('ta_cidade').value.trim() || 'Curitiba',
+    dia: document.getElementById('ta_dia').value.trim(),
+    mes: mes ? mes.charAt(0).toUpperCase() + mes.slice(1) : '',
+    ano: document.getElementById('ta_ano').value.trim()
+  };
+}
+
+function taValidar() {
+  const campos = [
+    { id: 'ta_nome', label: 'Nome Empresarial / Nome' },
+    { id: 'ta_doc', label: 'CNPJ / CPF' },
+    { id: 'ta_dia', label: 'Dia' },
+    { id: 'ta_mes', label: 'Mês' },
+    { id: 'ta_ano', label: 'Ano' }
+  ];
+  if (document.getElementById('ta_promoOn').checked) {
+    campos.splice(2, 0, { id: 'ta_promoDesc', label: 'Desconto (%)' }, { id: 'ta_promoMeses', label: 'Válido nos meses' });
+  }
+  for (const c of campos) {
+    if (!document.getElementById(c.id).value.trim()) {
+      showToast('Preencha: ' + c.label, 'error');
+      document.getElementById(c.id).focus();
+      return false;
+    }
+  }
+  return true;
+}
+
+/* ── HTML (pré-visualização e PDF): duas folhas, como no modelo ── */
+function taRunsHtml(runs) {
+  return runs.map(function (r) {
+    let t = esc(r[0]);
+    if (r[2]) t = '<i>' + t + '</i>';
+    if (r[1]) t = '<b>' + t + '</b>';
+    return t;
+  }).join('');
+}
+function taBlocosHtml(blocos) {
+  let html = '', lista = false;
+  blocos.forEach(function (b) {
+    if (b.t === 'li' && !lista) { html += '<ul class="ta-ul">'; lista = true; }
+    if (b.t !== 'li' && lista) { html += '</ul>'; lista = false; }
+    if (b.t === 'h') html += '<div class="ta-h' + (b.first ? ' first' : '') + '">' + taRunsHtml(b.r) + '</div>';
+    else if (b.t === 'p') html += '<p class="ta-p">' + taRunsHtml(b.r) + '</p>';
+    else html += '<li>' + taRunsHtml(b.r) + '</li>';
+  });
+  return html + (lista ? '</ul>' : '');
+}
+function taPaginasHtml(d) {
+  const blocos = taConteudo(d);
+  const corte = blocos.findIndex(function (b) { return b.pagina2; });
+  const logo = '<img class="ta-logo" src="data:image/png;base64,' + LOGO_B64 + '"/>';
+  const v = function (x, ph) { return x ? esc(x) : '<span style="color:#9ca3af">' + ph + '</span>'; };
+  const pag1 = '<div class="ta-page">' + logo +
+    '<div class="ta-title">CONTRATO DE PRESTAÇÃO DE SERVIÇOS: AGENTE DE PRÉ-VENDAS IA</div>' +
+    taBlocosHtml(blocos.slice(0, corte)) + '</div>';
+  const pag2 = '<div class="ta-page">' + logo +
+    taBlocosHtml(blocos.slice(corte)) +
+    '<p class="ta-date">Data: ' + esc(d.cidade) + ', ' + v(d.dia, 'dia') + ' de ' + v(d.mes, 'mês') + ' de ' + v(d.ano, 'ano') + '</p>' +
+    '<div class="ta-sign"><div class="ln"></div>' +
+      '<p>CONTRATANTE:&nbsp;&nbsp;&nbsp; ' + v(d.nome, 'NOME DO CONTRATANTE') + '</p>' +
+      '<p>CNPJ/CPF: ' + v(d.doc, '00.000.000/0001-00') + '</p></div>' +
+    '<div class="ta-sign"><div class="ln"></div>' +
+      '<p>CONTRATADA: <b style="font-size:16px">MARCHETTI E MARCHETTI TECNOLOGIA LTDA</b></p>' +
+      '<p>CNPJ: <b>03.995.142/0001-24</b></p></div>' +
+    '</div>';
+  return [pag1, pag2];
+}
+
+function taAjustarEscala() {
+  const stage = document.getElementById('ta_stage');
+  const stack = document.getElementById('ta_paper');
+  if (!stage || !stack || !stage.clientWidth) return;
+  const s = Math.min(1, stage.clientWidth / 794);
+  stack.style.transform = 'scale(' + s + ')';
+  stage.style.height = (stack.offsetHeight * s) + 'px';
+}
+function taRender() {
+  document.getElementById('ta_paper').innerHTML = taPaginasHtml(taColetar()).join('');
+  ['ta_promoDescWrap', 'ta_promoMesesWrap'].forEach(function (id) {
+    document.getElementById(id).classList.toggle('hidden', !document.getElementById('ta_promoOn').checked);
+  });
+  taAjustarEscala();
+}
+
+/* ── DOCX ── */
+function taRunsXml(runs) {
+  return runs.map(function (r) {
+    const pr = (r[1] ? '<w:b/>' : '') + (r[2] ? '<w:i/>' : '');
+    return '<w:r><w:rPr>' + FONT + pr + '<w:sz w:val="' + SZ + '"/><w:szCs w:val="' + SZ + '"/></w:rPr><w:t xml:space="preserve">' + xe(r[0]) + '</w:t></w:r>';
+  }).join('');
+}
+function taPar(runs, o) {
+  o = o || {};
+  const ind = o.li ? '<w:ind w:left="720" w:hanging="360"/>' : '';
+  const brk = o.pageBreak ? '<w:pageBreakBefore/>' : '';
+  const kn = o.keepNext ? '<w:keepNext/>' : '';
+  const jc = '<w:jc w:val="' + (o.jc || 'both') + '"/>';
+  const sp = '<w:spacing w:before="' + (o.before || 0) + '" w:after="' + (o.after !== undefined ? o.after : 80) + '" w:line="259" w:lineRule="auto"/>';
+  const tabs = o.li ? '<w:tabs><w:tab w:val="left" w:pos="720"/></w:tabs>' : '';
+  const bullet = o.li ? '<w:r><w:rPr>' + FONT + '<w:sz w:val="' + SZ + '"/></w:rPr><w:t xml:space="preserve">•</w:t></w:r><w:r><w:tab/></w:r>' : '';
+  return '<w:p><w:pPr>' + kn + brk + tabs + sp + ind + jc + '</w:pPr>' + bullet + taRunsXml(runs) + '</w:p>';
+}
+function taLinhaAssin() {
+  return '<w:p><w:pPr><w:spacing w:before="720" w:after="0"/><w:jc w:val="center"/></w:pPr>' +
+    taRunsXml([['_________________________________________________________________________']]) + '</w:p>';
+}
+function taDocXml(d) {
+  const corpo = taConteudo(d).map(function (b, i, arr) {
+    if (b.t === 'h') return taPar(b.r, { before: b.first ? 0 : 360, after: 0, keepNext: true, pageBreak: b.pagina2, jc: 'left' });
+    const ultimoLi = b.t === 'li' && (!arr[i + 1] || arr[i + 1].t !== 'li');
+    return taPar(b.r, { li: b.t === 'li', after: b.t === 'li' ? (ultimoLi ? 80 : 0) : 80 });
+  }).join('');
+  const centro = function (runs, after) { return taPar(runs, { jc: 'center', after: after || 0 }); };
+  return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+  '<w:document xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">' +
+  '<w:body>' +
+  taPar([['CONTRATO DE PRESTAÇÃO DE SERVIÇOS: AGENTE DE PRÉ-VENDAS IA', true]], { jc: 'center', after: 440 }) +
+  corpo +
+  taPar([['Data: ' + d.cidade + ', ' + d.dia + ' de ' + d.mes + ' de ' + d.ano]], { before: 400, after: 0, jc: 'left' }) +
+  taLinhaAssin() +
+  centro([['CONTRATANTE:    ' + d.nome]]) +
+  centro([['CNPJ/CPF: ' + d.doc]]) +
+  taLinhaAssin() +
+  taPar([['CONTRATADA: ']], { jc: 'center', after: 0 }).replace('</w:p>',
+    '<w:r><w:rPr>' + FONT + '<w:b/><w:sz w:val="24"/><w:szCs w:val="24"/></w:rPr><w:t>MARCHETTI E MARCHETTI TECNOLOGIA LTDA</w:t></w:r></w:p>') +
+  centro([['CNPJ: '], ['03.995.142/0001-24', true]]) +
+  '<w:sectPr><w:headerReference w:type="default" r:id="rId3"/>' +
+  '<w:pgSz w:w="11909" w:h="16834"/><w:pgMar w:top="1300" w:right="936" w:bottom="1000" w:left="1134" w:header="250" w:footer="500" w:gutter="0"/></w:sectPr>' +
+  '</w:body></w:document>';
+}
+function taHeaderXml() {
+  return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+  '<w:hdr xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">' +
+  '<w:p><w:pPr><w:spacing w:before="0" w:after="0"/></w:pPr><w:r><w:drawing><wp:inline><wp:extent cx="1036320" cy="397080"/><wp:docPr id="1" name="logo"/>' +
+  '<a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic><pic:nvPicPr><pic:cNvPr id="1" name="logo"/><pic:cNvPicPr/></pic:nvPicPr>' +
+  '<pic:blipFill><a:blip r:embed="rId1"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>' +
+  '<pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="1036320" cy="397080"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>' +
+  '</w:hdr>';
+}
+async function taGerarDocx(d) {
+  const ct = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="png" ContentType="image/png"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/header1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml"/></Types>';
+  const rels = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>';
+  const docRels = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/header" Target="header1.xml"/></Relationships>';
+  const hdrRels = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/logo.png"/></Relationships>';
+  const zip = new JSZip();
+  zip.file('[Content_Types].xml', ct);
+  zip.file('_rels/.rels', rels);
+  zip.file('word/document.xml', taDocXml(d));
+  zip.file('word/_rels/document.xml.rels', docRels);
+  zip.file('word/header1.xml', taHeaderXml());
+  zip.file('word/_rels/header1.xml.rels', hdrRels);
+  zip.file('word/media/logo.png', Uint8Array.from(atob(LOGO_B64), function (c) { return c.charCodeAt(0); }));
+  return await zip.generateAsync({ type: 'blob', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+}
+
+/* ── PDF: cada folha vira uma página A4 ── */
+async function taGerarPdf(d, nomeBase) {
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const paginas = taPaginasHtml(d);
+  for (let i = 0; i < paginas.length; i++) {
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'position:fixed;left:-9999px;top:0;width:794px;background:#fff';
+    wrap.innerHTML = paginas[i];
+    document.body.appendChild(wrap);
+    try {
+      const canvas = await html2canvas(wrap.firstChild, { scale: 2, useCORS: true, backgroundColor: '#ffffff', width: 794, windowWidth: 794 });
+      if (i > 0) pdf.addPage();
+      let w = 210, h = (canvas.height * w) / canvas.width;
+      if (h > 297) { const k = 297 / h; h = 297; w = 210 * k; }   // nunca corta conteúdo
+      pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', (210 - w) / 2, 0, w, h);
+    } finally {
+      document.body.removeChild(wrap);
+    }
+  }
+  pdf.save(nomeBase + '.pdf');
+}
+
+async function gerarTermoIa(tipo) {
+  if (!taValidar()) return;
+  const d = taColetar();
+  const btn = document.getElementById(tipo === 'pdf' ? 'btnTaPdf' : 'btnTaDocx');
+  const htmlOriginal = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Gerando...';
+  const nomeBase = 'Termo_Adesao_IA_' + d.nome.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '').slice(0, 30) +
+    '_' + d.dia + '_' + d.mes + '_' + d.ano;
+  try {
+    if (tipo === 'docx') {
+      const blob = await taGerarDocx(d);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = nomeBase + '.docx'; a.click();
+      URL.revokeObjectURL(url);
+      showToast('Word gerado com sucesso!', 'success');
+    } else {
+      await taGerarPdf(d, nomeBase);
+      showToast('PDF gerado com sucesso!', 'success');
+    }
+  } catch (err) {
+    console.error(err);
+    showToast('Erro: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = htmlOriginal;
+  }
+}
+
+(function taInit() {
+  const hj = new Date();
+  const m = hj.getMonth(), a = hj.getFullYear();
+  document.getElementById('ta_dia').value = hj.getDate();
+  document.getElementById('ta_mes').value = MESES_CAP[m];
+  document.getElementById('ta_ano').value = a;
+  // Promo padrão: mês atual + seguinte (ex.: "Outubro e Novembro/2026")
+  document.getElementById('ta_promoMeses').value = m === 11
+    ? 'Dezembro/' + a + ' e Janeiro/' + (a + 1)
+    : MESES_CAP[m] + ' e ' + MESES_CAP[m + 1] + '/' + a;
+
+  // CNPJ (14 dígitos) ou CPF (11 dígitos)
+  document.getElementById('ta_doc').addEventListener('input', function (e) {
+    let v = e.target.value.replace(/\D/g, '').slice(0, 14);
+    if (v.length > 11) {
+      v = v.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{0,2}).*/, '$1.$2.$3/$4-$5').replace(/-$/, '');
+    } else if (v.length > 9) v = v.replace(/^(\d{3})(\d{3})(\d{3})(\d{0,2})/, '$1.$2.$3-$4');
+    else if (v.length > 6) v = v.replace(/^(\d{3})(\d{3})(\d+)/, '$1.$2.$3');
+    else if (v.length > 3) v = v.replace(/^(\d{3})(\d+)/, '$1.$2');
+    e.target.value = v;
+  });
+
+  document.querySelectorAll('#viewTermoIa input').forEach(function (el) {
+    el.addEventListener('input', taRender);
+    el.addEventListener('change', taRender);
+  });
+  window.addEventListener('resize', taAjustarEscala);
+  taRender();
 })();
 
 </script>
