@@ -1949,6 +1949,9 @@ function onAvAddonChange() {
 const ADICIONAIS = [
   { id: 'crm',      nome: 'CRM com WhatsApp',     desc: '3 usuários inclusos', fora: true,
     obs: 'O CRM é cobrado separadamente, via boleto, na virada de cada mês, pois a cobrança é pós-paga. Cada usuário adicional possui o custo de R$ 100,00 por mês.' },
+  // padrao: valor de tabela preenchido ao marcar (continua editável)
+  { id: 'ia',       nome: 'IA',                   desc: 'Agente de pré-vendas no WhatsApp — até 500 leads/mês', padrao: 996,
+    obs: 'R$ 996,00 por mês para atender até 500 leads. Leads acima desse volume no mês são cobrados a R$ 5,00 cada. Sem fidelidade — a contratação é formalizada mediante assinatura do termo.' },
   { id: 'nf',       nome: 'Nota Fiscal',          desc: 'Emissor de nota fiscal eletrônica', dual: true },
   { id: 'cnpj',     nome: 'CNPJ Adicional',       desc: 'Emita e receba notas em CNPJs distintos — R$ 100,00 por CNPJ/mês' },
   { id: 'assin',    nome: 'Assinatura Eletrônica',desc: 'Assine documentos digitalmente' },
@@ -2074,6 +2077,8 @@ function pSyncAddon(id) {
 function pToggleAddon(id) {
   const on = document.getElementById('ck_' + id).checked;
   document.getElementById('row_' + id).classList.toggle('on', on);
+  const cfg = ADICIONAIS.find(function (a) { return a.id === id; });
+  if (on && cfg && cfg.padrao && !document.getElementById('vl_' + id).value.trim()) pSetMoney('vl_' + id, cfg.padrao);
   if (on) document.getElementById('vl_' + id).focus();
   pRender();
 }
