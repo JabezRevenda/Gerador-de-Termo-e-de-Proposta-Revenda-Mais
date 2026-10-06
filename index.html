@@ -629,6 +629,12 @@ footer {
 .pp-pay b { color: #111827; font-weight: 700; }
 .pp-mod-de { font-size: 10px; color: #9ca3af; text-decoration: line-through; margin-bottom: 1px; }
 .pp-mod-cut { color: #9ca3af; text-decoration: line-through; font-weight: 600; margin-right: 5px; font-size: 13px; }
+.pp-mod-extra { border-top: 1px dashed #e5e7eb; margin-top: 9px; padding-top: 7px; text-align: left; }
+.pp-mod-x { display: flex; justify-content: space-between; gap: 6px; font-size: 9px; color: #6b7280; font-weight: 500; line-height: 1.6; }
+.pp-mod-x span:last-child { color: #374151; font-weight: 600; white-space: nowrap; }
+.pp-mod-tot { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; margin-top: 4px; padding-top: 5px; border-top: 1px solid #f0f0f0; font-size: 9px; font-weight: 700; color: #111827; text-transform: uppercase; letter-spacing: 0.06em; }
+.pp-mod-tot b { font-size: 12.5px; letter-spacing: -0.01em; text-transform: none; white-space: nowrap; }
+.pp-mod.on .pp-mod-tot b { color: #E8003D; }
 .pp-mod-desc-tag { display: inline-block; margin-top: 4px; font-size: 8.5px; font-weight: 800; letter-spacing: 0.06em; color: #fff; background: #E8003D; border-radius: 4px; padding: 2px 7px; }
 
 /* ── Tipo de Proposta / fluxo avulso (CRM ou Nota Fiscal) ── */
@@ -1179,7 +1185,7 @@ footer {
 
         <!-- ═══ Adicionais: Software Gerencial ═══ -->
         <div id="blocoAddonsSoftware" style="display:contents">
-          <div class="hint">Marque apenas os opcionais contratados. Os valores entram no total das três modalidades — exceto o CRM, cobrado à parte.</div>
+          <div class="hint">Marque apenas os opcionais contratados. Os valores entram no total das três modalidades — exceto CRM e IA, cobrados à parte em boleto e mostrados embaixo de cada modalidade com a mensalidade total.</div>
           <div id="p_addons" style="grid-column:span 2;display:flex;flex-direction:column;gap:10px"></div>
           <div id="p_notas"></div>
           <button type="button" class="btn-ghost" onclick="pAddCustom()">+ Adicionar outro módulo</button>
@@ -1947,11 +1953,11 @@ function onAvAddonChange() {
 
 // Produtos adicionais — para incluir um novo módulo fixo, basta acrescentar aqui
 const ADICIONAIS = [
-  { id: 'crm',      nome: 'CRM com WhatsApp',     desc: '3 usuários inclusos', fora: true,
+  { id: 'crm',      nome: 'CRM com WhatsApp',     desc: '3 usuários inclusos', fora: true, usuarios: true, padrao: 500,
     obs: 'O CRM é cobrado separadamente, via boleto, na virada de cada mês, pois a cobrança é pós-paga. Cada usuário adicional possui o custo de R$ 100,00 por mês.' },
   // padrao: valor de tabela preenchido ao marcar (continua editável)
-  { id: 'ia',       nome: 'IA',                   desc: 'Agente de pré-vendas no WhatsApp — até 500 leads/mês', padrao: 996,
-    obs: 'R$ 996,00 por mês para atender até 500 leads. Leads acima desse volume no mês são cobrados a R$ 5,00 cada. Sem fidelidade — a contratação é formalizada mediante assinatura do termo.' },
+  { id: 'ia',       nome: 'IA',                   desc: 'Agente de pré-vendas no WhatsApp — até 500 leads/mês', padrao: 996, fora: true,
+    obs: 'Cobrada à parte, via boleto mensal. R$ 996,00 por mês para atender até 500 leads; leads acima desse volume no mês são cobrados a R$ 5,00 cada. Sem fidelidade — a contratação é formalizada mediante assinatura do termo.' },
   { id: 'nf',       nome: 'Nota Fiscal',          desc: 'Emissor de nota fiscal eletrônica', dual: true },
   { id: 'cnpj',     nome: 'CNPJ Adicional',       desc: 'Emita e receba notas em CNPJs distintos — R$ 100,00 por CNPJ/mês' },
   { id: 'assin',    nome: 'Assinatura Eletrônica',desc: 'Assine documentos digitalmente' },
@@ -2052,13 +2058,31 @@ function linhaAddon(a, removivel) {
     '<input type="checkbox" id="ck_' + id + '" onchange="pToggleAddon(\'' + id + '\')"/>' +
     '<div class="addon-main">' +
       '<div class="addon-nome">' + esc(a.nome) + marca + '</div>' +
-      (a.desc ? '<div class="addon-desc">' + esc(a.desc) + '</div>' : '') +
+      (a.desc ? '<div class="addon-desc" id="ds_' + id + '">' + esc(a.desc) + '</div>' : '') +
+      (a.usuarios ? '<div class="crm-nested">Usuários: <input id="us_' + id + '" class="mini-num" type="number" min="1" value="' + AV_TABELA.crmInclusos + '"' +
+        ' oninput="pCrmUsuarios(\'' + id + '\')" onchange="pCrmUsuarios(\'' + id + '\')"/>' +
+        '<span>3 inclusos · R$ 100,00 por usuário extra</span></div>' : '') +
     '</div>' +
     '<div class="addon-val">' + (a.dual ? '<small>Mensal</small>' : '') +
       '<input class="money-addon" id="vl_' + id + '" type="text" placeholder="0,00"/></div>' +
     (a.dual ? '<div class="addon-val"><small>Anual /mês</small><input class="money-addon" id="va_' + id + '" type="text" placeholder="0,00"/></div>' : '') +
     (removivel ? '<button type="button" class="addon-del" onclick="pRemoveCustom(\'' + id + '\')" title="Remover">&times;</button>' : '') +
   '</div>';
+}
+// CRM no Software Gerencial: mesma tabela do avulso (base 3 usuários + R$ 100 por extra), valor continua editável
+function pCrmUsuarios(id) {
+  const c = avCrmCalc(document.getElementById('us_' + id).value);
+  pSetMoney('vl_' + id, c.valor);
+  document.getElementById('ds_' + id).textContent = pCrmDesc(c);
+  if (!document.getElementById('ck_' + id).checked) {
+    document.getElementById('ck_' + id).checked = true;
+    document.getElementById('row_' + id).classList.add('on');
+  }
+  pRender();
+}
+function pCrmDesc(c) {
+  return c.usuarios + ' usuário' + (c.usuarios === 1 ? '' : 's') +
+    (c.extra > 0 ? ' (3 inclusos + ' + c.extra + ' extra)' : ' (3 inclusos)');
 }
 function pSetMoney(id, num) {
   const el = document.getElementById(id);
@@ -2078,7 +2102,9 @@ function pToggleAddon(id) {
   const on = document.getElementById('ck_' + id).checked;
   document.getElementById('row_' + id).classList.toggle('on', on);
   const cfg = ADICIONAIS.find(function (a) { return a.id === id; });
-  if (on && cfg && cfg.padrao && !document.getElementById('vl_' + id).value.trim()) pSetMoney('vl_' + id, cfg.padrao);
+  if (on && cfg && cfg.padrao && !document.getElementById('vl_' + id).value.trim()) {
+    pSetMoney('vl_' + id, cfg.usuarios ? avCrmCalc(document.getElementById('us_' + id).value).valor : cfg.padrao);
+  }
   if (on) document.getElementById('vl_' + id).focus();
   pRender();
 }
@@ -2106,8 +2132,9 @@ function pColetar() {
   }).map(function (a) {
     const valor = pParse(document.getElementById('vl_' + a.id).value);
     const campoAnual = document.getElementById('va_' + a.id);
+    const us = a.usuarios ? document.getElementById('us_' + a.id) : null;
     return {
-      nome: a.nome, desc: a.desc, obs: a.obs || '', fora: !!a.fora, dual: !!a.dual,
+      nome: a.nome, desc: us ? pCrmDesc(avCrmCalc(us.value)) : a.desc, obs: a.obs || '', fora: !!a.fora, dual: !!a.dual,
       valor: valor,
       valorAnual: a.dual && campoAnual ? pParse(campoAnual.value) : valor
     };
@@ -2130,6 +2157,9 @@ function pColetar() {
   // O CRM (fora: true) é cobrado à parte e não entra em nenhum total
   const somaAdd = selecionados.reduce(function (s, a) { return s + (a.fora ? 0 : a.valor); }, 0);
   const somaAddAnual = selecionados.reduce(function (s, a) { return s + (a.fora ? 0 : a.valorAnual); }, 0);
+  // CRM e IA: boleto mensal à parte — aparecem embaixo de cada modalidade para o cliente ver a mensalidade total
+  const aParte = selecionados.filter(function (a) { return a.fora; });
+  const somaParte = aParte.reduce(function (s, a) { return s + a.valor; }, 0);
   const tipoTri = document.getElementById('p_tipoTri').value;
   const tipoAnual = document.getElementById('p_tipoAnual').value;
 
@@ -2157,12 +2187,13 @@ function pColetar() {
     adesao: ADESAO_FIXA,
     somaAdd: somaAdd,
     somaAddAnual: somaAddAnual,
+    aParte: aParte, somaParte: somaParte,
     vTri: vTri, tipoTri: tipoTri,
     vAnual: vAnual, tipoAnual: tipoAnual,
-    // Totais: plano (já descontado) + adicionais (CRM fora). No à vista, os adicionais entram pelo período cheio
+    // Totais: plano (já descontado) + adicionais (CRM/IA fora). No à vista, plano e adicionais entram pelo período cheio
     total:      mensalidade + somaAdd,
-    totalTri:   vTri   + (tipoTri   === 'vista' ? somaAdd * 3       : somaAdd),
-    totalAnual: vAnual + (tipoAnual === 'vista' ? somaAddAnual * 12 : somaAddAnual),
+    totalTri:   (vTri   + somaAdd)      * (tipoTri   === 'vista' ? 3  : 1),
+    totalAnual: (vAnual + somaAddAnual) * (tipoAnual === 'vista' ? 12 : 1),
     forma: document.getElementById('p_forma').value,
     condicoes: document.getElementById('p_condicoes').value.trim()
   };
@@ -2170,7 +2201,7 @@ function pColetar() {
 
 /* ── Montagem do documento ───────────────────────────────────────── */
 // Card de preço estilo "De/Por" — usado tanto no Software Gerencial quanto no fluxo avulso
-function precoCard(titulo, tabela, final, detalhe, destaque) {
+function precoCard(titulo, tabela, final, detalhe, destaque, extra) {
   const temDesc = final < tabela;
   return '<div class="pp-mod' + (destaque ? ' on' : '') + '">' +
     '<div class="pp-mod-t">' + titulo + '</div>' +
@@ -2178,6 +2209,20 @@ function precoCard(titulo, tabela, final, detalhe, destaque) {
     '<div class="pp-mod-v">' + pBRL(final) + '</div>' +
     '<div class="pp-mod-d">' + detalhe + '</div>' +
     (temDesc ? '<div class="pp-mod-desc-tag">− ' + pBRL(tabela - final) + '</div>' : '') +
+    (extra || '') +
+  '</div>';
+}
+// Itens cobrados à parte (CRM / IA) + mensalidade total do cliente naquela modalidade.
+// porMes = valor mensal do card; null quando a modalidade é à vista (não há parcela mensal para somar)
+function blocoAParte(itens, somaParte, porMes) {
+  if (!itens.length) return '';
+  return '<div class="pp-mod-extra">' +
+    itens.map(function (a) {
+      return '<div class="pp-mod-x"><span>+ ' + esc(a.nome.replace(' com WhatsApp', '')) + ' (boleto)</span><span>' + pBRL(a.valor) + '</span></div>';
+    }).join('') +
+    (porMes === null
+      ? '<div class="pp-mod-tot"><span>Boleto/mês</span><b>' + pBRL(somaParte) + '</b></div>'
+      : '<div class="pp-mod-tot"><span>Total/mês</span><b>' + pBRL(porMes + somaParte) + '</b></div>') +
   '</div>';
 }
 
@@ -2202,16 +2247,19 @@ function pMontarPapel(d) {
     : '';
 
   function parcelaTxt(tipo, n) {
-    return tipo === 'vista' ? '(por mês, à vista)' : n + 'x de (por mês)';
+    return tipo === 'vista' ? 'à vista (' + n + ' meses)' : n + 'x de (por mês)';
   }
   const mensalBruto = d.mensalTabela + d.somaAdd;
-  const triBruto = d.triTabela + (d.tipoTri === 'vista' ? d.somaAdd * 3 : d.somaAdd);
-  const anualBruto = d.anualTabela + (d.tipoAnual === 'vista' ? d.somaAddAnual * 12 : d.somaAddAnual);
+  const triBruto = (d.triTabela + d.somaAdd) * (d.tipoTri === 'vista' ? 3 : 1);
+  const anualBruto = (d.anualTabela + d.somaAddAnual) * (d.tipoAnual === 'vista' ? 12 : 1);
   const detAdd = d.somaAdd ? '<br/>Já inclui os adicionais' : '';
   const modalidades = '<div class="pp-mods">' +
-    precoCard('Mensal', mensalBruto, d.total, 'Adesão de <b>' + pBRL(d.adesao) + '</b>' + detAdd, false) +
-    precoCard('Trimestral', triBruto, d.totalTri, 'Sem adesão · ' + parcelaTxt(d.tipoTri, 3) + detAdd, false) +
-    precoCard('Anual', anualBruto, d.totalAnual, 'Sem adesão · ' + parcelaTxt(d.tipoAnual, 12) + detAdd, true) +
+    precoCard('Mensal', mensalBruto, d.total, 'Adesão de <b>' + pBRL(d.adesao) + '</b>' + detAdd, false,
+      blocoAParte(d.aParte, d.somaParte, d.total)) +
+    precoCard('Trimestral', triBruto, d.totalTri, 'Sem adesão · ' + parcelaTxt(d.tipoTri, 3) + detAdd, false,
+      blocoAParte(d.aParte, d.somaParte, d.tipoTri === 'vista' ? null : d.totalTri)) +
+    precoCard('Anual', anualBruto, d.totalAnual, 'Sem adesão · ' + parcelaTxt(d.tipoAnual, 12) + detAdd, true,
+      blocoAParte(d.aParte, d.somaParte, d.tipoAnual === 'vista' ? null : d.totalAnual)) +
   '</div>';
 
   const condicoes = d.condicoes
@@ -2562,7 +2610,9 @@ function pRender() {
     'Adesão ' + pBRL(d.adesao) + ' (só no mensal)' +
     '<br/>Trimestral: ' + resumoMod(d.totalTri, d.tipoTri, 3) +
     '  ·  Anual: ' + resumoMod(d.totalAnual, d.tipoAnual, 12) +
-    (d.somaAdd ? '<br/>Inclui ' + pBRL(d.somaAdd) + ' de adicionais' : '');
+    (d.somaAdd ? '<br/>Inclui ' + pBRL(d.somaAdd) + ' de adicionais' : '') +
+    (d.somaParte ? '<br/>+ ' + pBRL(d.somaParte) + '/mês à parte (' + d.aParte.map(function (a) { return a.nome.replace(' com WhatsApp', ''); }).join(' + ') + ')' +
+      ' · mensalidade total ' + pBRL(d.total + d.somaParte) : '');
   pAjustarEscala();
 }
 
