@@ -804,6 +804,7 @@ footer {
           <option value="1.0">Plano 1.0</option>
           <option value="2.0">Plano 2.0</option>
           <option value="3.0">Plano 3.0</option>
+          <option value="Integrador">Integrador</option>
           <option value="outros">Outros</option>
         </select>
       </div>
@@ -958,6 +959,8 @@ footer {
               <option value="0.5">Plano 0.5</option>
               <option value="1.0" selected>Plano 1.0</option>
               <option value="2.0">Plano 2.0</option>
+              <option value="3.0">Plano 3.0</option>
+              <option value="integrador">Integrador</option>
             </select>
           </div>
           <div class="field">
@@ -1854,7 +1857,13 @@ const DESCONTO_ANUAL = 50;   // quanto o valor anual fica abaixo do mensal
 const PLANOS = {
   '0.5': { veiculos: 25,  usuarios: 5,  valor: '600,00',   desmarcados: ['Gestão financeira da loja'] },
   '1.0': { veiculos: 50,  usuarios: 10, valor: '800,00',   desmarcados: [] },
-  '2.0': { veiculos: 100, usuarios: 15, valor: '1.000,00', desmarcados: [] }
+  '2.0': { veiculos: 100, usuarios: 15, valor: '1.000,00', desmarcados: [] },
+  '3.0': { veiculos: 150, usuarios: 20, valor: '1.300,00', desmarcados: [] },
+  // Integrador: só conecta aos portais de anúncio e sobe os carros (cadastro + fotos)
+  'integrador': { nome: 'Integrador', linha: 'Integrador de anúncios', veiculos: 300, usuarios: '', valor: '400,00',
+    desmarcados: RECURSOS_PADRAO.filter(function (r) {
+      return r !== 'Integrador para portais de anúncio' && r !== 'Cadastro fácil pela placa';
+    }) }
 };
 
 // ── Tipo de Proposta: Software Gerencial (acima) ou CRM/Nota Fiscal/IA avulso ──
@@ -2131,6 +2140,8 @@ function pColetar() {
     data: dt.toLocaleDateString('pt-BR'),
     validade: document.getElementById('p_validade').value || '7',
     plano: document.getElementById('p_plano').value,
+    planoNome: cfg.nome || 'Plano ' + document.getElementById('p_plano').value,
+    planoLinha: cfg.linha || 'Software Gerencial',
     selo: document.getElementById('p_selo').value,
     veiculos: document.getElementById('p_veiculos').value.trim(),
     usuarios: document.getElementById('p_usuarios').value.trim(),
@@ -2204,7 +2215,7 @@ function pMontarPapel(d) {
     : '';
 
   const subtitulo = [
-    'Software Gerencial',
+    esc(d.planoLinha),
     d.veiculos ? 'até ' + esc(d.veiculos) + ' veículos' : '',
     d.usuarios ? esc(d.usuarios) + ' usuário' + (d.usuarios === '1' ? '' : 's') : ''
   ].filter(Boolean).join('  ·  ');
@@ -2230,7 +2241,7 @@ function pMontarPapel(d) {
 
     '<div class="pp-sec">Solução Contratada</div>' +
     '<div class="pp-plan">' +
-      '<div><div class="pp-plan-n">Plano ' + esc(d.plano) + '</div><div class="pp-plan-s">' + subtitulo + '</div></div>' +
+      '<div><div class="pp-plan-n">' + esc(d.planoNome) + '</div><div class="pp-plan-s">' + subtitulo + '</div></div>' +
       (d.selo ? '<div class="pp-plan-tag">' + esc(d.selo) + '</div>' : '') +
     '</div>' +
 
