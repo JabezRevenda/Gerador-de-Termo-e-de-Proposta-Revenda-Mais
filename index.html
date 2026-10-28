@@ -1558,10 +1558,12 @@ function rr(text,bold,size) {
 }
 function pp(children,opts) {
   opts=opts||{};
-  const jc=opts.center?'<w:jc w:val="center"/>':'';
+  const kn=opts.keepNext?'<w:keepNext/>':'';
+  const brk=opts.pageBreak?'<w:pageBreakBefore/>':'';
+  const jc=opts.center?'<w:jc w:val="center"/>':(opts.justify?'<w:jc w:val="both"/>':'');
   const sp='<w:spacing w:before="'+(opts.before||0)+'" w:after="'+(opts.after!==undefined?opts.after:100)+'"/>';
   const ln='<w:line w:val="240" w:lineRule="auto"/>';
-  return '<w:p><w:pPr>'+jc+sp+ln+'</w:pPr>'+children+'</w:p>';
+  return '<w:p><w:pPr>'+kn+brk+jc+sp+ln+'</w:pPr>'+children+'</w:p>';
 }
 function multiPar(text,bold) {
   return text.split('\n').map(line=>pp(rr(line||' ',bold,SZ),{after:60})).join('');
@@ -1585,6 +1587,45 @@ function gapCell(w) {
 function tblNoBorder(rows,w) {
   return '<w:tbl><w:tblPr><w:tblW w:w="'+w+'" w:type="dxa"/><w:tblBorders><w:top w:val="none" w:sz="0" w:color="FFFFFF"/><w:left w:val="none" w:sz="0" w:color="FFFFFF"/><w:bottom w:val="none" w:sz="0" w:color="FFFFFF"/><w:right w:val="none" w:sz="0" w:color="FFFFFF"/><w:insideH w:val="none" w:sz="0" w:color="FFFFFF"/><w:insideV w:val="none" w:sz="0" w:color="FFFFFF"/></w:tblBorders><w:tblLayout w:type="fixed"/></w:tblPr>'+rows+'</w:tbl>';
 }
+
+// ── Anexo 1 — Condições Gerais (texto fiel ao modelo atualizado) ──
+const ANEXO_RENOVACAO = [
+  ['1. DOCUMENTOS INTEGRANTES', [
+    '1.1. Integram o presente Termo, para todos os fins, os Termos de Uso e a Política de Privacidade da plataforma REVENDA MAIS, disponíveis em nossa plataforma, os quais o CONTRATANTE declara ter lido, compreendido e aceitado. Em caso de divergência, prevalecerá o disposto neste Termo.',
+    '1.2. As informações de caráter institucional, comercial ou publicitário divulgadas pela CONTRATADA, inclusive em seu site, a respeito do acesso do CONTRATANTE aos seus dados, deverão ser interpretadas em conformidade com as condições deste Termo, em especial com a Cláusula 5.'
+  ]],
+  ['2. OBRIGAÇÕES DA CONTRATADA', [
+    '2.1. São obrigações da CONTRATADA: (a) disponibilizar ao CONTRATANTE o acesso à plataforma, conforme o plano contratado e as funcionalidades nele disponíveis; (b) adotar medidas de segurança técnicas e administrativas aptas a proteger os dados armazenados na plataforma contra acessos não autorizados e situações acidentais ou ilícitas; (c) manter disponíveis ao CONTRATANTE, durante a vigência deste Termo, as ferramentas de exportação de dados previstas na Cláusula 5; e (d) prestar suporte técnico por meio de seus canais oficiais de atendimento.'
+  ]],
+  ['3. OBRIGAÇÕES DO CONTRATANTE', [
+    '3.1. São obrigações do CONTRATANTE: (a) efetuar pontualmente os pagamentos devidos; (b) utilizar a plataforma em conformidade com este Termo, com os Termos de Uso e com a legislação aplicável; (c) responsabilizar-se pela veracidade, exatidão e licitude dos dados e arquivos que inserir na plataforma, inclusive pela existência de base legal para o tratamento dos dados pessoais de seus clientes, leads, colaboradores e demais terceiros; (d) manter em sigilo as credenciais de acesso, respondendo pelos atos praticados por seus usuários; e (e) realizar, periodicamente e sob sua exclusiva responsabilidade, a exportação e a cópia de segurança (backup) dos dados que julgar necessários, especialmente antes de solicitar o cancelamento.'
+  ]],
+  ['4. TITULARIDADE DOS DADOS, PROPRIEDADE INTELECTUAL E PROTEÇÃO DE DADOS PESSOAIS', [
+    '4.1. Os dados e arquivos inseridos pelo CONTRATANTE na plataforma ("Dados do Contratante") são de titularidade do CONTRATANTE.',
+    '4.2. A plataforma, incluindo software, código-fonte, estrutura e modelagem de banco de dados, identificadores internos, relatórios, layouts, templates e demais elementos de propriedade intelectual, é de titularidade exclusiva da CONTRATADA, sendo concedido ao CONTRATANTE apenas o direito de uso, não exclusivo e intransferível, durante a vigência deste Termo.',
+    '4.3. Em relação aos dados pessoais contidos nos Dados do Contratante, o CONTRATANTE atua como controlador e a CONTRATADA como operadora, nos termos da Lei nº 13.709/2018 (LGPD). A CONTRATADA tratará tais dados exclusivamente para a execução deste Termo e conforme as instruções do CONTRATANTE, as quais as partes reconhecem estar refletidas nas funcionalidades da plataforma e nas disposições deste Termo. Instruções que demandem desenvolvimento, extração ou serviço não abrangido pelo plano contratado observarão o disposto na Cláusula 5.4.',
+    '4.4. Caberá ao CONTRATANTE, na qualidade de controlador, atender às requisições dos titulares de dados pessoais. A CONTRATADA encaminhará ao CONTRATANTE as requisições que receber diretamente e prestará o auxílio razoável, dentro das funcionalidades da plataforma.'
+  ]],
+  ['5. EXPORTAÇÃO DOS DADOS E MIGRAÇÃO', [
+    '5.1. A exportação dos Dados do Contratante será realizada pelo próprio CONTRATANTE, de forma autônoma, por meio dos relatórios disponíveis na plataforma, em formato de planilha eletrônica (XLSX e/ou CSV), que é o formato padrão adotado pela CONTRATADA, inclusive para fins de migração para outros sistemas.',
+    '5.2. Os documentos, imagens e demais arquivos anexados pelo CONTRATANTE à plataforma (tais como CRV/ATPV, CNH, contratos e fotos) poderão ser baixados pelo próprio CONTRATANTE, individualmente e em seu formato original, diretamente na plataforma.',
+    '5.3. O CONTRATANTE declara estar ciente de que: (a) a plataforma não dispõe de funcionalidade de exportação integral em formatos ou estruturas diversos dos previstos nas Cláusulas 5.1 e 5.2, tais como cópia (dump) de banco de dados, arquivos JSON, dicionário de dados ou arquivos com preservação de identificadores internos e de relacionamentos entre registros; e (b) a disponibilização dos meios previstos nas Cláusulas 5.1 e 5.2 constitui cumprimento integral da obrigação da CONTRATADA de dar acesso aos Dados do Contratante, inclusive para fins de migração.',
+    '5.4. Solicitações de extração em formato, estrutura ou meio diverso, bem como de envio em lote dos arquivos anexados, não integram o plano contratado e poderão ser atendidas pela CONTRATADA, a seu critério e conforme viabilidade técnica, mediante orçamento prévio aprovado pelo CONTRATANTE, do qual constarão valor, formato e prazo de entrega.',
+    '5.5. Em caso de cancelamento ou término deste Termo, por qualquer motivo, o CONTRATANTE terá acesso a plataforma até a data de encerramento do plano cancelado, e deverá até o final dessa data fazer as devidas exportações conforme item 5.',
+    '5.6. Decorrido o prazo previsto na Cláusula 5.5, a CONTRATADA poderá eliminar os Dados do Contratante, ressalvada a conservação necessária ao cumprimento de obrigação legal ou regulatória, ao exercício regular de direitos e às demais hipóteses do art. 16 da LGPD, sem que caiba ao CONTRATANTE qualquer indenização ou reclamação a esse título.'
+  ]],
+  ['6. RESPONSABILIDADES', [
+    '6.1. Cada parte responderá pelos danos que comprovadamente causar à outra em decorrência do descumprimento deste Termo.',
+    '6.2. A CONTRATADA não se responsabiliza: (a) pelo conteúdo, exatidão ou licitude dos dados inseridos pelo CONTRATANTE; (b) por decisões comerciais tomadas pelo CONTRATANTE com base nas informações da plataforma; (c) por indisponibilidades decorrentes de manutenções programadas, falhas de terceiros (tais como provedores de internet e energia, integrações e sistemas de órgãos públicos), caso fortuito ou força maior; e (d) pela perda de dados que o CONTRATANTE deixar de exportar no prazo da Cláusula 5.5.',
+    '6.3. Exceto em caso de dolo ou culpa grave, a responsabilidade total da CONTRATADA decorrente deste Termo fica limitada ao valor efetivamente pago pelo CONTRATANTE nos [12 (doze)] meses anteriores ao evento que der causa à reclamação.'
+  ]],
+  ['7. DISPOSIÇÕES FINAIS', [
+    '7.1. O CONTRATANTE declara ter lido e compreendido integralmente este Termo, em especial as Cláusulas 4, 5 e 6, que tratam da titularidade e da exportação dos dados e das responsabilidades das partes.',
+    '7.2. As partes reconhecem a validade da assinatura deste Termo por meio eletrônico, nos termos do art. 10, § 2º, da Medida Provisória nº 2.200-2/2001.',
+    '7.3. As condições deste Termo aplicam-se à relação entre as partes a partir da data de sua assinatura e prevalecem sobre as condições anteriormente pactuadas naquilo que com elas conflitarem.'
+  ]]
+];
+const REF_ANEXO = '- Este termo de renovação possui condições gerais descritas no ANEXO 1 deste documento.';
 
 // ── Montar XML do documento ────────────────────────────────────────
 function montarDocXml(d) {
@@ -1637,6 +1678,15 @@ function montarDocXml(d) {
     ? pp(rr('- O formato de pagamento é pré-pago, e a cobrança será realizada por cartão de crédito em ',false,SZ)+rr(d.parcelas+'x de '+d.valorParcela,true,SZ)+rr('.',false,SZ),{after:100})
     : pp(rr('- O formato de pagamento é pré-pago, e a cobrança será realizada via Boleto / PIX.',false,SZ),{after:100});
 
+  // Anexo 1 — começa em nova folha, como no modelo (fonte 10,5 e texto justificado)
+  const SZA=21;
+  const anexo =
+    pp(rr('ANEXO 1',true,SZA)+'<w:r><w:br/></w:r><w:r><w:br/></w:r>'+rr('CONDIÇÕES GERAIS',true,SZA),{center:true,pageBreak:true,after:240})+
+    ANEXO_RENOVACAO.map(function(s){
+      return pp(rr(s[0],true,SZA),{justify:true,keepNext:true,after:120})+
+        s[1].map(function(c){ return pp(rr(c,false,SZA),{justify:true,after:120}); }).join('');
+    }).join('');
+
   return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
 '<w:document xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">'+
 '<w:body>'+
@@ -1646,12 +1696,14 @@ pp(rr('O presente termo tem como objeto formalizar a renovação de serviço ref
 p3+
 pp(rr('- O plano acima descrito é renovado automaticamente e pode ser cancelado com 30 dias de aviso, respeitando a fidelidade acordada.'),{after:100})+
 p5+
-pp(rr('- Em caso de rescisão antecipada de contrato anual, serão devidos: (i) valor de setup; (ii) diferença entre o valor do plano anual contratado e o correspondente ao plano mensal sem descontos, proporcional ao período utilizado, acrescido dos valores referente aos serviços adicionais utilizados no período; e (iii) uma mensalidade adicional a título de aviso prévio. Eventual saldo remanescente será restituído via chargeback.'),{after:140})+
+pp(rr('- Em caso de rescisão antecipada de contrato anual, serão devidos: (i) valor de setup; (ii) diferença entre o valor do plano anual contratado e o correspondente ao plano mensal sem descontos, proporcional ao período utilizado, acrescido dos valores referente aos serviços adicionais utilizados no período; e (iii) uma mensalidade adicional a título de aviso prévio. Eventual saldo remanescente será restituído via chargeback.'),{after:100})+
+pp(rr(REF_ANEXO),{after:140})+
 tab0+
 pp(rr(' '),{after:40})+
 pp(rr('Para dirimir qualquer litígio as partes elegem o foro de Curitiba/PR;'),{after:160})+
 pp(rr('Curitiba, '+d.dia+' de '+d.mes+' de 2026.'),{after:280})+
 tab1+
+anexo+
 '<w:sectPr><w:pgSz w:w="11909" w:h="16834"/><w:pgMar w:top="720" w:right="848" w:bottom="720" w:left="1133"/></w:sectPr>'+
 '</w:body></w:document>';
 }
@@ -1696,32 +1748,31 @@ async function gerarDocx(d) {
 }
 
 // ── Gerar PDF via jsPDF + html2canvas ─────────────────────────────
-async function gerarPdfViaHtml(d) {
-  const frasePag = d.forma === 'cartao'
-    ? '. O Plano será pago em <strong>'+d.parcelas+'x de '+d.valorParcela+'</strong> no cartão de crédito'
-    : '. O Plano será pago via <strong>Boleto / PIX</strong>';
+// Folha A4 com 794 px de largura = 1123 px de altura
+const FOLHA_W = 794, FOLHA_H = 1123;
+const QUEBRA_FOLHA = '<!--quebra-->';
 
+async function gerarPdfViaHtml(d) {
   const condicoesLinhas = d.condicoes.split('\n').map(function(l){ return '<p style="margin:0 0 4px">'+l+'</p>'; }).join('');
 
-  const div = document.createElement('div');
-  div.style.cssText = 'position:fixed;left:-9999px;top:0;width:794px;background:white;font-family:Calibri,Arial,sans-serif;font-size:11pt;color:#111;line-height:1.5;padding:56px 68px 56px 85px;box-sizing:border-box';
-
-  div.innerHTML =
-    '<div style="margin-bottom:16px"><img src="data:image/png;base64,'+LOGO_B64+'" style="height:50px"/></div>'+
-    '<h1 style="text-align:center;font-size:13pt;font-weight:bold;margin:0 0 18px">TERMO DE RENOVAÇÃO</h1>'+
-    '<p style="margin:0 0 10px">O presente termo tem como objeto formalizar a renovação de serviço referente a utilização do sistema para lojas de veículos <strong>REVENDA MAIS</strong>.</p>'+
-    '<p style="margin:0 0 10px">O valor do serviço cobrado pela CONTRATADA pelo objeto deste termo é de <strong>'+d.valor+'</strong> para renovação do Plano <strong>'+d.plano+'</strong> e pelo período de fidelidade de <strong>'+d.fidelidade+' meses</strong>.</p>'+
-    '<p style="margin:0 0 10px">- O plano acima descrito é renovado automaticamente e pode ser cancelado com 30 dias de aviso, respeitando a fidelidade acordada.</p>'+
+  const blocos = [
+    '<div style="margin-bottom:16px"><img src="data:image/png;base64,'+LOGO_B64+'" style="height:50px"/></div>',
+    '<h1 style="text-align:center;font-size:13pt;font-weight:bold;margin:0 0 18px">TERMO DE RENOVAÇÃO</h1>',
+    '<p style="margin:0 0 10px">O presente termo tem como objeto formalizar a renovação de serviço referente a utilização do sistema para lojas de veículos <strong>REVENDA MAIS</strong>.</p>',
+    '<p style="margin:0 0 10px">O valor do serviço cobrado pela CONTRATADA pelo objeto deste termo é de <strong>'+d.valor+'</strong> para renovação do Plano <strong>'+d.plano+'</strong> e pelo período de fidelidade de <strong>'+d.fidelidade+' meses</strong>.</p>',
+    '<p style="margin:0 0 10px">- O plano acima descrito é renovado automaticamente e pode ser cancelado com 30 dias de aviso, respeitando a fidelidade acordada.</p>',
     (d.forma === 'cartao'
       ? '<p style="margin:0 0 10px">- O formato de pagamento é pré-pago, e a cobrança será realizada por cartão de crédito em <strong>'+d.parcelas+'x de '+d.valorParcela+'</strong>.</p>'
-      : '<p style="margin:0 0 10px">- O formato de pagamento é pré-pago, e a cobrança será realizada via <strong>Boleto / PIX</strong>.</p>')+
-    '<p style="margin:0 0 10px">- Em caso de rescisão antecipada de contrato anual, serão devidos: (i) valor de setup; (ii) diferença entre o valor do plano anual contratado e o correspondente ao plano mensal sem descontos, proporcional ao período utilizado, acrescido dos valores referente aos serviços adicionais utilizados no período; e (iii) uma mensalidade adicional a título de aviso prévio. Eventual saldo remanescente será restituído via chargeback.</p>'+
+      : '<p style="margin:0 0 10px">- O formato de pagamento é pré-pago, e a cobrança será realizada via <strong>Boleto / PIX</strong>.</p>'),
+    '<p style="margin:0 0 10px">- Em caso de rescisão antecipada de contrato anual, serão devidos: (i) valor de setup; (ii) diferença entre o valor do plano anual contratado e o correspondente ao plano mensal sem descontos, proporcional ao período utilizado, acrescido dos valores referente aos serviços adicionais utilizados no período; e (iii) uma mensalidade adicional a título de aviso prévio. Eventual saldo remanescente será restituído via chargeback.</p>',
+    '<p style="margin:0 0 10px">'+REF_ANEXO+'</p>',
     '<table style="width:100%;border-collapse:collapse;margin:12px 0">'+
       '<tr><td style="border:1px solid #333;padding:6px 8px"><strong>Veículos:</strong> '+d.veiculos+'<br/><strong>Usuário:</strong> '+d.usuarios+'</td></tr>'+
       '<tr><td style="border:1px solid #333;padding:6px 8px"><strong>Outras condições:</strong><br/>'+condicoesLinhas+'</td></tr>'+
-    '</table>'+
-
-    '<p style="margin:0 0 10px">Para dirimir qualquer litígio as partes elegem o foro de Curitiba/PR;</p>'+
+    '</table>',
+    '<p style="margin:0 0 10px">Para dirimir qualquer litígio as partes elegem o foro de Curitiba/PR;</p>',
+    // data e assinaturas sempre na mesma folha
+    '<div>'+
     '<p style="margin:14px 0 40px">Curitiba, '+d.dia+' de '+d.mes+' de 2026.</p>'+
     '<table style="width:100%;border-collapse:collapse">'+
       '<tr>'+
@@ -1739,52 +1790,66 @@ async function gerarPdfViaHtml(d) {
           '<p style="margin:0">CNPJ: 03.995.142/0001-24</p>'+
         '</td>'+
       '</tr>'+
-    '</table>';
+    '</table>'+
+    '</div>',
 
-  document.body.appendChild(div);
+    // Anexo 1 — começa em nova folha, como no modelo
+    QUEBRA_FOLHA,
+    '<p style="margin:0 0 16px;text-align:center;font-size:10.5pt;font-weight:bold">ANEXO 1<br/><br/>CONDIÇÕES GERAIS</p>'
+  ];
+  const estiloAnexo = 'margin:0 0 8px;font-size:10.5pt;line-height:1.4;text-align:justify';
+  ANEXO_RENOVACAO.forEach(function(s){
+    // título da cláusula sempre junto do primeiro item
+    blocos.push('<div><p style="'+estiloAnexo+';font-weight:bold">'+s[0]+'</p><p style="'+estiloAnexo+'">'+s[1][0]+'</p></div>');
+    s[1].slice(1).forEach(function(c){ blocos.push('<p style="'+estiloAnexo+'">'+c+'</p>'); });
+  });
+
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'position:fixed;left:-9999px;top:0;width:'+FOLHA_W+'px';
+  document.body.appendChild(wrap);
 
   try {
-    const canvas = await html2canvas(div, {
-      scale: 2,
-      useCORS: true,
-      backgroundColor: '#ffffff',
-      width: 794,
-      windowWidth: 794
+    // Distribui os blocos pelas folhas sem cortar nenhum ao meio
+    const folhas = [];
+    const novaFolha = function() {
+      const f = document.createElement('div');
+      f.style.cssText = 'width:'+FOLHA_W+'px;min-height:'+FOLHA_H+'px;background:white;font-family:Calibri,Arial,sans-serif;font-size:11pt;color:#111;line-height:1.5;padding:56px 68px 56px 85px;box-sizing:border-box';
+      wrap.appendChild(f);
+      folhas.push(f);
+      return f;
+    };
+    let folha = novaFolha();
+    blocos.forEach(function(b) {
+      if (b === QUEBRA_FOLHA) { folha = novaFolha(); return; }
+      folha.insertAdjacentHTML('beforeend', b);
+      if (folha.offsetHeight > FOLHA_H && folha.children.length > 1) {
+        const el = folha.lastElementChild;
+        folha = novaFolha();
+        folha.appendChild(el);
+      }
     });
 
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-    const imgData = canvas.toDataURL('image/jpeg', 0.95);
-    const pdfW = 210;
-    const pdfH = (canvas.height * pdfW) / canvas.width;
-    const pageH = 297;
-
-    if (pdfH <= pageH) {
-      pdf.addImage(imgData, 'JPEG', 0, 0, pdfW, pdfH);
-    } else {
-      let yPos = 0;
-      let remaining = pdfH;
-      let page = 0;
-      while (remaining > 0) {
-        if (page > 0) pdf.addPage();
-        const sliceH = Math.min(pageH, remaining);
-        const srcY = (yPos / pdfH) * canvas.height;
-        const srcH = (sliceH / pdfH) * canvas.height;
-        const sc = document.createElement('canvas');
-        sc.width = canvas.width;
-        sc.height = srcH;
-        sc.getContext('2d').drawImage(canvas, 0, srcY, canvas.width, srcH, 0, 0, canvas.width, srcH);
-        pdf.addImage(sc.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, pdfW, sliceH);
-        yPos += sliceH;
-        remaining -= sliceH;
-        page++;
-      }
+    for (let i = 0; i < folhas.length; i++) {
+      folhas.forEach(function(f, j) { f.style.display = j === i ? '' : 'none'; });
+      const canvas = await html2canvas(folhas[i], {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        width: FOLHA_W,
+        windowWidth: FOLHA_W
+      });
+      if (i > 0) pdf.addPage();
+      let w = 210, h = (canvas.height * w) / canvas.width;
+      if (h > 297) { const k = 297 / h; h = 297; w = 210 * k; }   // nunca corta conteúdo
+      pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', (210 - w) / 2, 0, w, h);
     }
 
     const nomePdf = 'Termo_Renovacao_'+d.nome.replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_]/g,'').slice(0,30)+'_'+d.dia+'_'+d.mes+'_2026.pdf';
     pdf.save(nomePdf);
   } finally {
-    document.body.removeChild(div);
+    document.body.removeChild(wrap);
   }
 }
 
