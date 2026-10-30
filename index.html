@@ -1009,7 +1009,7 @@ footer {
     <div class="card-body">
       <div class="field span2">
         <label>Condições Combinadas</label>
-        <textarea id="condicoesCombinadas" placeholder="Descreva as condições negociadas...&#10;Use Enter para parágrafos."></textarea>
+        <textarea id="condicoesCombinadas" placeholder="Ex: Plano 1.0 + Renave - 12x de R$ 545,00&#10;CRM à parte"></textarea>
       </div>
     </div>
   </div>
@@ -3513,15 +3513,13 @@ function impPreencherTermo(p) {
   set('numVeiculos', pl ? pl.cfg.veiculos : '');
   set('numUsuarios', pl ? pl.cfg.usuarios : '');
 
+  // Só reforça o fechamento, no formato do comercial: "Plano 1.0 + Renave - 12x de R$ 545,00" / "CRM à parte"
+  const nomesParte = p.aParte.map(function (a) { return a.nome; });
+  const ultimo = nomesParte.pop();
   set('condicoesCombinadas', [
-    'Renovação Anual conforme Proposta de Renovação nº ' + (p.numero || '—') + ', de ' + p.data + '.',
-    'Valor mensal: ' + p.itens.map(function (i) {
-      return i.nome + ' (' + (i.anual > 0 ? pBRL(i.anual) : 'incluso') + ')';
-    }).join(' + ') + ' = ' + pBRL(p.anualMes) + '.',
-    p.aParte.length ? 'Cobrados à parte, via boleto mensal: ' + p.aParte.map(function (a) {
-      return a.nome + ' (' + pBRL(a.valor) + ')';
-    }).join(' e ') + '.' : '',
-    p.vigencia ? 'Nova vigência a partir de ' + p.vigencia + '.' : '',
+    p.itens.map(function (i) { return i.nome; }).join(' + ') + ' - ' +
+      (vista ? pBRL(p.totalAnual) + ' à vista' : '12x de ' + pBRL(p.anualMes)),
+    ultimo ? (nomesParte.length ? nomesParte.join(', ') + ' e ' + ultimo : ultimo) + ' à parte' : '',
     p.condicoes
   ].filter(Boolean).join('\n'));
 
