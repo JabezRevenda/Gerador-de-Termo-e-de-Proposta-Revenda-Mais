@@ -1,0 +1,8 @@
+{
+  "name": "gerador-revenda-mais",
+  "private": true,
+  "description": "Gerador de propostas e termos da Revenda Mais. A função api/financeiro.js usa o nodemailer para enviar pelo Gmail.",
+  "dependencies": {
+    "nodemailer": "10.1.1"
+  }
+}
