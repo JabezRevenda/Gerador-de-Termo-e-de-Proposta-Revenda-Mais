@@ -754,6 +754,34 @@ footer {
 .rv-parte-tot b { font-size: 14px; letter-spacing: -0.01em; text-transform: none; white-space: nowrap; }
 .rv-opt.on .rv-parte-tot b { color: #E8003D; }
 .rv-notas { margin-top: 18px; }
+.rv-guarde { font-size: 11.5px; color: var(--text-muted); margin-top: 14px; text-align: center; }
+
+/* ── Termo de Renovação: subir a proposta aceita ── */
+.import-box {
+  background: var(--bg-card);
+  border: 1.5px dashed rgba(232,0,61,0.4);
+  border-radius: 8px;
+  padding: 18px 22px;
+  margin-bottom: 16px;
+  transition: background 0.15s, border-color 0.15s;
+}
+.import-box.drag { background: var(--red-light); border-color: var(--red); }
+.import-top { display: flex; align-items: center; gap: 16px; }
+.import-txt { flex: 1; min-width: 0; }
+.import-t { font-size: 14px; font-weight: 700; color: var(--text-heading); }
+.import-d { font-size: 12px; color: var(--text-muted); margin-top: 2px; line-height: 1.5; }
+.import-btn {
+  font-family: 'Poppins', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  color: #fff; background: var(--red); border: none; border-radius: 6px; padding: 11px 18px;
+  cursor: pointer; white-space: nowrap; transition: background 0.15s;
+}
+.import-btn:hover { background: var(--red-dark); }
+.import-res { border-top: 1px solid var(--border); margin-top: 16px; padding-top: 14px; display: flex; flex-direction: column; gap: 10px; }
+.import-res-t { font-size: 13px; font-weight: 600; color: var(--text-heading); }
+.import-res-t span { color: var(--text-muted); font-weight: 500; }
+.import-msg { font-size: 12.5px; line-height: 1.55; color: var(--text-label); background: var(--red-light); border-left: 3px solid var(--red); border-radius: 0 6px 6px 0; padding: 10px 14px; }
+.import-msg b { color: var(--text-heading); }
+.import-msg.ok { background: rgba(5,150,105,0.08); border-left-color: var(--success); }
 
 .rv-intro { font-size: 12px; color: #4b5563; line-height: 1.65; margin-bottom: 22px; }
 .rv-intro b { color: #111827; font-weight: 700; }
@@ -837,6 +865,8 @@ footer {
   .addon-val, .addon-tipo { width: 100%; }
   .tab { font-size: 10.5px; letter-spacing: 0.05em; padding: 12px 6px; gap: 6px; }
   .subtab { font-size: 11.5px; padding: 10px 8px 11px; flex: 1; }
+  .import-top { flex-direction: column; align-items: stretch; }
+  .import-res .tipo-toggle { flex-direction: column; }
   .preview-wrap { padding: 12px; }
 }
 
@@ -877,6 +907,19 @@ footer {
   <div class="page-header">
     <div class="page-eyebrow">Revenda Mais</div>
     <h1 class="page-title">Termo de<br/><span>Renovação</span></h1>
+  </div>
+
+  <!-- Subir a Proposta de Renovação aceita — preenche o termo -->
+  <div class="import-box" id="impBox">
+    <div class="import-top">
+      <div class="import-txt">
+        <div class="import-t">O cliente aceitou uma Proposta de Renovação?</div>
+        <div class="import-d">Suba o PDF ou a imagem gerada aqui no gerador (ou arraste o arquivo para esta caixa) e o termo vem preenchido.</div>
+      </div>
+      <button type="button" class="import-btn" onclick="document.getElementById('impArquivo').click()">Subir proposta</button>
+      <input type="file" id="impArquivo" accept=".pdf,.png,.jpg,.jpeg,application/pdf,image/*" class="hidden"/>
+    </div>
+    <div class="import-res hidden" id="impRes"></div>
   </div>
 
   <!-- Card 1 -->
@@ -1471,7 +1514,7 @@ footer {
       </div>
       <div class="card-body">
         <div class="chk-grid">
-          <label class="chk"><input type="checkbox" id="rv_onMensal" checked/><span>Mostrar Renovação Mensal</span></label>
+          <label class="chk"><input type="checkbox" id="rv_onMensal" checked/><span>Mostrar Mensalidade</span></label>
           <label class="chk"><input type="checkbox" id="rv_onAnual" checked/><span>Mostrar Renovação Anual</span></label>
         </div>
         <div class="field" id="rv_formaMensalWrap">
@@ -1536,6 +1579,7 @@ footer {
         Gerar PDF
       </button>
     </div>
+    <p class="rv-guarde">Quando o cliente aceitar, suba este arquivo em <b>Termos › Termo de Renovação</b> e o termo vem preenchido.</p>
   </section>
 
   <!-- ══════════ TERMO DE ADESÃO IA ══════════ -->
@@ -2974,8 +3018,53 @@ function nomeArquivo(cliente) {
   return cliente.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '').slice(0, 30) || 'Cliente';
 }
 
-// Renderiza uma folha .paper fora da tela e baixa como PNG ou PDF (sempre 1 página A4)
-async function exportarPapel(html, base, tipo, btnId) {
+/* ── Dados escondidos no arquivo ─────────────────────────────────────
+   O PDF/PNG gerado leva os dados da proposta em texto (base64 entre MARCA_PROPOSTA e MARCA_FIM):
+   no PDF, nas palavras-chave do documento; no PNG, num bloco de texto da imagem.
+   Subindo o arquivo de volta (Termo de Renovação), basta procurar a marca nos bytes. */
+// MARCA_FIM fecha o base64: no PNG os bytes seguintes (CRC) podem parecer base64
+const MARCA_PROPOSTA = 'RVMAIS-PROPOSTA:', MARCA_FIM = ':FIM';
+function b64Utf8(txt) {
+  return btoa(Array.from(new TextEncoder().encode(txt), function (c) { return String.fromCharCode(c); }).join(''));
+}
+function deB64Utf8(b64) {
+  return new TextDecoder().decode(Uint8Array.from(atob(b64), function (c) { return c.charCodeAt(0); }));
+}
+let CRC_TABELA = null;
+function crc32(bytes) {
+  if (!CRC_TABELA) {
+    CRC_TABELA = [];
+    for (let n = 0; n < 256; n++) {
+      let c = n;
+      for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1;
+      CRC_TABELA[n] = c >>> 0;
+    }
+  }
+  let crc = 0xFFFFFFFF;
+  for (let i = 0; i < bytes.length; i++) crc = CRC_TABELA[(crc ^ bytes[i]) & 0xFF] ^ (crc >>> 8);
+  return (crc ^ 0xFFFFFFFF) >>> 0;
+}
+// Insere um bloco tEXt logo antes do IEND (últimos 12 bytes do PNG gerado pelo canvas)
+function pngComTexto(dataUrl, texto) {
+  const png = Uint8Array.from(atob(dataUrl.split(',')[1]), function (c) { return c.charCodeAt(0); });
+  const corpo = new TextEncoder().encode('tEXtRevendaMais\0' + texto);
+  const bloco = new Uint8Array(corpo.length + 8);
+  const dv = new DataView(bloco.buffer);
+  dv.setUint32(0, corpo.length - 4);   // tamanho não conta o tipo "tEXt"
+  bloco.set(corpo, 4);
+  dv.setUint32(bloco.length - 4, crc32(corpo));
+  const fim = png.length - 12;
+  const out = new Uint8Array(png.length + bloco.length);
+  out.set(png.subarray(0, fim));
+  out.set(bloco, fim);
+  out.set(png.subarray(fim), fim + bloco.length);
+  return out;
+}
+
+// Renderiza uma folha .paper fora da tela e baixa como PNG ou PDF (sempre 1 página A4).
+// dados (opcional): vai escondido no arquivo para ser lido de volta depois
+async function exportarPapel(html, base, tipo, btnId, dados) {
+  const marca = dados ? MARCA_PROPOSTA + b64Utf8(JSON.stringify(dados)) + MARCA_FIM : '';
   const btn = document.getElementById(btnId);
   const htmlOriginal = btn.innerHTML;
   btn.disabled = true;
@@ -2992,13 +3081,17 @@ async function exportarPapel(html, base, tipo, btnId) {
 
     if (tipo === 'png') {
       const a = document.createElement('a');
-      a.href = canvas.toDataURL('image/png');
+      a.href = marca
+        ? URL.createObjectURL(new Blob([pngComTexto(canvas.toDataURL('image/png'), marca)], { type: 'image/png' }))
+        : canvas.toDataURL('image/png');
       a.download = base + '.png';
       a.click();
+      if (marca) setTimeout(function () { URL.revokeObjectURL(a.href); }, 5000);
       showToast('Imagem gerada com sucesso!', 'success');
     } else {
       const { jsPDF } = window.jspdf;
       const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      if (marca) pdf.setProperties({ title: base, keywords: marca });
       const imgData = canvas.toDataURL('image/jpeg', 0.96);
       let w = 210;
       let h = (canvas.height * w) / canvas.width;
@@ -3128,6 +3221,7 @@ function rvColetar() {
   const itens = linhas.filter(function (row) { return !row.dataset.parte; }).map(function (row) {
     return {
       nome: rvNomeItem(row),
+      plano: !!row.querySelector('.rv-nome-sel'),
       mensal: pParse(row.querySelector('.rv-mensal').value),
       anual: pParse(row.querySelector('.rv-anual').value)
     };
@@ -3197,7 +3291,7 @@ function rvMontarPapel(d) {
 
   const mensal = !d.onMensal ? '' :
     '<div class="rv-opt">' +
-      '<div class="rv-opt-h"><div class="rv-opt-t">Renovação Mensal</div><div class="rv-opt-s">Pagamento mês a mês</div></div>' +
+      '<div class="rv-opt-h"><div class="rv-opt-t">Mensalidade</div><div class="rv-opt-s">Pagamento mês a mês</div></div>' +
       '<div class="rv-opt-b">' + linhas('mensal') + '</div>' +
       '<div class="rv-opt-f"><div class="rv-tot-l">Total</div>' +
         '<div class="rv-tot-v">' + pBRL(d.totalMensal) + ' <small>/mês</small></div>' +
@@ -3320,7 +3414,7 @@ function rvValidar(d) {
   if (!d.cliente) { showToast('Preencha: Nome do Cliente', 'error'); document.getElementById('rv_cliente').focus(); return false; }
   if (!d.itens.length) { showToast('Inclua ao menos um produto', 'error'); return false; }
   if (!d.onMensal && !d.onAnual) { showToast('Escolha ao menos uma modalidade', 'error'); return false; }
-  if (d.onMensal && !d.totalMensal) { showToast('Preencha os valores da renovação mensal', 'error'); return false; }
+  if (d.onMensal && !d.totalMensal) { showToast('Preencha os valores da mensalidade', 'error'); return false; }
   if (d.onAnual && !d.anualMes) { showToast('Preencha os valores da renovação anual', 'error'); return false; }
   return true;
 }
@@ -3329,7 +3423,7 @@ async function gerarPropostaRenov(tipo) {
   const d = rvColetar();
   if (!rvValidar(d)) return;
   await exportarPapel(rvMontarPapel(d), 'Proposta_Renovacao_' + nomeArquivo(d.cliente), tipo,
-    tipo === 'pdf' ? 'btnRvPdf' : 'btnRvPng');
+    tipo === 'pdf' ? 'btnRvPdf' : 'btnRvPng', Object.assign({ v: 1, tipo: 'renovacao' }, d));
 }
 
 /* ── Inicialização ───────────────────────────────────────────────── */
@@ -3356,6 +3450,120 @@ async function gerarPropostaRenov(tipo) {
   }).join('');
   rvAddItem({ plano: true }, false);
   window.addEventListener('resize', rvAjustarEscala);
+})();
+
+/* ══════════════════════════════════════════════════════════════════
+   PROPOSTA ACEITA → TERMO DE RENOVAÇÃO
+   Sobe o PDF/PNG da Proposta de Renovação e o termo vem preenchido com a modalidade escolhida
+   ══════════════════════════════════════════════════════════════════ */
+let propostaImportada = null;
+
+async function impLerArquivo(arquivo) {
+  if (!arquivo) return;
+  const txt = new TextDecoder('latin1').decode(await arquivo.arrayBuffer());
+  const m = txt.match(/RVMAIS-PROPOSTA:([A-Za-z0-9+\/=]+):FIM/);
+  let p = null;
+  try { p = m ? JSON.parse(deB64Utf8(m[1])) : null; } catch (e) { p = null; }
+  if (!p || p.tipo !== 'renovacao') {
+    propostaImportada = null;
+    impMostrar('<div class="import-msg"><b>' + esc(arquivo.name) + '</b> não tem os dados de uma Proposta de Renovação. ' +
+      'Use o PDF ou a imagem baixados aqui no gerador — a imagem enviada como foto pelo WhatsApp perde esses dados.</div>');
+    return;
+  }
+  propostaImportada = p;
+  const ambos = p.onMensal && p.onAnual;
+  impMostrar(
+    '<div class="import-res-t">Proposta nº ' + (esc(p.numero) || '—') + ' · ' + esc(p.cliente) + ' <span>· ' + esc(p.data) + '</span></div>' +
+    (ambos ? '<div class="import-d">Qual modalidade o cliente aceitou?</div>' : '') +
+    '<div class="tipo-toggle">' +
+      (p.onMensal ? '<button type="button" class="tipo-btn" id="impBtnMensal" onclick="impAplicar(\'mensal\')">Mensal — ' + pBRL(p.totalMensal) + '/mês</button>' : '') +
+      (p.onAnual ? '<button type="button" class="tipo-btn" id="impBtnAnual" onclick="impAplicar(\'anual\')">Anual — ' +
+        (p.tipoAnual === 'vista' ? pBRL(p.totalAnual) + ' à vista' : '12x de ' + pBRL(p.anualMes)) + '</button>' : '') +
+    '</div>' +
+    '<div id="impMsg"></div>');
+  if (!ambos) impAplicar(p.onMensal ? 'mensal' : 'anual');
+}
+
+function impMostrar(html) {
+  const res = document.getElementById('impRes');
+  res.innerHTML = html;
+  res.classList.remove('hidden');
+}
+
+// Liga o plano da proposta ao select do termo; plano de tabela traz veículos e usuários
+function impPlanoTermo(nome) {
+  const k = Object.keys(PLANOS).find(function (k) { return (PLANOS[k].nome || 'Plano ' + k) === nome; });
+  return k ? { valor: k === 'integrador' ? 'Integrador' : k, cfg: PLANOS[k] } : null;
+}
+
+function impAplicar(modalidade) {
+  const p = propostaImportada;
+  if (!p) return;
+  const anual = modalidade === 'anual';
+  const vista = anual && p.tipoAnual === 'vista';
+  const set = function (id, v) { document.getElementById(id).value = v; };
+  ['Mensal', 'Anual'].forEach(function (m) {
+    const b = document.getElementById('impBtn' + m);
+    if (b) b.classList.toggle('active', m.toLowerCase() === modalidade);
+  });
+
+  // Razão social e CNPJ não estão na proposta — limpa para não sobrar de outro cliente
+  set('nomeEmpresarial', '');
+  set('cnpj', '');
+
+  const planoItem = p.itens.find(function (i) { return i.plano; }) || p.itens[0] || { nome: '' };
+  const pl = impPlanoTermo(planoItem.nome);
+  set('plano', pl ? pl.valor : 'outros');
+  onPlanoChange();
+  if (!pl) set('planoCustom', planoItem.nome);
+  set('numVeiculos', pl ? pl.cfg.veiculos : '');
+  set('numUsuarios', pl ? pl.cfg.usuarios : '');
+
+  const campo = anual ? 'anual' : 'mensal';
+  set('condicoesCombinadas', [
+    (anual ? 'Renovação Anual' : 'Mensalidade') + ' conforme Proposta de Renovação nº ' + (p.numero || '—') + ', de ' + p.data + '.',
+    'Valor mensal: ' + p.itens.map(function (i) {
+      return i.nome + ' (' + (i[campo] > 0 ? pBRL(i[campo]) : 'incluso') + ')';
+    }).join(' + ') + ' = ' + pBRL(anual ? p.anualMes : p.totalMensal) + '.',
+    p.aParte.length ? 'Cobrados à parte, via boleto mensal: ' + p.aParte.map(function (a) {
+      return a.nome + ' (' + pBRL(a.valor) + ')';
+    }).join(' e ') + '.' : '',
+    p.vigencia ? 'Nova vigência a partir de ' + p.vigencia + '.' : '',
+    p.condicoes
+  ].filter(Boolean).join('\n'));
+
+  // Anual: valor do termo = 12 parcelas. Mensal: o termo só tem fidelidade semestral ou anual,
+  // então valor e fidelidade ficam para o consultor definir
+  pSetMoney('valorPlano', anual ? p.anualMes * 12 : 0);
+  set('fidelidade', anual ? '12' : '');
+  set('formaPagamento', anual
+    ? (vista ? 'boletopix' : 'cartao')
+    : ({ 'Cartão de crédito': 'cartao', 'Boleto / PIX': 'boletopix' }[p.formaMensal] || ''));
+  document.getElementById('parcelas').innerHTML = '<option value="">Selecione as parcelas</option>';
+  document.getElementById('parcelasPreview').classList.add('hidden');
+  onFidelidadeChange();   // monta as parcelas e mostra/esconde o parcelamento
+  if (anual && !vista) { set('parcelas', '12'); onParcelasChange(); }
+
+  const confira = pl ? 'confira veículos e usuários (vieram da tabela do plano)' : 'preencha veículos e usuários';
+  document.getElementById('impMsg').innerHTML = anual
+    ? '<div class="import-msg ok"><b>Termo preenchido com a Renovação Anual.</b> Agora complete o <b>Nome Empresarial</b> e o <b>CNPJ</b> e ' + confira + '.' +
+      (vista ? ' Pagamento à vista marcado como Boleto / PIX — troque se for no cartão.' : '') + '</div>'
+    : '<div class="import-msg"><b>Mensalidade:</b> plano, pagamento e condições preenchidos. O termo só tem fidelidade semestral ou anual — ' +
+      '<b>escolha a fidelidade e preencha o valor total</b>. Complete também o <b>Nome Empresarial</b> e o <b>CNPJ</b> e ' + confira + '.</div>';
+  document.getElementById('nomeEmpresarial').focus();
+}
+
+(function impInit() {
+  const box = document.getElementById('impBox');
+  const input = document.getElementById('impArquivo');
+  input.addEventListener('change', function () { impLerArquivo(input.files[0]); input.value = ''; });
+  ['dragenter', 'dragover'].forEach(function (ev) {
+    box.addEventListener(ev, function (e) { e.preventDefault(); box.classList.add('drag'); });
+  });
+  ['dragleave', 'drop'].forEach(function (ev) {
+    box.addEventListener(ev, function (e) { e.preventDefault(); box.classList.remove('drag'); });
+  });
+  box.addEventListener('drop', function (e) { impLerArquivo(e.dataTransfer.files[0]); });
 })();
 
 /* ══════════════════════════════════════════════════════════════════
