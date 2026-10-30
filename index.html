@@ -4089,9 +4089,148 @@ async function finLerTermo(arquivo) {
     finTermoUI();
     finLeituraUI('<b>Esse arquivo é a Proposta de Renovação</b>, não o termo assinado. Suba o termo que o cliente assinou.');
   } else {
-    finLeituraUI('<b>Não deu para ler os dados deste arquivo</b> (foto ou PDF assinado fora do gerador). Preencha os campos abaixo — o arquivo vai anexo normalmente.');
+    // Sem dados escondidos (termo antigo, foto, PDF de fora): tenta ler o texto da imagem
+    const vez = ++finLeituraVez;
+    const lido = await finLerPorOcr(arquivo, vez);
+    if (vez !== finLeituraVez) return;   // outro arquivo foi escolhido enquanto lia
+    if (lido) {
+      finCarregarTermo(lido);
+      finLeituraUI('<b>Dados lidos da imagem do termo.</b> Confira com atenção — a leitura por imagem pode errar algum número — e complete o ID da loja.', true);
+    } else {
+      finLeituraUI('<b>Não deu para ler os dados deste arquivo</b> (foto escura ou torta, ou documento fora do padrão do termo). Preencha os campos abaixo — o arquivo vai anexo normalmente.');
+    }
   }
   finRender();
+}
+
+/* ── Leitura por imagem (OCR) — termo antigo, foto ou PDF assinado fora do gerador ──
+   Sem IA paga: o tesseract.js reconhece as letras no próprio navegador (o arquivo não sai do
+   computador) e os campos saem das frases fixas do termo. O leitor (~5 MB) só é baixado na
+   primeira vez que precisar. */
+const TESSERACT_URL = 'https://cdn.jsdelivr.net/npm/tesseract.js@7.0.0/dist/tesseract.min.js';
+const CNPJ_CONTRATADA = '03995142000124';   // Revenda Mais, sempre presente na assinatura
+let tesseractPromessa = null;
+let finLeituraVez = 0;
+
+function carregarTesseract() {
+  if (window.Tesseract) return Promise.resolve();
+  if (!tesseractPromessa) {
+    tesseractPromessa = new Promise(function (ok, erro) {
+      const s = document.createElement('script');
+      s.src = TESSERACT_URL;
+      s.onload = ok;
+      s.onerror = function () { tesseractPromessa = null; erro(new Error('leitor indisponível')); };
+      document.head.appendChild(s);
+    });
+  }
+  return tesseractPromessa;
+}
+
+// Imagens JPEG embutidas num PDF (cada página do termo do gerador é uma; escaneamentos também)
+function jpegsDoPdf(bytes) {
+  const txt = new TextDecoder('latin1').decode(bytes);
+  const imagens = [];
+  const re = /stream\r?\n/g;
+  let m;
+  while ((m = re.exec(txt))) {
+    const ini = m.index + m[0].length;
+    if (bytes[ini] !== 0xFF || bytes[ini + 1] !== 0xD8 || bytes[ini + 2] !== 0xFF) continue;
+    const fimStream = txt.indexOf('endstream', ini);
+    const fim = txt.lastIndexOf('\xFF\xD9', fimStream);
+    if (fimStream < 0 || fim < ini) continue;
+    if (fim + 2 - ini > 20000) imagens.push(bytes.slice(ini, fim + 2));   // ignora ícones e carimbos pequenos
+    re.lastIndex = fimStream;
+  }
+  return imagens;
+}
+
+async function finLerPorOcr(arquivo, vez) {
+  let imagens = [];
+  if (/^image\//.test(arquivo.type)) imagens = [arquivo];
+  else if (arquivo.type === 'application/pdf' || /\.pdf$/i.test(arquivo.name)) {
+    imagens = jpegsDoPdf(new Uint8Array(await arquivo.arrayBuffer())).slice(0, 2).map(function (b) {
+      return new Blob([b], { type: 'image/jpeg' });
+    });
+  }
+  if (!imagens.length) return null;
+
+  const progresso = function (txt) {
+    if (vez === finLeituraVez) {
+      finLeituraUI('<b>Lendo o texto do termo…</b> ' + txt + '. Na primeira vez demora um pouco mais.');
+    }
+  };
+  progresso('preparando o leitor');
+  let worker = null;
+  try {
+    await carregarTesseract();
+    let pagina = 1;
+    worker = await Tesseract.createWorker('por', 1, {
+      logger: function (m) {
+        if (m.status === 'recognizing text') progresso('página ' + pagina + ': ' + Math.round(m.progress * 100) + '%');
+      }
+    });
+    let texto = '', campos = null;
+    for (; pagina <= imagens.length; pagina++) {
+      texto += '\n' + (await worker.recognize(imagens[pagina - 1])).data.text;
+      campos = camposDoTermo(texto);
+      if (campos && campos.nome && campos.valor) break;   // a página 1 já bastou
+    }
+    return campos;
+  } catch (e) {
+    console.warn('Leitura por imagem falhou:', e);
+    return null;
+  } finally {
+    if (worker) worker.terminate();
+  }
+}
+
+// Campos do Termo de Renovação a partir do texto lido, pelas frases fixas do modelo.
+// Tolerante a erros comuns de leitura (R$ lido como RS, espaços a mais, acentos trocados).
+function camposDoTermo(texto) {
+  const linhas = texto.split(/\r?\n/).map(function (l) { return l.trim(); }).filter(Boolean);
+  const corrido = linhas.join(' ').replace(/\s+/g, ' ');
+  const RS = 'R\\s?[$S5]\\s*', DIN = '(\\d{1,3}(?:[.\\s]?\\d{3})*,\\s?\\d{2})';
+  const din = function (v) { return 'R$ ' + v.replace(/\s/g, ''); };
+  const t = {};
+  let m = corrido.match(new RegExp('termo [ée] de\\s*' + RS + DIN, 'i'));
+  if (m) t.valor = din(m[1]);
+  m = corrido.match(/renova[çc][ãa]o do Plano\s+(.+?)\s+e pelo per/i);
+  if (m) t.plano = m[1].trim().replace(/^(\d)[,.](\d)$/, '$1.$2');
+  m = corrido.match(/fidelidade de\s*(\d+)\s*mes/i);
+  if (m) t.fidelidade = m[1];
+  m = corrido.match(new RegExp('cr[ée]dito em\\s*(\\d+)\\s*[xX×]\\s*de\\s*' + RS + DIN, 'i'));
+  if (m) { t.forma = 'cartao'; t.parcelas = m[1]; t.valorParcela = din(m[2]); }
+  else if (/via\s+Boleto/i.test(corrido)) t.forma = 'boletopix';
+  m = corrido.match(/Ve[íi]culos\s*:?\s*(\d+)/i);
+  if (m) t.veiculos = m[1];
+  m = corrido.match(/Usu[áa]rios?\s*:?\s*(\d+)/i);
+  if (m) t.usuarios = m[1];
+
+  // Outras condições: o que vem depois do título até "Para dirimir…"
+  const iCond = linhas.findIndex(function (l) { return /Outras condi/i.test(l); });
+  if (iCond >= 0) {
+    const iFim = linhas.findIndex(function (l, k) { return k > iCond && /Para dirimir|^Curitiba,/i.test(l); });
+    const resto = linhas[iCond].replace(/.*Outras condi\S*\s*:?/i, '').trim();
+    t.condicoes = [resto].concat(linhas.slice(iCond + 1, iFim > iCond ? iFim : iCond + 6)).filter(Boolean).join('\n');
+  }
+
+  // Contratante: o CNPJ que não é o da Revenda Mais, e o nome na linha de baixo de "CONTRATANTE"
+  const cnpjs = (corrido.match(/\d{2}\s?[.,]?\s?\d{3}\s?[.,]?\s?\d{3}\s?\/?\s?\d{4}\s?-?\s?\d{2}/g) || [])
+    .map(function (c) { return c.replace(/\D/g, ''); })
+    .filter(function (c) { return c.length === 14 && c !== CNPJ_CONTRATADA; });
+  if (cnpjs[0]) t.cnpj = cnpjs[0].replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
+  const iCt = linhas.findIndex(function (l) { return /CONTRATANTE/i.test(l); });
+  if (iCt >= 0) {
+    const limpar = function (l) {
+      return l.replace(/CONTRATANTE\s*:?/ig, '').replace(/CONTRATADA\s*:?/ig, '')
+        .replace(/\s*MARC\s?H?\s?ETT.*$/i, '')   // coluna da contratada (MARCHETTI…) lida na mesma linha
+        .replace(/\s+/g, ' ').trim()
+        .replace(/\s[LUI1][TMI1][DO]A$/i, ' LTDA');   // "LTDA" lido como UTDA/UMDA em foto
+    };
+    const nome = [limpar(linhas[iCt]), limpar(linhas[iCt + 1] || '')].find(function (l) { return l && !/^CNPJ/i.test(l); });
+    if (nome) t.nome = nome;
+  }
+  return t.valor || t.nome ? t : null;
 }
 function finTermoUI(erro) {
   const a = finArquivo;
