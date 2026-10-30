@@ -738,6 +738,22 @@ footer {
 .rv-item .rv-del-vazio { width: 16px; flex-shrink: 0; }
 .rv-sem-mensal .rv-col-mensal,
 .rv-sem-anual .rv-col-anual { display: none; }
+/* Item à parte (CRM / IA): um único valor de boleto, ocupando as duas colunas */
+.rv-item .rv-col-parte { width: 270px; }
+.rv-sem-mensal .rv-col-parte,
+.rv-sem-anual .rv-col-parte { width: 128px; }
+
+.rv-parte { border-top: 1px dashed #e5e7eb; margin-top: 13px; padding-top: 10px; }
+.rv-parte-it { display: flex; justify-content: space-between; gap: 8px; font-size: 11px; color: #6b7280; font-weight: 500; line-height: 1.8; }
+.rv-parte-it span:last-child { color: #374151; font-weight: 600; white-space: nowrap; }
+.rv-parte-tot {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 8px;
+  margin-top: 5px; padding-top: 7px; border-top: 1px solid #f0f0f0;
+  font-size: 9.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #111827;
+}
+.rv-parte-tot b { font-size: 14px; letter-spacing: -0.01em; text-transform: none; white-space: nowrap; }
+.rv-opt.on .rv-parte-tot b { color: #E8003D; }
+.rv-notas { margin-top: 18px; }
 
 .rv-intro { font-size: 12px; color: #4b5563; line-height: 1.65; margin-bottom: 22px; }
 .rv-intro b { color: #111827; font-weight: 700; }
@@ -1440,7 +1456,7 @@ footer {
         <span class="card-title">Produtos e Valores</span>
       </div>
       <div class="card-body" id="rv_itensCard">
-        <div class="hint">Informe quanto o cliente paga por produto em cada modalidade. No anual, use o valor de cada parcela (por mês).</div>
+        <div class="hint">Informe quanto o cliente paga por produto em cada modalidade. No anual, use o valor de cada parcela (por mês). CRM e IA são cobrados à parte, em boleto mensal — não entram no total do plano.</div>
         <div id="rv_itens" style="grid-column:span 2;display:flex;flex-direction:column;gap:10px"></div>
         <div class="chk-actions" id="rv_atalhos"></div>
         <button type="button" class="btn-ghost" onclick="rvAddItem({ nome: '' }, true)">+ Adicionar outro produto</button>
@@ -3032,11 +3048,19 @@ async function exportarPapel(html, base, tipo, btnId) {
 /* ══════════════════════════════════════════════════════════════════
    PROPOSTA DE RENOVAÇÃO — o cliente compara mensal x anual com os valores dele
    ══════════════════════════════════════════════════════════════════ */
+// CRM e IA são cobrados à parte, em boleto mensal — não entram no total do plano.
+// O texto da observação é o mesmo da Proposta Comercial.
+const RV_A_PARTE = {
+  crm: ADICIONAIS.find(function (a) { return a.id === 'crm'; }).obs,
+  ia:  ADICIONAIS.find(function (a) { return a.id === 'ia'; }).obs
+};
 // Atalhos de produto — valor de tabela preenchido ao incluir (continua editável)
 const RV_ATALHOS = [
   { nome: 'Renave',                mensal: AV_TABELA.renave,   anual: AV_TABELA.renave },
   { nome: 'Nota Fiscal' },
   { nome: 'CNPJ Adicional',        mensal: AV_TABELA.cnpjUnit, anual: AV_TABELA.cnpjUnit },
+  { nome: 'CRM',                   mensal: AV_TABELA.crmBase,  parte: 'crm' },
+  { nome: 'IA',                    mensal: AV_TABELA.iaMensal, parte: 'ia' },
   { nome: 'Assinatura Eletrônica' },
   { nome: 'Vistoria' },
   { nome: 'Integrações' }
@@ -3050,18 +3074,23 @@ function rvOpcoesPlano() {
   }).join('') + '<option value="">Outro (digitar)</option>';
 }
 
-// Linha de produto: a primeira é sempre o plano (select), as demais têm nome livre e podem ser removidas
+// Linha de produto: a primeira é sempre o plano (select), as demais têm nome livre e podem ser removidas.
+// Itens à parte (CRM / IA) têm um único valor de boleto, igual nas duas modalidades.
 function rvAddItem(it, foco) {
   const id = 'rvi' + (++rvSeq);
   const nome = it.plano
     ? '<select class="rv-nome-sel" onchange="rvOnPlano(this)">' + rvOpcoesPlano() + '</select>' +
       '<input class="rv-nome hidden" type="text" placeholder="Nome do plano"/>'
     : '<input class="rv-nome" type="text" placeholder="Nome do produto"/>';
+  const valores = it.parte
+    ? '<div class="addon-val rv-col-parte"><small>Boleto /mês</small><input class="money rv-parte-val" id="' + id + '_m" type="text" placeholder="0,00"/></div>'
+    : '<div class="addon-val rv-col-mensal"><small>Mensal</small><input class="money rv-mensal" id="' + id + '_m" type="text" placeholder="0,00"/></div>' +
+      '<div class="addon-val rv-col-anual"><small>Anual /mês</small><input class="money rv-anual" id="' + id + '_a" type="text" placeholder="0,00"/></div>';
   document.getElementById('rv_itens').insertAdjacentHTML('beforeend',
-    '<div class="addon on rv-item" id="' + id + '">' +
-      '<div class="addon-main"><small>' + (it.plano ? 'Plano' : 'Produto') + '</small>' + nome + '</div>' +
-      '<div class="addon-val rv-col-mensal"><small>Mensal</small><input class="money rv-mensal" id="' + id + '_m" type="text" placeholder="0,00"/></div>' +
-      '<div class="addon-val rv-col-anual"><small>Anual /mês</small><input class="money rv-anual" id="' + id + '_a" type="text" placeholder="0,00"/></div>' +
+    '<div class="addon on rv-item" id="' + id + '"' + (it.parte ? ' data-parte="' + it.parte + '"' : '') + '>' +
+      '<div class="addon-main"><small>' + (it.plano ? 'Plano' : 'Produto') +
+        (it.parte ? '<span class="addon-flag">à parte · boleto</span>' : '') + '</small>' + nome + '</div>' +
+      valores +
       (it.plano
         ? '<span class="rv-del-vazio"></span>'
         : '<button type="button" class="addon-del" onclick="rvRemoveItem(\'' + id + '\')" title="Remover">&times;</button>') +
@@ -3095,13 +3124,18 @@ function rvNomeItem(row) {
 
 /* ── Coleta ──────────────────────────────────────────────────────── */
 function rvColetar() {
-  const itens = Array.prototype.map.call(document.querySelectorAll('#rv_itens .rv-item'), function (row) {
+  const linhas = Array.prototype.slice.call(document.querySelectorAll('#rv_itens .rv-item'));
+  const itens = linhas.filter(function (row) { return !row.dataset.parte; }).map(function (row) {
     return {
       nome: rvNomeItem(row),
       mensal: pParse(row.querySelector('.rv-mensal').value),
       anual: pParse(row.querySelector('.rv-anual').value)
     };
   }).filter(function (i) { return i.nome || i.mensal || i.anual; });
+  const aParte = linhas.filter(function (row) { return row.dataset.parte; }).map(function (row) {
+    return { nome: rvNomeItem(row), valor: pParse(row.querySelector('.rv-parte-val').value), obs: RV_A_PARTE[row.dataset.parte] };
+  }).filter(function (a) { return a.nome || a.valor; });
+  const somaParte = aParte.reduce(function (s, a) { return s + a.valor; }, 0);
 
   const totalMensal = itens.reduce(function (s, i) { return s + i.mensal; }, 0);
   const anualMes = itens.reduce(function (s, i) { return s + i.anual; }, 0);
@@ -3123,6 +3157,7 @@ function rvColetar() {
     validade: document.getElementById('rv_validade').value || '7',
     vigencia: vigIso ? new Date(vigIso + 'T12:00:00').toLocaleDateString('pt-BR') : '',
     itens: itens,
+    aParte: aParte, somaParte: somaParte,
     onMensal: onMensal, onAnual: onAnual,
     totalMensal: totalMensal,
     anualMes: anualMes,
@@ -3146,6 +3181,19 @@ function rvMontarPapel(d) {
         (i[campo] > 0 ? '<span>' + pBRL(i[campo]) + '</span>' : '<span class="inc">Incluso</span>') + '</div>';
     }).join('');
   }
+  // CRM / IA embaixo do total, com a mensalidade completa do cliente naquela modalidade.
+  // porMes = null no anual à vista (não há parcela mensal para somar — mostra só o boleto)
+  function parte(porMes) {
+    if (!d.aParte.length) return '';
+    return '<div class="rv-parte"><div class="rv-tot-l">À parte · boleto mensal</div>' +
+      d.aParte.map(function (a) {
+        return '<div class="rv-parte-it"><span>+ ' + (esc(a.nome) || 'Produto') + '</span><span>' + pBRL(a.valor) + '</span></div>';
+      }).join('') +
+      (porMes === null
+        ? '<div class="rv-parte-tot"><span>Boleto/mês</span><b>' + pBRL(d.somaParte) + '</b></div>'
+        : '<div class="rv-parte-tot"><span>Total/mês</span><b>' + pBRL(porMes + d.somaParte) + '</b></div>') +
+    '</div>';
+  }
 
   const mensal = !d.onMensal ? '' :
     '<div class="rv-opt">' +
@@ -3154,6 +3202,7 @@ function rvMontarPapel(d) {
       '<div class="rv-opt-f"><div class="rv-tot-l">Total</div>' +
         '<div class="rv-tot-v">' + pBRL(d.totalMensal) + ' <small>/mês</small></div>' +
         '<div class="rv-tot-d">' + esc(d.formaMensal) + '</div>' +
+        parte(d.totalMensal) +
       '</div>' +
     '</div>';
 
@@ -3168,6 +3217,7 @@ function rvMontarPapel(d) {
             '<div class="rv-tot-d">Equivale a ' + pBRL(d.anualMes) + ' por mês</div>'
           : '<div class="rv-tot-v"><small>12x de</small> ' + pBRL(d.anualMes) + '</div>' +
             '<div class="rv-tot-d">no cartão de crédito</div>') +
+        parte(vista ? null : d.anualMes) +
         (d.economia > 0 ? '<div class="rv-eco">Economia de ' + pBRL(d.economia) + ' no ano</div>' : '') +
       '</div>' +
     '</div>';
@@ -3212,6 +3262,11 @@ function rvMontarPapel(d) {
 
     '<div class="pp-sec">' + (ambos ? 'Opções de Renovação' : 'Sua Renovação') + '</div>' +
     '<div class="rv-opts' + (ambos ? '' : ' um') + '">' + mensal + anual + '</div>' +
+    (d.aParte.length
+      ? '<div class="rv-notas">' + d.aParte.filter(function (a) { return a.obs; }).map(function (a) {
+          return '<div class="pp-note"><b>' + (esc(a.nome) || 'Produto') + ':</b> ' + esc(a.obs) + '</div>';
+        }).join('') + '</div>'
+      : '') +
     condicoes +
 
     '<div class="pp-sec">Como Renovar</div>' +
@@ -3250,9 +3305,11 @@ function rvRender() {
   const anualTxt = d.tipoAnual === 'vista' ? pBRL(d.totalAnual) + ' à vista' : '12x de ' + pBRL(d.anualMes);
   document.getElementById('rv_totalLabel').textContent = d.onMensal ? 'Mensal' : 'Anual';
   document.getElementById('rv_totalView').textContent = d.onMensal ? pBRL(d.totalMensal) + ' /mês' : anualTxt;
-  document.getElementById('rv_totalSub').innerHTML = d.onMensal && d.onAnual
-    ? 'Anual: ' + anualTxt + (d.economia > 0 ? '<br/>Economia de ' + pBRL(d.economia) + ' no ano' : '')
-    : '';
+  document.getElementById('rv_totalSub').innerHTML = [
+    d.onMensal && d.onAnual ? 'Anual: ' + anualTxt : '',
+    d.economia > 0 ? 'Economia de ' + pBRL(d.economia) + ' no ano' : '',
+    d.somaParte ? '+ ' + pBRL(d.somaParte) + '/mês à parte (' + d.aParte.map(function (a) { return a.nome; }).join(' + ') + ')' : ''
+  ].filter(Boolean).join('<br/>');
 
   document.getElementById('rv_paper').innerHTML = rvMontarPapel(d);
   rvAjustarEscala();
