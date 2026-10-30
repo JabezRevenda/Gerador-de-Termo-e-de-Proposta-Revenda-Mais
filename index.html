@@ -365,18 +365,39 @@ footer {
 }
 
 /* ══════════════════════════════════════════════════════════
-   ABAS — alternância entre os dois geradores
+   ABAS — dois grupos (Termos / Propostas), cada um com seus documentos
    ══════════════════════════════════════════════════════════ */
 .tabs {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 6px;
   background: #e6e8ec;
   border: 1px solid var(--border);
   border-radius: 10px;
   padding: 6px;
+  margin-bottom: 14px;
+}
+.subtabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--border);
   margin-bottom: 36px;
 }
+.subtab {
+  font-family: 'Poppins', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  border-bottom: 2.5px solid transparent;
+  margin-bottom: -1px;
+  padding: 10px 14px 11px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.subtab:hover { color: var(--text-heading); }
+.subtab.active { color: var(--red); border-bottom-color: var(--red); font-weight: 700; }
 .tab {
   font-family: 'Poppins', sans-serif;
   font-size: 12px;
@@ -443,7 +464,7 @@ footer {
 .chk.off span { text-decoration: line-through; }
 .chk-actions {
   grid-column: span 2;
-  display: flex; gap: 10px; margin-top: 2px;
+  display: flex; flex-wrap: wrap; gap: 10px; margin-top: 2px;
 }
 .chk-actions button {
   font-family: 'Poppins', sans-serif;
@@ -703,6 +724,82 @@ footer {
 }
 
 /* ══════════════════════════════════════════════════════════
+   PROPOSTA DE RENOVAÇÃO — formulário + documento (mesma folha .paper)
+   ══════════════════════════════════════════════════════════ */
+.rv-item .addon-main input,
+.rv-item .addon-main select { margin-top: 0; padding: 9px 12px; font-size: 14px; }
+.rv-item .addon-main select { padding-right: 30px; background-position: right 12px center; }
+.rv-item .addon-main small,
+.rv-item .addon-val small {
+  display: block; font-size: 8.5px; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--text-dim); margin-bottom: 3px;
+}
+.rv-item .addon-val small { text-align: right; }
+.rv-item .rv-del-vazio { width: 16px; flex-shrink: 0; }
+.rv-sem-mensal .rv-col-mensal,
+.rv-sem-anual .rv-col-anual { display: none; }
+/* Item à parte (CRM / IA): um único valor de boleto, ocupando as duas colunas */
+.rv-item .rv-col-parte { width: 270px; }
+.rv-sem-mensal .rv-col-parte,
+.rv-sem-anual .rv-col-parte { width: 128px; }
+
+.rv-parte { border-top: 1px dashed #e5e7eb; margin-top: 13px; padding-top: 10px; }
+.rv-parte-it { display: flex; justify-content: space-between; gap: 8px; font-size: 11px; color: #6b7280; font-weight: 500; line-height: 1.8; }
+.rv-parte-it span:last-child { color: #374151; font-weight: 600; white-space: nowrap; }
+.rv-parte-tot {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 8px;
+  margin-top: 5px; padding-top: 7px; border-top: 1px solid #f0f0f0;
+  font-size: 9.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #111827;
+}
+.rv-parte-tot b { font-size: 14px; letter-spacing: -0.01em; text-transform: none; white-space: nowrap; }
+.rv-opt.on .rv-parte-tot b { color: #E8003D; }
+.rv-notas { margin-top: 18px; }
+
+.rv-intro { font-size: 12px; color: #4b5563; line-height: 1.65; margin-bottom: 22px; }
+.rv-intro b { color: #111827; font-weight: 700; }
+
+.rv-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 14px; }
+.rv-opts.um { grid-template-columns: 1fr; }
+.rv-opt { border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; position: relative; }
+.rv-opt.on { border: 1.5px solid #E8003D; }
+.rv-opt-h { padding: 16px 20px 14px; background: #f8f9fa; border-bottom: 1px solid #eeeeee; }
+.rv-opt.on .rv-opt-h { background: rgba(232,0,61,0.055); border-bottom-color: rgba(232,0,61,0.14); }
+.rv-opt-t { font-size: 15px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #111827; }
+.rv-opt.on .rv-opt-t { color: #E8003D; }
+.rv-opt-s { font-size: 10.5px; color: #6b7280; font-weight: 500; margin-top: 2px; }
+.rv-opt-tag {
+  position: absolute; top: 17px; right: 18px;
+  font-size: 8.5px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase;
+  color: #fff; background: #E8003D; padding: 5px 11px; border-radius: 4px;
+}
+.rv-opt-b { padding: 4px 20px 0; }
+.rv-it { display: flex; justify-content: space-between; gap: 12px; padding: 11px 0; border-bottom: 1px solid #f2f2f2; font-size: 12.5px; }
+.rv-it:last-child { border-bottom: none; }
+.rv-it span:first-child { color: #374151; font-weight: 500; }
+.rv-it span:last-child { color: #111827; font-weight: 700; white-space: nowrap; }
+.rv-it span.inc { color: #059669; }
+.rv-opt-f { margin: 6px 20px 18px; padding-top: 14px; border-top: 1.5px solid #111827; }
+.rv-opt.on .rv-opt-f { border-top-color: #E8003D; }
+.rv-tot-l { font-size: 8.5px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: #9ca3af; margin-bottom: 2px; }
+.rv-tot-v { font-size: 25px; font-weight: 800; color: #111827; letter-spacing: -0.01em; line-height: 1.15; }
+.rv-tot-v small { font-size: 12px; font-weight: 600; color: #6b7280; letter-spacing: 0; }
+.rv-opt.on .rv-tot-v { color: #E8003D; }
+.rv-tot-d { font-size: 10.5px; color: #6b7280; font-weight: 500; margin-top: 3px; }
+.rv-eco {
+  display: inline-block; margin-top: 9px; font-size: 9.5px; font-weight: 800; letter-spacing: 0.03em;
+  color: #fff; background: #059669; border-radius: 4px; padding: 4px 9px;
+}
+
+.rv-steps { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 18px; }
+.rv-step { background: #f8f9fa; border-radius: 8px; padding: 12px 14px; }
+.rv-step-n {
+  width: 22px; height: 22px; border-radius: 50%; background: #E8003D; color: #fff;
+  font-size: 10px; font-weight: 800; display: flex; align-items: center; justify-content: center; margin-bottom: 7px;
+}
+.rv-step-t { font-size: 11px; font-weight: 700; color: #111827; }
+.rv-step-d { font-size: 9.5px; color: #6b7280; line-height: 1.45; margin-top: 2px; }
+
+/* ══════════════════════════════════════════════════════════
    TERMO DE ADESÃO IA (folha A4 — 794px, espelho do modelo Word)
    ══════════════════════════════════════════════════════════ */
 .chk-line {
@@ -739,6 +836,7 @@ footer {
   .addon { flex-wrap: wrap; }
   .addon-val, .addon-tipo { width: 100%; }
   .tab { font-size: 10.5px; letter-spacing: 0.05em; padding: 12px 6px; gap: 6px; }
+  .subtab { font-size: 11.5px; padding: 10px 8px 11px; flex: 1; }
   .preview-wrap { padding: 12px; }
 }
 
@@ -757,19 +855,23 @@ footer {
 
 <main>
   <nav class="tabs">
-    <button class="tab active" id="tabTermo" onclick="trocarAba('termo')">
+    <button class="tab active" id="tabGrupoTermos" onclick="trocarGrupo('termos')">
       <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-      Termo de Renovação
+      Termos
     </button>
-    <button class="tab" id="tabProposta" onclick="trocarAba('proposta')">
+    <button class="tab" id="tabGrupoPropostas" onclick="trocarGrupo('propostas')">
       <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
-      Proposta Comercial
-    </button>
-    <button class="tab" id="tabTermoIa" onclick="trocarAba('termoIa')">
-      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
-      Termo de Adesão IA
+      Propostas
     </button>
   </nav>
+  <div class="subtabs" id="subTermos">
+    <button class="subtab active" id="tabTermo" onclick="trocarAba('termo')">Termo de Renovação</button>
+    <button class="subtab" id="tabTermoIa" onclick="trocarAba('termoIa')">Termo de Adesão IA</button>
+  </div>
+  <div class="subtabs hidden" id="subPropostas">
+    <button class="subtab" id="tabProposta" onclick="trocarAba('proposta')">Proposta Comercial</button>
+    <button class="subtab" id="tabPropostaRenov" onclick="trocarAba('propostaRenov')">Proposta de Renovação</button>
+  </div>
 
   <section id="viewTermo">
   <div class="page-header">
@@ -1292,6 +1394,144 @@ footer {
         Baixar Imagem
       </button>
       <button class="btn btn-pdf" id="btnPropPdf" onclick="gerarProposta('pdf')">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+        Gerar PDF
+      </button>
+    </div>
+  </section>
+
+  <!-- ══════════ PROPOSTA DE RENOVAÇÃO ══════════ -->
+  <section id="viewPropostaRenov" class="hidden">
+    <div class="page-header">
+      <div class="page-eyebrow">Revenda Mais</div>
+      <h1 class="page-title">Proposta de<br/><span>Renovação</span></h1>
+    </div>
+
+    <!-- Card 1 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-num">01</div>
+        <span class="card-title">Dados do Cliente</span>
+      </div>
+      <div class="card-body">
+        <div class="field span2">
+          <label>Nome do Cliente / Loja</label>
+          <input id="rv_cliente" type="text" placeholder="Nome da revenda"/>
+        </div>
+        <div class="field">
+          <label>Telefone</label>
+          <input id="rv_fone" type="text" placeholder="(00) 00000-0000"/>
+        </div>
+        <div class="field">
+          <label>Nº da Proposta</label>
+          <input id="rv_numero" type="text" placeholder="0000"/>
+        </div>
+        <div class="field">
+          <label>Consultor</label>
+          <input id="rv_consultor" type="text" placeholder="Seu nome"/>
+        </div>
+        <div class="field">
+          <label>Contato do Consultor</label>
+          <input id="rv_consultorContato" type="text" placeholder="Telefone / e-mail"/>
+        </div>
+        <div class="field">
+          <label>Data da Proposta</label>
+          <input id="rv_data" type="date"/>
+        </div>
+        <div class="field">
+          <label>Validade (dias)</label>
+          <input id="rv_validade" type="number" min="1" value="7"/>
+        </div>
+        <div class="field span2">
+          <label>Nova vigência a partir de (opcional)</label>
+          <input id="rv_vigencia" type="date"/>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 2 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-num">02</div>
+        <span class="card-title">Produtos e Valores</span>
+      </div>
+      <div class="card-body" id="rv_itensCard">
+        <div class="hint">Informe quanto o cliente paga por produto em cada modalidade. No anual, use o valor de cada parcela (por mês). CRM e IA são cobrados à parte, em boleto mensal — não entram no total do plano.</div>
+        <div id="rv_itens" style="grid-column:span 2;display:flex;flex-direction:column;gap:10px"></div>
+        <div class="chk-actions" id="rv_atalhos"></div>
+        <button type="button" class="btn-ghost" onclick="rvAddItem({ nome: '' }, true)">+ Adicionar outro produto</button>
+      </div>
+    </div>
+
+    <!-- Card 3 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-num">03</div>
+        <span class="card-title">Modalidades e Pagamento</span>
+      </div>
+      <div class="card-body">
+        <div class="chk-grid">
+          <label class="chk"><input type="checkbox" id="rv_onMensal" checked/><span>Mostrar Renovação Mensal</span></label>
+          <label class="chk"><input type="checkbox" id="rv_onAnual" checked/><span>Mostrar Renovação Anual</span></label>
+        </div>
+        <div class="field" id="rv_formaMensalWrap">
+          <label>Pagamento — Mensal</label>
+          <select id="rv_formaMensal">
+            <option value="Cartão de crédito">Cartão de crédito</option>
+            <option value="Boleto / PIX">Boleto / PIX</option>
+            <option value="Cartão de crédito ou Boleto / PIX" selected>Cartão ou Boleto / PIX</option>
+          </select>
+        </div>
+        <div class="field" id="rv_tipoAnualWrap">
+          <label>Pagamento — Anual</label>
+          <select id="rv_tipoAnual">
+            <option value="parcelado" selected>12x no cartão de crédito</option>
+            <option value="vista">À vista</option>
+          </select>
+        </div>
+        <div class="field span2">
+          <label>Condições Especiais</label>
+          <textarea id="rv_condicoes" placeholder="Ex: Valores congelados por 12 meses.&#10;Use Enter para novas linhas. Deixe vazio para ocultar do documento."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 4 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-num">04</div>
+        <span class="card-title">Total</span>
+      </div>
+      <div class="card-body">
+        <div class="total-box">
+          <div>
+            <div class="tb-l" id="rv_totalLabel">Mensal</div>
+            <div class="tb-v" id="rv_totalView">R$ 0,00</div>
+          </div>
+          <div class="tb-sub" id="rv_totalSub"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 5 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-num">05</div>
+        <span class="card-title">Pré-visualização</span>
+      </div>
+      <div class="preview-wrap">
+        <div class="preview-stage" id="rv_stage">
+          <div class="paper" id="rv_paper"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-docx" id="btnRvPng" onclick="gerarPropostaRenov('png')">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        Baixar Imagem
+      </button>
+      <button class="btn btn-pdf" id="btnRvPdf" onclick="gerarPropostaRenov('pdf')">
         <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
         Gerar PDF
       </button>
@@ -1888,19 +2128,42 @@ async function gerarDocumento(tipo) {
 /* ══════════════════════════════════════════════════════════════════
    ABAS
    ══════════════════════════════════════════════════════════════════ */
+// Cada documento pertence a um grupo (aba de cima) e tem sua sub-aba.
+// Para incluir um novo documento, basta acrescentar aqui e criar a <section>/<button> correspondentes.
+const ABAS = {
+  termo:         { view: 'viewTermo',         tab: 'tabTermo',         grupo: 'termos' },
+  termoIa:       { view: 'viewTermoIa',       tab: 'tabTermoIa',       grupo: 'termos' },
+  proposta:      { view: 'viewProposta',      tab: 'tabProposta',      grupo: 'propostas' },
+  propostaRenov: { view: 'viewPropostaRenov', tab: 'tabPropostaRenov', grupo: 'propostas' }
+};
+const GRUPOS = {
+  termos:    { tab: 'tabGrupoTermos',    sub: 'subTermos',    titulo: 'Gerador de Termos' },
+  propostas: { tab: 'tabGrupoPropostas', sub: 'subPropostas', titulo: 'Gerador de Propostas' }
+};
+// Ao voltar para um grupo, reabre o último documento usado nele
+const ultimaAba = { termos: 'termo', propostas: 'proposta' };
+
+function trocarGrupo(grupo) {
+  trocarAba(ultimaAba[grupo]);
+}
+
 function trocarAba(aba) {
-  const ehProposta = aba === 'proposta';
-  document.getElementById('viewTermo').classList.toggle('hidden', aba !== 'termo');
-  document.getElementById('viewProposta').classList.toggle('hidden', !ehProposta);
-  document.getElementById('viewTermoIa').classList.toggle('hidden', aba !== 'termoIa');
-  document.getElementById('tabTermo').classList.toggle('active', aba === 'termo');
-  document.getElementById('tabProposta').classList.toggle('active', ehProposta);
-  document.getElementById('tabTermoIa').classList.toggle('active', aba === 'termoIa');
-  document.getElementById('headerSub').textContent = ehProposta ? 'Gerador de Propostas' : 'Gerador de Termos';
-  document.title = (ehProposta ? 'Gerador de Propostas' : 'Gerador de Termos') + ' Revenda Mais';
+  const grupo = ABAS[aba].grupo;
+  ultimaAba[grupo] = aba;
+  Object.keys(ABAS).forEach(function (k) {
+    document.getElementById(ABAS[k].view).classList.toggle('hidden', k !== aba);
+    document.getElementById(ABAS[k].tab).classList.toggle('active', k === aba);
+  });
+  Object.keys(GRUPOS).forEach(function (g) {
+    document.getElementById(GRUPOS[g].tab).classList.toggle('active', g === grupo);
+    document.getElementById(GRUPOS[g].sub).classList.toggle('hidden', g !== grupo);
+  });
+  document.getElementById('headerSub').textContent = GRUPOS[grupo].titulo;
+  document.title = GRUPOS[grupo].titulo + ' Revenda Mais';
   window.scrollTo({ top: 0, behavior: 'smooth' });
-  if (ehProposta) setTimeout(pAjustarEscala, 30);
+  if (aba === 'proposta') setTimeout(pAjustarEscala, 30);
   if (aba === 'termoIa') setTimeout(taAjustarEscala, 30);
+  if (aba === 'propostaRenov') setTimeout(rvAjustarEscala, 30);
 }
 
 /* ══════════════════════════════════════════════════════════════════
@@ -2056,13 +2319,24 @@ function setPriceStack(idFinal, idDe, tabela, final) {
 function pParse(txt) {
   return parseFloat(String(txt || '').replace(/\./g, '').replace(',', '.')) || 0;
 }
-function pMask(el) {
+// Máscara de moeda (0,00) que chama aoMudar a cada digitação
+function mascaraMoeda(el, aoMudar) {
   el.addEventListener('input', function (e) {
     let v = e.target.value.replace(/\D/g, '');
-    if (!v) { e.target.value = ''; pRender(); return; }
+    if (!v) { e.target.value = ''; aoMudar(); return; }
     e.target.value = (parseInt(v) / 100).toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-    pRender();
+    aoMudar();
   });
+}
+function pMask(el) {
+  mascaraMoeda(el, pRender);
+}
+function formatFone(txt) {
+  let v = txt.replace(/\D/g, '').slice(0, 11);
+  if (v.length > 10) v = v.replace(/^(\d{2})(\d{5})(\d{4}).*/, '($1) $2-$3');
+  else if (v.length > 6) v = v.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, '($1) $2-$3');
+  else if (v.length > 2) v = v.replace(/^(\d{2})(\d*)/, '($1) $2');
+  return v;
 }
 function esc(s) {
   return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -2691,8 +2965,18 @@ function pValidar(d) {
 async function gerarProposta(tipo) {
   const d = tipoProposta === 'avulso' ? avColetar() : pColetar();
   if (!pValidar(d)) return;
+  await exportarPapel(
+    tipoProposta === 'avulso' ? avMontarPapel(d) : pMontarPapel(d),
+    'Proposta_' + nomeArquivo(d.cliente), tipo, tipo === 'pdf' ? 'btnPropPdf' : 'btnPropPng');
+}
 
-  const btn = document.getElementById(tipo === 'pdf' ? 'btnPropPdf' : 'btnPropPng');
+function nomeArquivo(cliente) {
+  return cliente.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '').slice(0, 30) || 'Cliente';
+}
+
+// Renderiza uma folha .paper fora da tela e baixa como PNG ou PDF (sempre 1 página A4)
+async function exportarPapel(html, base, tipo, btnId) {
+  const btn = document.getElementById(btnId);
   const htmlOriginal = btn.innerHTML;
   btn.disabled = true;
   btn.innerHTML = '<div class="spinner"></div> Gerando...';
@@ -2700,10 +2984,8 @@ async function gerarProposta(tipo) {
   const div = document.createElement('div');
   div.className = 'paper';
   div.style.cssText = 'position:fixed;left:-9999px;top:0;width:794px;background:#fff';
-  div.innerHTML = tipoProposta === 'avulso' ? avMontarPapel(d) : pMontarPapel(d);
+  div.innerHTML = html;
   document.body.appendChild(div);
-
-  const base = 'Proposta_' + (d.cliente.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '').slice(0, 30) || 'Cliente');
 
   try {
     const canvas = await html2canvas(div, { scale: 2, useCORS: true, backgroundColor: '#ffffff', width: 794, windowWidth: 794 });
@@ -2746,11 +3028,7 @@ async function gerarProposta(tipo) {
     String(hj.getFullYear()).slice(2) + String(hj.getMonth() + 1).padStart(2, '0') + String(Math.floor(Math.random() * 900) + 100);
 
   document.getElementById('p_fone').addEventListener('input', function (e) {
-    let v = e.target.value.replace(/\D/g, '').slice(0, 11);
-    if (v.length > 10) v = v.replace(/^(\d{2})(\d{5})(\d{4}).*/, '($1) $2-$3');
-    else if (v.length > 6) v = v.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, '($1) $2-$3');
-    else if (v.length > 2) v = v.replace(/^(\d{2})(\d*)/, '($1) $2');
-    e.target.value = v;
+    e.target.value = formatFone(e.target.value);
     pRender();
   });
 
@@ -2765,6 +3043,319 @@ async function gerarProposta(tipo) {
   pAplicarPlano();
   onAvCnpjQtdChange();   // preenche o valor de tabela do CNPJ adicional e recalcula tudo
   window.addEventListener('resize', pAjustarEscala);
+})();
+
+/* ══════════════════════════════════════════════════════════════════
+   PROPOSTA DE RENOVAÇÃO — o cliente compara mensal x anual com os valores dele
+   ══════════════════════════════════════════════════════════════════ */
+// CRM e IA são cobrados à parte, em boleto mensal — não entram no total do plano.
+// O texto da observação é o mesmo da Proposta Comercial.
+const RV_A_PARTE = {
+  crm: ADICIONAIS.find(function (a) { return a.id === 'crm'; }).obs,
+  ia:  ADICIONAIS.find(function (a) { return a.id === 'ia'; }).obs
+};
+// Atalhos de produto — valor de tabela preenchido ao incluir (continua editável)
+const RV_ATALHOS = [
+  { nome: 'Renave',                mensal: AV_TABELA.renave,   anual: AV_TABELA.renave },
+  { nome: 'Nota Fiscal' },
+  { nome: 'CNPJ Adicional',        mensal: AV_TABELA.cnpjUnit, anual: AV_TABELA.cnpjUnit },
+  { nome: 'CRM',                   mensal: AV_TABELA.crmBase,  parte: 'crm' },
+  { nome: 'IA',                    mensal: AV_TABELA.iaMensal, parte: 'ia' },
+  { nome: 'Assinatura Eletrônica' },
+  { nome: 'Vistoria' },
+  { nome: 'Integrações' }
+];
+let rvSeq = 0;
+
+function rvOpcoesPlano() {
+  return Object.keys(PLANOS).map(function (k) {
+    const nome = PLANOS[k].nome || 'Plano ' + k;
+    return '<option value="' + nome + '"' + (k === '1.0' ? ' selected' : '') + '>' + nome + '</option>';
+  }).join('') + '<option value="">Outro (digitar)</option>';
+}
+
+// Linha de produto: a primeira é sempre o plano (select), as demais têm nome livre e podem ser removidas.
+// Itens à parte (CRM / IA) têm um único valor de boleto, igual nas duas modalidades.
+function rvAddItem(it, foco) {
+  const id = 'rvi' + (++rvSeq);
+  const nome = it.plano
+    ? '<select class="rv-nome-sel" onchange="rvOnPlano(this)">' + rvOpcoesPlano() + '</select>' +
+      '<input class="rv-nome hidden" type="text" placeholder="Nome do plano"/>'
+    : '<input class="rv-nome" type="text" placeholder="Nome do produto"/>';
+  const valores = it.parte
+    ? '<div class="addon-val rv-col-parte"><small>Boleto /mês</small><input class="money rv-parte-val" id="' + id + '_m" type="text" placeholder="0,00"/></div>'
+    : '<div class="addon-val rv-col-mensal"><small>Mensal</small><input class="money rv-mensal" id="' + id + '_m" type="text" placeholder="0,00"/></div>' +
+      '<div class="addon-val rv-col-anual"><small>Anual /mês</small><input class="money rv-anual" id="' + id + '_a" type="text" placeholder="0,00"/></div>';
+  document.getElementById('rv_itens').insertAdjacentHTML('beforeend',
+    '<div class="addon on rv-item" id="' + id + '"' + (it.parte ? ' data-parte="' + it.parte + '"' : '') + '>' +
+      '<div class="addon-main"><small>' + (it.plano ? 'Plano' : 'Produto') +
+        (it.parte ? '<span class="addon-flag">à parte · boleto</span>' : '') + '</small>' + nome + '</div>' +
+      valores +
+      (it.plano
+        ? '<span class="rv-del-vazio"></span>'
+        : '<button type="button" class="addon-del" onclick="rvRemoveItem(\'' + id + '\')" title="Remover">&times;</button>') +
+    '</div>');
+
+  const row = document.getElementById(id);
+  if (!it.plano) row.querySelector('.rv-nome').value = it.nome || '';
+  pSetMoney(id + '_m', it.mensal || 0);
+  pSetMoney(id + '_a', it.anual || 0);
+  row.querySelectorAll('input.money').forEach(function (el) { mascaraMoeda(el, rvRender); });
+  row.querySelectorAll('input:not(.money), select').forEach(function (el) {
+    el.addEventListener('input', rvRender);
+    el.addEventListener('change', rvRender);
+  });
+  if (foco) (it.nome ? document.getElementById(id + '_m') : row.querySelector('.rv-nome')).focus();
+  rvRender();
+}
+function rvRemoveItem(id) {
+  document.getElementById(id).remove();
+  rvRender();
+}
+function rvOnPlano(sel) {
+  const txt = sel.parentNode.querySelector('.rv-nome');
+  txt.classList.toggle('hidden', sel.value !== '');
+  if (sel.value === '') txt.focus();
+}
+function rvNomeItem(row) {
+  const sel = row.querySelector('.rv-nome-sel');
+  return sel && sel.value ? sel.value : row.querySelector('.rv-nome').value.trim();
+}
+
+/* ── Coleta ──────────────────────────────────────────────────────── */
+function rvColetar() {
+  const linhas = Array.prototype.slice.call(document.querySelectorAll('#rv_itens .rv-item'));
+  const itens = linhas.filter(function (row) { return !row.dataset.parte; }).map(function (row) {
+    return {
+      nome: rvNomeItem(row),
+      mensal: pParse(row.querySelector('.rv-mensal').value),
+      anual: pParse(row.querySelector('.rv-anual').value)
+    };
+  }).filter(function (i) { return i.nome || i.mensal || i.anual; });
+  const aParte = linhas.filter(function (row) { return row.dataset.parte; }).map(function (row) {
+    return { nome: rvNomeItem(row), valor: pParse(row.querySelector('.rv-parte-val').value), obs: RV_A_PARTE[row.dataset.parte] };
+  }).filter(function (a) { return a.nome || a.valor; });
+  const somaParte = aParte.reduce(function (s, a) { return s + a.valor; }, 0);
+
+  const totalMensal = itens.reduce(function (s, i) { return s + i.mensal; }, 0);
+  const anualMes = itens.reduce(function (s, i) { return s + i.anual; }, 0);
+  const tipoAnual = document.getElementById('rv_tipoAnual').value;
+  const onMensal = document.getElementById('rv_onMensal').checked;
+  const onAnual = document.getElementById('rv_onAnual').checked;
+
+  const dataIso = document.getElementById('rv_data').value;
+  const dt = dataIso ? new Date(dataIso + 'T12:00:00') : new Date();
+  const vigIso = document.getElementById('rv_vigencia').value;
+
+  return {
+    cliente: document.getElementById('rv_cliente').value.trim(),
+    fone: document.getElementById('rv_fone').value.trim(),
+    numero: document.getElementById('rv_numero').value.trim(),
+    consultor: document.getElementById('rv_consultor').value.trim(),
+    consultorContato: document.getElementById('rv_consultorContato').value.trim(),
+    data: dt.toLocaleDateString('pt-BR'),
+    validade: document.getElementById('rv_validade').value || '7',
+    vigencia: vigIso ? new Date(vigIso + 'T12:00:00').toLocaleDateString('pt-BR') : '',
+    itens: itens,
+    aParte: aParte, somaParte: somaParte,
+    onMensal: onMensal, onAnual: onAnual,
+    totalMensal: totalMensal,
+    anualMes: anualMes,
+    tipoAnual: tipoAnual,
+    totalAnual: tipoAnual === 'vista' ? anualMes * 12 : anualMes,
+    // Só faz sentido comparar quando as duas modalidades aparecem e têm valor
+    economia: onMensal && onAnual && totalMensal > 0 && anualMes > 0 ? Math.max(0, (totalMensal - anualMes) * 12) : 0,
+    formaMensal: document.getElementById('rv_formaMensal').value,
+    condicoes: document.getElementById('rv_condicoes').value.trim()
+  };
+}
+
+/* ── Montagem do documento ───────────────────────────────────────── */
+function rvMontarPapel(d) {
+  const ambos = d.onMensal && d.onAnual;
+  const vista = d.tipoAnual === 'vista';
+
+  function linhas(campo) {
+    return d.itens.map(function (i) {
+      return '<div class="rv-it"><span>' + (esc(i.nome) || 'Produto') + '</span>' +
+        (i[campo] > 0 ? '<span>' + pBRL(i[campo]) + '</span>' : '<span class="inc">Incluso</span>') + '</div>';
+    }).join('');
+  }
+  // CRM / IA embaixo do total, com a mensalidade completa do cliente naquela modalidade.
+  // porMes = null no anual à vista (não há parcela mensal para somar — mostra só o boleto)
+  function parte(porMes) {
+    if (!d.aParte.length) return '';
+    return '<div class="rv-parte"><div class="rv-tot-l">À parte · boleto mensal</div>' +
+      d.aParte.map(function (a) {
+        return '<div class="rv-parte-it"><span>+ ' + (esc(a.nome) || 'Produto') + '</span><span>' + pBRL(a.valor) + '</span></div>';
+      }).join('') +
+      (porMes === null
+        ? '<div class="rv-parte-tot"><span>Boleto/mês</span><b>' + pBRL(d.somaParte) + '</b></div>'
+        : '<div class="rv-parte-tot"><span>Total/mês</span><b>' + pBRL(porMes + d.somaParte) + '</b></div>') +
+    '</div>';
+  }
+
+  const mensal = !d.onMensal ? '' :
+    '<div class="rv-opt">' +
+      '<div class="rv-opt-h"><div class="rv-opt-t">Renovação Mensal</div><div class="rv-opt-s">Pagamento mês a mês</div></div>' +
+      '<div class="rv-opt-b">' + linhas('mensal') + '</div>' +
+      '<div class="rv-opt-f"><div class="rv-tot-l">Total</div>' +
+        '<div class="rv-tot-v">' + pBRL(d.totalMensal) + ' <small>/mês</small></div>' +
+        '<div class="rv-tot-d">' + esc(d.formaMensal) + '</div>' +
+        parte(d.totalMensal) +
+      '</div>' +
+    '</div>';
+
+  const anual = !d.onAnual ? '' :
+    '<div class="rv-opt' + (ambos ? ' on' : '') + '">' +
+      (d.economia > 0 ? '<div class="rv-opt-tag">Mais econômico</div>' : '') +
+      '<div class="rv-opt-h"><div class="rv-opt-t">Renovação Anual</div><div class="rv-opt-s">Contrato de 12 meses · valores por mês</div></div>' +
+      '<div class="rv-opt-b">' + linhas('anual') + '</div>' +
+      '<div class="rv-opt-f"><div class="rv-tot-l">Total</div>' +
+        (vista
+          ? '<div class="rv-tot-v">' + pBRL(d.totalAnual) + ' <small>à vista</small></div>' +
+            '<div class="rv-tot-d">Equivale a ' + pBRL(d.anualMes) + ' por mês</div>'
+          : '<div class="rv-tot-v"><small>12x de</small> ' + pBRL(d.anualMes) + '</div>' +
+            '<div class="rv-tot-d">no cartão de crédito</div>') +
+        parte(vista ? null : d.anualMes) +
+        (d.economia > 0 ? '<div class="rv-eco">Economia de ' + pBRL(d.economia) + ' no ano</div>' : '') +
+      '</div>' +
+    '</div>';
+
+  const condicoes = d.condicoes
+    ? '<div class="pp-cond"><div class="l">Condições Especiais</div>' +
+      d.condicoes.split('\n').map(function (l) { return '<p>' + esc(l) + '</p>'; }).join('') + '</div>'
+    : '';
+
+  const contato = [esc(d.consultor), esc(d.consultorContato)].filter(Boolean).join(' · ');
+  const passos = [
+    ambos ? ['Escolha a modalidade', 'Mensal ou anual — a que fizer mais sentido para a sua loja.']
+          : ['Confira os valores', 'Veja os produtos incluídos e o total da renovação.'],
+    ['Confirme com o consultor', 'Responda esta proposta' + (contato ? ' para ' + contato : '') + '.'],
+    ['Assine o termo', 'Enviamos o Termo de Renovação para a sua assinatura.']
+  ];
+
+  return '' +
+  '<div class="pp-top">' +
+    '<img src="data:image/png;base64,' + LOGO_LIGHT_B64 + '"/>' +
+    '<div style="text-align:right">' +
+      '<div class="pp-kicker">Revenda Mais</div>' +
+      '<div class="pp-doc">Proposta de Renovação</div>' +
+    '</div>' +
+  '</div>' +
+  '<div class="pp-accent"></div>' +
+  '<div class="pp-body">' +
+    '<div class="pp-meta">' +
+      '<div><div class="l">Cliente</div><div class="v">' + (esc(d.cliente) || '—') + '</div></div>' +
+      '<div><div class="l">Telefone</div><div class="v">' + (esc(d.fone) || '—') + '</div></div>' +
+      '<div><div class="l">Consultor</div><div class="v">' + (esc(d.consultor) || '—') +
+        (d.consultorContato ? '<br/><span style="font-weight:400;font-size:10px;color:#6b7280">' + esc(d.consultorContato) + '</span>' : '') + '</div></div>' +
+      '<div><div class="l">Proposta nº</div><div class="v">' + (esc(d.numero) || '—') +
+        '<br/><span style="font-weight:400;font-size:10px;color:#6b7280">' + d.data + '</span></div></div>' +
+    '</div>' +
+
+    '<div class="rv-intro">' + (d.cliente ? 'Olá, <b>' + esc(d.cliente) + '</b>! ' : 'Olá! ') +
+      'Agradecemos por fazer parte da Revenda Mais. Preparamos as condições para a renovação do seu contrato' +
+      (d.vigencia ? ', com nova vigência a partir de <b>' + d.vigencia + '</b>' : '') +
+      (ambos ? ' — compare as opções abaixo e escolha a que fica melhor para você.' : '.') +
+    '</div>' +
+
+    '<div class="pp-sec">' + (ambos ? 'Opções de Renovação' : 'Sua Renovação') + '</div>' +
+    '<div class="rv-opts' + (ambos ? '' : ' um') + '">' + mensal + anual + '</div>' +
+    (d.aParte.length
+      ? '<div class="rv-notas">' + d.aParte.filter(function (a) { return a.obs; }).map(function (a) {
+          return '<div class="pp-note"><b>' + (esc(a.nome) || 'Produto') + ':</b> ' + esc(a.obs) + '</div>';
+        }).join('') + '</div>'
+      : '') +
+    condicoes +
+
+    '<div class="pp-sec">Como Renovar</div>' +
+    '<div class="rv-steps">' + passos.map(function (p, i) {
+      return '<div class="rv-step"><div class="rv-step-n">' + (i + 1) + '</div>' +
+        '<div class="rv-step-t">' + p[0] + '</div><div class="rv-step-d">' + p[1] + '</div></div>';
+    }).join('') + '</div>' +
+
+    '<div class="pp-fine">' +
+      '<b>Condições gerais:</b> proposta válida por ' + esc(d.validade) + ' dias a contar de ' + d.data + '. ' +
+      'Não serão considerados acordos verbais, apenas os formalizados por escrito. ' +
+      'A renovação é formalizada mediante assinatura do Termo de Renovação.' +
+    '</div>' +
+  '</div>' +
+  '<div class="pp-foot"><span>Revenda Mais  ·  revendamais.com.br/planos</span><span>Página 1 | 1</span></div>';
+}
+
+/* ── Preview ─────────────────────────────────────────────────────── */
+function rvAjustarEscala() {
+  const stage = document.getElementById('rv_stage');
+  const paper = document.getElementById('rv_paper');
+  if (!stage || !paper || !stage.clientWidth) return;
+  const s = Math.min(1, stage.clientWidth / 794);
+  paper.style.transform = 'scale(' + s + ')';
+  stage.style.height = (paper.offsetHeight * s) + 'px';
+}
+
+function rvRender() {
+  const d = rvColetar();
+  // Esconde no formulário o que não vai para o documento
+  document.getElementById('rv_itensCard').classList.toggle('rv-sem-mensal', !d.onMensal);
+  document.getElementById('rv_itensCard').classList.toggle('rv-sem-anual', !d.onAnual);
+  document.getElementById('rv_formaMensalWrap').classList.toggle('hidden', !d.onMensal);
+  document.getElementById('rv_tipoAnualWrap').classList.toggle('hidden', !d.onAnual);
+
+  const anualTxt = d.tipoAnual === 'vista' ? pBRL(d.totalAnual) + ' à vista' : '12x de ' + pBRL(d.anualMes);
+  document.getElementById('rv_totalLabel').textContent = d.onMensal ? 'Mensal' : 'Anual';
+  document.getElementById('rv_totalView').textContent = d.onMensal ? pBRL(d.totalMensal) + ' /mês' : anualTxt;
+  document.getElementById('rv_totalSub').innerHTML = [
+    d.onMensal && d.onAnual ? 'Anual: ' + anualTxt : '',
+    d.economia > 0 ? 'Economia de ' + pBRL(d.economia) + ' no ano' : '',
+    d.somaParte ? '+ ' + pBRL(d.somaParte) + '/mês à parte (' + d.aParte.map(function (a) { return a.nome; }).join(' + ') + ')' : ''
+  ].filter(Boolean).join('<br/>');
+
+  document.getElementById('rv_paper').innerHTML = rvMontarPapel(d);
+  rvAjustarEscala();
+}
+
+/* ── Validação e geração ─────────────────────────────────────────── */
+function rvValidar(d) {
+  if (!d.cliente) { showToast('Preencha: Nome do Cliente', 'error'); document.getElementById('rv_cliente').focus(); return false; }
+  if (!d.itens.length) { showToast('Inclua ao menos um produto', 'error'); return false; }
+  if (!d.onMensal && !d.onAnual) { showToast('Escolha ao menos uma modalidade', 'error'); return false; }
+  if (d.onMensal && !d.totalMensal) { showToast('Preencha os valores da renovação mensal', 'error'); return false; }
+  if (d.onAnual && !d.anualMes) { showToast('Preencha os valores da renovação anual', 'error'); return false; }
+  return true;
+}
+
+async function gerarPropostaRenov(tipo) {
+  const d = rvColetar();
+  if (!rvValidar(d)) return;
+  await exportarPapel(rvMontarPapel(d), 'Proposta_Renovacao_' + nomeArquivo(d.cliente), tipo,
+    tipo === 'pdf' ? 'btnRvPdf' : 'btnRvPng');
+}
+
+/* ── Inicialização ───────────────────────────────────────────────── */
+(function rvInit() {
+  const hj = new Date();
+  document.getElementById('rv_data').value =
+    hj.getFullYear() + '-' + String(hj.getMonth() + 1).padStart(2, '0') + '-' + String(hj.getDate()).padStart(2, '0');
+  document.getElementById('rv_consultor').value = 'Jabez';
+  document.getElementById('rv_consultorContato').value = '(41) 9107-5457';
+  document.getElementById('rv_numero').value =
+    String(hj.getFullYear()).slice(2) + String(hj.getMonth() + 1).padStart(2, '0') + String(Math.floor(Math.random() * 900) + 100);
+
+  document.getElementById('rv_fone').addEventListener('input', function (e) {
+    e.target.value = formatFone(e.target.value);
+  });
+  // As linhas de produto ainda não existem aqui — cada uma liga os próprios eventos em rvAddItem
+  document.querySelectorAll('#viewPropostaRenov input, #viewPropostaRenov select, #viewPropostaRenov textarea').forEach(function (el) {
+    el.addEventListener('input', rvRender);
+    el.addEventListener('change', rvRender);
+  });
+
+  document.getElementById('rv_atalhos').innerHTML = RV_ATALHOS.map(function (a, i) {
+    return '<button type="button" onclick="rvAddItem(RV_ATALHOS[' + i + '], true)">+ ' + esc(a.nome) + '</button>';
+  }).join('');
+  rvAddItem({ plano: true }, false);
+  window.addEventListener('resize', rvAjustarEscala);
 })();
 
 /* ══════════════════════════════════════════════════════════════════
