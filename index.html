@@ -365,39 +365,59 @@ footer {
 }
 
 /* ══════════════════════════════════════════════════════════
-   ABAS — dois grupos (Termos / Propostas), cada um com seus documentos
+   ABAS — Renovação (fluxo em 3 etapas) + documentos avulsos
    ══════════════════════════════════════════════════════════ */
 .tabs {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 6px;
   background: #e6e8ec;
   border: 1px solid var(--border);
   border-radius: 10px;
   padding: 6px;
-  margin-bottom: 14px;
-}
-.subtabs {
-  display: flex;
-  gap: 4px;
-  border-bottom: 1px solid var(--border);
   margin-bottom: 36px;
 }
-.subtab {
-  font-family: 'Poppins', sans-serif;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-muted);
-  background: transparent;
-  border: none;
-  border-bottom: 2.5px solid transparent;
-  margin-bottom: -1px;
-  padding: 10px 14px 11px;
-  cursor: pointer;
-  transition: color 0.15s, border-color 0.15s;
+.tabs.com-etapas { margin-bottom: 14px; }
+
+/* ── Etapas da renovação ── */
+.steps { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 36px; }
+.step {
+  font-family: 'Poppins', sans-serif; text-align: left;
+  display: flex; align-items: flex-start; gap: 12px;
+  background: var(--bg-card); border: 1.5px solid var(--border); border-radius: 10px;
+  padding: 14px 16px; cursor: pointer; transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+  position: relative;
 }
-.subtab:hover { color: var(--text-heading); }
-.subtab.active { color: var(--red); border-bottom-color: var(--red); font-weight: 700; }
+.step:hover { border-color: #c9ccd3; box-shadow: var(--shadow-card); }
+.step.active { border-color: var(--red); background: #fff7f9; box-shadow: var(--shadow-card); }
+.step-n {
+  width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+  background: #eceef1; color: var(--text-muted);
+  font-size: 13px; font-weight: 800; display: flex; align-items: center; justify-content: center;
+}
+.step.active .step-n { background: var(--red); color: #fff; }
+.step-txt { display: flex; flex-direction: column; min-width: 0; }
+.step-t { font-size: 13px; font-weight: 700; color: var(--text-heading); line-height: 1.3; }
+.step.active .step-t { color: var(--red); }
+.step-d { font-size: 11px; color: var(--text-muted); font-weight: 500; line-height: 1.4; margin-top: 2px; }
+
+/* ── Chamada para a próxima etapa ── */
+.next-step {
+  margin-top: 20px; display: flex; align-items: center; gap: 16px;
+  background: var(--bg-card); border: 1px solid var(--border); border-left: 4px solid var(--red);
+  border-radius: 8px; padding: 16px 20px;
+}
+.next-step-txt { flex: 1; min-width: 0; }
+.next-step-l { font-size: 9.5px; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase; color: var(--red); }
+.next-step-t { font-size: 14px; font-weight: 600; color: var(--text-heading); margin-top: 2px; line-height: 1.45; }
+.next-step.fim { border-left-color: var(--success); }
+.next-step.fim .next-step-l { color: var(--success); }
+.next-btn {
+  font-family: 'Poppins', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--red); background: var(--red-light); border: 1.5px solid rgba(232,0,61,0.35); border-radius: 6px;
+  padding: 11px 16px; cursor: pointer; white-space: nowrap; transition: background 0.15s;
+}
+.next-btn:hover { background: rgba(232,0,61,0.14); }
 .tab {
   font-family: 'Poppins', sans-serif;
   font-size: 12px;
@@ -754,7 +774,6 @@ footer {
 .rv-parte-tot b { font-size: 14px; letter-spacing: -0.01em; text-transform: none; white-space: nowrap; }
 .rv-opt.on .rv-parte-tot b { color: #E8003D; }
 .rv-notas { margin-top: 18px; }
-.rv-guarde { font-size: 11.5px; color: var(--text-muted); margin-top: 14px; text-align: center; }
 
 /* ── Termo de Renovação: subir a proposta aceita ── */
 .import-box {
@@ -782,6 +801,38 @@ footer {
 .import-msg { font-size: 12.5px; line-height: 1.55; color: var(--text-label); background: var(--red-light); border-left: 3px solid var(--red); border-radius: 0 6px 6px 0; padding: 10px 14px; }
 .import-msg b { color: var(--text-heading); }
 .import-msg.ok { background: rgba(5,150,105,0.08); border-left-color: var(--success); }
+.import-acoes { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.import-btn.sec { color: var(--red); background: var(--red-light); border: 1.5px solid rgba(232,0,61,0.35); }
+.import-btn.sec:hover { background: rgba(232,0,61,0.14); }
+
+/* ── Enviar ao Financeiro ── */
+.fin-arq {
+  grid-column: span 2; display: flex; align-items: center; gap: 14px;
+  border: 1.5px dashed var(--border-input); border-radius: 8px; padding: 14px 16px;
+  transition: background 0.15s, border-color 0.15s;
+}
+.fin-arq.ok { border-style: solid; border-color: var(--success); background: rgba(5,150,105,0.05); }
+.fin-arq.drag { border-color: var(--red); background: var(--red-light); }
+.fin-arq-ic {
+  width: 38px; height: 38px; border-radius: 8px; flex-shrink: 0; background: #eceef1; color: var(--text-muted);
+  display: flex; align-items: center; justify-content: center;
+}
+.fin-arq.ok .fin-arq-ic { background: var(--success); color: #fff; }
+.fin-arq-ic svg { width: 19px; height: 19px; }
+.fin-arq-txt { flex: 1; min-width: 0; }
+.fin-arq-t { font-size: 13.5px; font-weight: 600; color: var(--text-heading); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fin-arq-d { font-size: 11.5px; color: var(--text-muted); margin-top: 1px; }
+.field.destaque label { color: var(--red); }
+.field.destaque input { border-color: rgba(232,0,61,0.45); background: #fffafb; }
+.email-prev {
+  grid-column: span 2; background: #f8f9fa; border: 1px solid var(--border); border-radius: 8px;
+  padding: 16px 18px; font-size: 13px; line-height: 1.7; color: var(--text); white-space: pre-wrap; word-break: break-word;
+}
+.email-prev .ep-cab { font-size: 11.5px; color: var(--text-muted); border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 10px; white-space: normal; }
+.email-prev .ep-cab b { color: var(--text-heading); font-weight: 600; }
+.fin-status { margin-top: 14px; }
+.fin-erro { color: var(--error); font-weight: 600; }
+.btn-row.um { grid-template-columns: 1fr; }
 
 .rv-intro { font-size: 12px; color: #4b5563; line-height: 1.65; margin-bottom: 22px; }
 .rv-intro b { color: #111827; font-weight: 700; }
@@ -864,8 +915,17 @@ footer {
   .addon { flex-wrap: wrap; }
   .addon-val, .addon-tipo { width: 100%; }
   .tab { font-size: 10.5px; letter-spacing: 0.05em; padding: 12px 6px; gap: 6px; }
-  .subtab { font-size: 11.5px; padding: 10px 8px 11px; flex: 1; }
+  .steps { gap: 6px; }
+  .step { flex-direction: column; align-items: center; text-align: center; gap: 6px; padding: 10px 6px; }
+  .step-txt { align-items: center; }
+  .step-t { font-size: 11px; }
+  .step-d { display: none; }
+  .next-step { flex-direction: column; align-items: stretch; }
   .import-top { flex-direction: column; align-items: stretch; }
+  .import-acoes { flex-direction: column; }
+  .fin-arq, .email-prev { grid-column: span 1; }
+  .fin-arq { flex-wrap: wrap; }
+  .fin-arq .import-acoes, .fin-arq > .import-btn { width: 100%; }
   .preview-wrap { padding: 12px; }
 }
 
@@ -877,45 +937,60 @@ footer {
   <div class="logo-area">
     <img class="logo-img" id="headerLogo" alt="Revenda Mais"/>
     <div class="logo-sep"></div>
-    <span class="logo-sub" id="headerSub">Gerador de Termos</span>
+    <span class="logo-sub" id="headerSub">Renovação</span>
   </div>
   <span class="header-pill">Uso Interno</span>
 </header>
 
 <main>
-  <nav class="tabs">
-    <button class="tab active" id="tabGrupoTermos" onclick="trocarGrupo('termos')">
-      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-      Termos
+  <nav class="tabs com-etapas" id="tabsPrincipais">
+    <button class="tab active" id="tabGrupoRenovacao" onclick="trocarGrupo('renovacao')">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+      Renovação
     </button>
-    <button class="tab" id="tabGrupoPropostas" onclick="trocarGrupo('propostas')">
+    <button class="tab" id="tabGrupoProposta" onclick="trocarGrupo('proposta')">
       <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
-      Propostas
+      Proposta Comercial
+    </button>
+    <button class="tab" id="tabGrupoTermoIa" onclick="trocarGrupo('termoIa')">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+      Termo de Adesão IA
     </button>
   </nav>
-  <div class="subtabs" id="subTermos">
-    <button class="subtab active" id="tabTermo" onclick="trocarAba('termo')">Termo de Renovação</button>
-    <button class="subtab" id="tabTermoIa" onclick="trocarAba('termoIa')">Termo de Adesão IA</button>
-  </div>
-  <div class="subtabs hidden" id="subPropostas">
-    <button class="subtab" id="tabProposta" onclick="trocarAba('proposta')">Proposta Comercial</button>
-    <button class="subtab" id="tabPropostaRenov" onclick="trocarAba('propostaRenov')">Proposta de Renovação</button>
-  </div>
 
-  <section id="viewTermo">
+  <!-- Renovação: as três etapas do processo, na ordem em que acontecem -->
+  <nav class="steps" id="renovSteps">
+    <button class="step active" id="passo1" onclick="trocarAba('propostaRenov')">
+      <span class="step-n">1</span>
+      <span class="step-txt"><span class="step-t">Proposta de Renovação</span><span class="step-d">Monte a mensalidade e o anual e envie ao cliente</span></span>
+    </button>
+    <button class="step" id="passo2" onclick="trocarAba('termo')">
+      <span class="step-n">2</span>
+      <span class="step-txt"><span class="step-t">Termo de Renovação</span><span class="step-d">Cliente fechou o anual? Gere o termo para assinar</span></span>
+    </button>
+    <button class="step" id="passo3" onclick="trocarAba('financeiro')">
+      <span class="step-n">3</span>
+      <span class="step-txt"><span class="step-t">Enviar ao Financeiro</span><span class="step-d">Termo assinado? Mande a renovação ao financeiro</span></span>
+    </button>
+  </nav>
+
+  <section id="viewTermo" class="hidden">
   <div class="page-header">
-    <div class="page-eyebrow">Revenda Mais</div>
+    <div class="page-eyebrow">Renovação · Etapa 2 de 3</div>
     <h1 class="page-title">Termo de<br/><span>Renovação</span></h1>
   </div>
 
-  <!-- Subir a Proposta de Renovação aceita — preenche o termo -->
+  <!-- Usar a Proposta de Renovação aceita — preenche o termo -->
   <div class="import-box" id="impBox">
     <div class="import-top">
       <div class="import-txt">
         <div class="import-t">O cliente fechou a Renovação Anual?</div>
-        <div class="import-d">Suba o PDF ou a imagem da Proposta de Renovação gerada aqui no gerador (ou arraste o arquivo para esta caixa) e o termo vem preenchido.</div>
+        <div class="import-d">Use a proposta da etapa 1 ou suba o PDF / imagem da proposta gerada aqui (ou arraste o arquivo para esta caixa) e o termo vem preenchido.</div>
       </div>
-      <button type="button" class="import-btn" onclick="document.getElementById('impArquivo').click()">Subir proposta</button>
+      <div class="import-acoes">
+        <button type="button" class="import-btn sec hidden" id="impUsarEtapa1" onclick="impUsarEtapa1()">Usar proposta da etapa 1</button>
+        <button type="button" class="import-btn" onclick="document.getElementById('impArquivo').click()">Subir proposta</button>
+      </div>
       <input type="file" id="impArquivo" accept=".pdf,.png,.jpg,.jpeg,application/pdf,image/*" class="hidden"/>
     </div>
     <div class="import-res hidden" id="impRes"></div>
@@ -1041,6 +1116,13 @@ footer {
       <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
       Gerar PDF
     </button>
+  </div>
+  <div class="next-step">
+    <div class="next-step-txt">
+      <div class="next-step-l">Próxima etapa</div>
+      <div class="next-step-t">Mande o termo para o cliente assinar. Voltou assinado (foto ou PDF)? Envie a renovação ao financeiro.</div>
+    </div>
+    <button type="button" class="next-btn" onclick="trocarAba('financeiro')">Enviar ao financeiro →</button>
   </div>
   </section>
 
@@ -1443,9 +1525,9 @@ footer {
   </section>
 
   <!-- ══════════ PROPOSTA DE RENOVAÇÃO ══════════ -->
-  <section id="viewPropostaRenov" class="hidden">
+  <section id="viewPropostaRenov">
     <div class="page-header">
-      <div class="page-eyebrow">Revenda Mais</div>
+      <div class="page-eyebrow">Renovação · Etapa 1 de 3</div>
       <h1 class="page-title">Proposta de<br/><span>Renovação</span></h1>
     </div>
 
@@ -1578,7 +1660,142 @@ footer {
         Gerar PDF
       </button>
     </div>
-    <p class="rv-guarde" id="rv_guarde">Se o cliente fechar o anual, suba este arquivo em <b>Termos › Termo de Renovação</b> e o termo vem preenchido.</p>
+    <!-- Muda conforme as modalidades: só o anual segue para o termo -->
+    <div class="next-step" id="rv_proximo">
+      <div class="next-step-txt">
+        <div class="next-step-l">Próxima etapa</div>
+        <div class="next-step-t">Cliente fechou o anual? Gere o Termo de Renovação com os dados desta proposta.</div>
+      </div>
+      <button type="button" class="next-btn" onclick="trocarAba('termo')">Gerar o termo →</button>
+    </div>
+    <div class="next-step fim hidden" id="rv_fimMensal">
+      <div class="next-step-txt">
+        <div class="next-step-l">Só mensalidade</div>
+        <div class="next-step-t">Na mensalidade o cliente não assina nada — a renovação termina com o envio desta proposta.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ RENOVAÇÃO · ENVIAR AO FINANCEIRO ══════════ -->
+  <section id="viewFinanceiro" class="hidden">
+    <div class="page-header">
+      <div class="page-eyebrow">Renovação · Etapa 3 de 3</div>
+      <h1 class="page-title">Enviar ao<br/><span>Financeiro</span></h1>
+    </div>
+
+    <!-- Card 1 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-num">01</div>
+        <span class="card-title">Proposta e Termo Assinado</span>
+      </div>
+      <div class="card-body">
+        <div class="fin-arq" id="finProp">
+          <div class="fin-arq-ic"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg></div>
+          <div class="fin-arq-txt">
+            <div class="fin-arq-t" id="finPropT">Nenhuma proposta carregada</div>
+            <div class="fin-arq-d" id="finPropD">Os dados do e-mail vêm da Proposta de Renovação — ou preencha à mão abaixo.</div>
+          </div>
+          <div class="import-acoes">
+            <button type="button" class="import-btn sec hidden" id="finUsarEtapa1" onclick="finUsarEtapa1()">Usar etapa 1</button>
+            <button type="button" class="import-btn sec" onclick="document.getElementById('finPropArquivo').click()">Subir proposta</button>
+          </div>
+          <input type="file" id="finPropArquivo" accept=".pdf,.png,application/pdf,image/png" class="hidden"/>
+        </div>
+        <div class="fin-arq" id="finTermo">
+          <div class="fin-arq-ic"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg></div>
+          <div class="fin-arq-txt">
+            <div class="fin-arq-t" id="finTermoT">Termo assinado</div>
+            <div class="fin-arq-d" id="finTermoD">Foto ou PDF do termo assinado pelo cliente — vai anexo no e-mail. Você também pode arrastar o arquivo para cá.</div>
+          </div>
+          <button type="button" class="import-btn" id="finTermoBtn" onclick="document.getElementById('finTermoArquivo').click()">Subir termo</button>
+          <input type="file" id="finTermoArquivo" accept=".pdf,application/pdf,image/*" class="hidden"/>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 2 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-num">02</div>
+        <span class="card-title">Dados para o Financeiro</span>
+      </div>
+      <div class="card-body">
+        <div class="field">
+          <label>Solicitante (e-mail)</label>
+          <input id="fin_solicitante" type="email" placeholder="seu.email@revendamais.com.br"/>
+        </div>
+        <div class="field destaque">
+          <label>ID da Loja *</label>
+          <input id="fin_idLoja" type="text" placeholder="Ex: 12345"/>
+        </div>
+        <div class="field span2">
+          <label>Loja</label>
+          <input id="fin_loja" type="text" placeholder="Nome da loja"/>
+        </div>
+        <div class="field">
+          <label>Plano atual</label>
+          <input id="fin_planoAtual" type="text" placeholder="Ex: Plano 1.0"/>
+        </div>
+        <div class="field">
+          <label>Novo plano</label>
+          <select id="fin_novoPlano"></select>
+        </div>
+        <div class="field span2">
+          <label>Alteração nos produtos adicionais</label>
+          <select id="fin_altAdic">
+            <option value="Não, serão mantidos os mesmos produtos">Não, serão mantidos os mesmos produtos</option>
+            <option value="sim">Sim — descrever</option>
+          </select>
+        </div>
+        <div class="field span2 hidden" id="fin_altAdicTxtWrap">
+          <label>Quais alterações?</label>
+          <input id="fin_altAdicTxt" type="text" placeholder="Ex: inclusão do Renave"/>
+        </div>
+        <div class="field span2">
+          <label>CRM</label>
+          <input id="fin_crm" type="text" placeholder="Ex: Não possui contratado"/>
+        </div>
+        <div class="field">
+          <label>Valor da renovação (R$)</label>
+          <input id="fin_valor" type="text" placeholder="0,00"/>
+        </div>
+        <div class="field">
+          <label>Forma de pagamento</label>
+          <select id="fin_forma">
+            <option value="Cartão de crédito">Cartão de crédito</option>
+            <option value="Boleto ou PIX">Boleto ou PIX</option>
+          </select>
+        </div>
+        <div class="field span2">
+          <label>Em quantas vezes</label>
+          <input id="fin_parcelas" type="text" placeholder="Ex: 12x de R$ 545,00"/>
+        </div>
+        <div class="field span2">
+          <label>Obs</label>
+          <textarea id="fin_obs" placeholder="Ex: Plano 1.0 + Renave - 12x de R$ 545,00&#10;CRM à parte"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 3 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-num">03</div>
+        <span class="card-title">E-mail que o Financeiro vai receber</span>
+      </div>
+      <div class="card-body">
+        <div class="email-prev" id="fin_prev"></div>
+      </div>
+    </div>
+
+    <div class="btn-row um">
+      <button class="btn btn-pdf" id="btnFin" onclick="enviarFinanceiro()">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+        Enviar para o financeiro
+      </button>
+    </div>
+    <div class="fin-status" id="finStatus"></div>
   </section>
 
   <!-- ══════════ TERMO DE ADESÃO IA ══════════ -->
@@ -2171,20 +2388,22 @@ async function gerarDocumento(tipo) {
 /* ══════════════════════════════════════════════════════════════════
    ABAS
    ══════════════════════════════════════════════════════════════════ */
-// Cada documento pertence a um grupo (aba de cima) e tem sua sub-aba.
-// Para incluir um novo documento, basta acrescentar aqui e criar a <section>/<button> correspondentes.
+// Cada tela pertence a uma aba de cima. A Renovação tem três etapas (proposta → termo → financeiro);
+// para incluir uma nova tela, basta acrescentar aqui e criar a <section> correspondente.
 const ABAS = {
-  termo:         { view: 'viewTermo',         tab: 'tabTermo',         grupo: 'termos' },
-  termoIa:       { view: 'viewTermoIa',       tab: 'tabTermoIa',       grupo: 'termos' },
-  proposta:      { view: 'viewProposta',      tab: 'tabProposta',      grupo: 'propostas' },
-  propostaRenov: { view: 'viewPropostaRenov', tab: 'tabPropostaRenov', grupo: 'propostas' }
+  propostaRenov: { view: 'viewPropostaRenov', grupo: 'renovacao', passo: 1 },
+  termo:         { view: 'viewTermo',         grupo: 'renovacao', passo: 2 },
+  financeiro:    { view: 'viewFinanceiro',    grupo: 'renovacao', passo: 3 },
+  proposta:      { view: 'viewProposta',      grupo: 'proposta' },
+  termoIa:       { view: 'viewTermoIa',       grupo: 'termoIa' }
 };
 const GRUPOS = {
-  termos:    { tab: 'tabGrupoTermos',    sub: 'subTermos',    titulo: 'Gerador de Termos' },
-  propostas: { tab: 'tabGrupoPropostas', sub: 'subPropostas', titulo: 'Gerador de Propostas' }
+  renovacao: { tab: 'tabGrupoRenovacao', titulo: 'Renovação' },
+  proposta:  { tab: 'tabGrupoProposta',  titulo: 'Gerador de Propostas' },
+  termoIa:   { tab: 'tabGrupoTermoIa',   titulo: 'Gerador de Termos' }
 };
-// Ao voltar para um grupo, reabre o último documento usado nele
-const ultimaAba = { termos: 'termo', propostas: 'proposta' };
+// Ao voltar para a Renovação, reabre a etapa em que a pessoa estava
+const ultimaAba = { renovacao: 'propostaRenov', proposta: 'proposta', termoIa: 'termoIa' };
 
 function trocarGrupo(grupo) {
   trocarAba(ultimaAba[grupo]);
@@ -2192,14 +2411,18 @@ function trocarGrupo(grupo) {
 
 function trocarAba(aba) {
   const grupo = ABAS[aba].grupo;
+  const renovacao = grupo === 'renovacao';
   ultimaAba[grupo] = aba;
   Object.keys(ABAS).forEach(function (k) {
     document.getElementById(ABAS[k].view).classList.toggle('hidden', k !== aba);
-    document.getElementById(ABAS[k].tab).classList.toggle('active', k === aba);
   });
   Object.keys(GRUPOS).forEach(function (g) {
     document.getElementById(GRUPOS[g].tab).classList.toggle('active', g === grupo);
-    document.getElementById(GRUPOS[g].sub).classList.toggle('hidden', g !== grupo);
+  });
+  document.getElementById('tabsPrincipais').classList.toggle('com-etapas', renovacao);
+  document.getElementById('renovSteps').classList.toggle('hidden', !renovacao);
+  [1, 2, 3].forEach(function (n) {
+    document.getElementById('passo' + n).classList.toggle('active', ABAS[aba].passo === n);
   });
   document.getElementById('headerSub').textContent = GRUPOS[grupo].titulo;
   document.title = GRUPOS[grupo].titulo + ' Revenda Mais';
@@ -2207,6 +2430,7 @@ function trocarAba(aba) {
   if (aba === 'proposta') setTimeout(pAjustarEscala, 30);
   if (aba === 'termoIa') setTimeout(taAjustarEscala, 30);
   if (aba === 'propostaRenov') setTimeout(rvAjustarEscala, 30);
+  if (aba === 'termo' || aba === 'financeiro') atualizarAtalhosEtapa1();
 }
 
 /* ══════════════════════════════════════════════════════════════════
@@ -3401,7 +3625,8 @@ function rvRender() {
   document.getElementById('rv_itensCard').classList.toggle('rv-sem-anual', !d.onAnual);
   document.getElementById('rv_formaMensalWrap').classList.toggle('hidden', !d.onMensal);
   document.getElementById('rv_tipoAnualWrap').classList.toggle('hidden', !d.onAnual);
-  document.getElementById('rv_guarde').classList.toggle('hidden', !d.onAnual);
+  document.getElementById('rv_proximo').classList.toggle('hidden', !d.onAnual);
+  document.getElementById('rv_fimMensal').classList.toggle('hidden', d.onAnual);
 
   const anualTxt = d.tipoAnual === 'vista' ? pBRL(d.totalAnual) + ' à vista' : '12x de ' + pBRL(d.anualMes);
   document.getElementById('rv_totalLabel').textContent = d.onMensal ? 'Mensal' : 'Anual';
@@ -3460,21 +3685,72 @@ async function gerarPropostaRenov(tipo) {
 })();
 
 /* ══════════════════════════════════════════════════════════════════
-   PROPOSTA ACEITA → TERMO DE RENOVAÇÃO
-   Sobe o PDF/PNG da Proposta de Renovação e o termo vem preenchido com a renovação anual.
+   RENOVAÇÃO · ETAPA 2 — PROPOSTA ACEITA → TERMO DE RENOVAÇÃO
+   Usa a proposta da etapa 1 (ou o PDF/PNG dela) e o termo vem preenchido com a renovação anual.
    Só o anual tem termo — na mensalidade o cliente não assina nada.
    ══════════════════════════════════════════════════════════════════ */
-async function impLerArquivo(arquivo) {
-  if (!arquivo) return;
+// Proposta em andamento: preenche o termo (etapa 2) e o e-mail do financeiro (etapa 3)
+let renovacaoAtual = null;
+const MSG_SEM_DADOS = ' não tem os dados de uma Proposta de Renovação. Use o PDF ou a imagem baixados aqui no gerador — ' +
+  'a imagem enviada como foto pelo WhatsApp perde esses dados.';
+
+// Lê os dados escondidos no PDF/PNG da proposta; null se o arquivo não tiver
+async function lerPropostaArquivo(arquivo) {
   const txt = new TextDecoder('latin1').decode(await arquivo.arrayBuffer());
   const m = txt.match(/RVMAIS-PROPOSTA:([A-Za-z0-9+\/=]+):FIM/);
-  let p = null;
-  try { p = m ? JSON.parse(deB64Utf8(m[1])) : null; } catch (e) { p = null; }
-  if (!p || p.tipo !== 'renovacao') {
-    impMostrar('<div class="import-msg"><b>' + esc(arquivo.name) + '</b> não tem os dados de uma Proposta de Renovação. ' +
-      'Use o PDF ou a imagem baixados aqui no gerador — a imagem enviada como foto pelo WhatsApp perde esses dados.</div>');
+  try {
+    const p = m ? JSON.parse(deB64Utf8(m[1])) : null;
+    return p && p.tipo === 'renovacao' ? p : null;
+  } catch (e) { return null; }
+}
+
+// Proposta montada na etapa 1 nesta mesma sessão, se já tiver o anual preenchido
+function propostaEtapa1() {
+  const d = rvColetar();
+  return d.cliente && d.onAnual && d.anualMes > 0 ? Object.assign({ v: 1, tipo: 'renovacao' }, d) : null;
+}
+function atualizarAtalhosEtapa1() {
+  const tem = !!propostaEtapa1();
+  document.getElementById('impUsarEtapa1').classList.toggle('hidden', !tem);
+  document.getElementById('finUsarEtapa1').classList.toggle('hidden', !tem);
+}
+
+function aceitarArquivoSolto(el, aoSoltar) {
+  ['dragenter', 'dragover'].forEach(function (ev) {
+    el.addEventListener(ev, function (e) { e.preventDefault(); el.classList.add('drag'); });
+  });
+  ['dragleave', 'drop'].forEach(function (ev) {
+    el.addEventListener(ev, function (e) { e.preventDefault(); el.classList.remove('drag'); });
+  });
+  el.addEventListener('drop', function (e) { if (e.dataTransfer.files[0]) aoSoltar(e.dataTransfer.files[0]); });
+}
+
+// Reforço do fechamento no formato do comercial: "Plano 1.0 + Renave - 12x de R$ 545,00" / "CRM à parte"
+function reforcoFechamento(p) {
+  const nomesParte = p.aParte.map(function (a) { return a.nome; });
+  const ultimo = nomesParte.pop();
+  return [
+    p.itens.map(function (i) { return i.nome; }).join(' + ') + ' - ' +
+      (p.tipoAnual === 'vista' ? pBRL(p.totalAnual) + ' à vista' : '12x de ' + pBRL(p.anualMes)),
+    ultimo ? (nomesParte.length ? nomesParte.join(', ') + ' e ' + ultimo : ultimo) + ' à parte' : '',
+    p.condicoes
+  ].filter(Boolean).join('\n');
+}
+
+async function impLerArquivo(arquivo) {
+  if (!arquivo) return;
+  const p = await lerPropostaArquivo(arquivo);
+  if (!p) {
+    impMostrar('<div class="import-msg"><b>' + esc(arquivo.name) + '</b>' + MSG_SEM_DADOS + '</div>');
     return;
   }
+  impCarregar(p);
+}
+function impUsarEtapa1() {
+  const p = propostaEtapa1();
+  if (p) impCarregar(p);
+}
+function impCarregar(p) {
   const titulo = '<div class="import-res-t">Proposta nº ' + (esc(p.numero) || '—') + ' · ' + esc(p.cliente) +
     ' <span>· ' + esc(p.data) + '</span></div>';
   if (!p.onAnual) {
@@ -3483,6 +3759,7 @@ async function impLerArquivo(arquivo) {
   }
   impMostrar(titulo + '<div id="impMsg"></div>');
   impPreencherTermo(p);
+  finCarregar(p);   // a etapa 3 já fica preenchida com a mesma proposta
 }
 
 function impMostrar(html) {
@@ -3496,6 +3773,9 @@ function impPlanoTermo(nome) {
   const k = Object.keys(PLANOS).find(function (k) { return (PLANOS[k].nome || 'Plano ' + k) === nome; });
   return k ? { valor: k === 'integrador' ? 'Integrador' : k, cfg: PLANOS[k] } : null;
 }
+function planoDaProposta(p) {
+  return (p.itens.find(function (i) { return i.plano; }) || p.itens[0] || { nome: '' }).nome;
+}
 
 function impPreencherTermo(p) {
   const vista = p.tipoAnual === 'vista';
@@ -3505,23 +3785,14 @@ function impPreencherTermo(p) {
   set('nomeEmpresarial', '');
   set('cnpj', '');
 
-  const planoItem = p.itens.find(function (i) { return i.plano; }) || p.itens[0] || { nome: '' };
-  const pl = impPlanoTermo(planoItem.nome);
+  const planoNome = planoDaProposta(p);
+  const pl = impPlanoTermo(planoNome);
   set('plano', pl ? pl.valor : 'outros');
   onPlanoChange();
-  if (!pl) set('planoCustom', planoItem.nome);
+  if (!pl) set('planoCustom', planoNome);
   set('numVeiculos', pl ? pl.cfg.veiculos : '');
   set('numUsuarios', pl ? pl.cfg.usuarios : '');
-
-  // Só reforça o fechamento, no formato do comercial: "Plano 1.0 + Renave - 12x de R$ 545,00" / "CRM à parte"
-  const nomesParte = p.aParte.map(function (a) { return a.nome; });
-  const ultimo = nomesParte.pop();
-  set('condicoesCombinadas', [
-    p.itens.map(function (i) { return i.nome; }).join(' + ') + ' - ' +
-      (vista ? pBRL(p.totalAnual) + ' à vista' : '12x de ' + pBRL(p.anualMes)),
-    ultimo ? (nomesParte.length ? nomesParte.join(', ') + ' e ' + ultimo : ultimo) + ' à parte' : '',
-    p.condicoes
-  ].filter(Boolean).join('\n'));
+  set('condicoesCombinadas', reforcoFechamento(p));
 
   // Valor do termo = 12 parcelas, fidelidade de 12 meses
   pSetMoney('valorPlano', p.anualMes * 12);
@@ -3543,16 +3814,269 @@ function impPreencherTermo(p) {
 }
 
 (function impInit() {
-  const box = document.getElementById('impBox');
   const input = document.getElementById('impArquivo');
   input.addEventListener('change', function () { impLerArquivo(input.files[0]); input.value = ''; });
-  ['dragenter', 'dragover'].forEach(function (ev) {
-    box.addEventListener(ev, function (e) { e.preventDefault(); box.classList.add('drag'); });
+  aceitarArquivoSolto(document.getElementById('impBox'), impLerArquivo);
+})();
+
+/* ══════════════════════════════════════════════════════════════════
+   RENOVAÇÃO · ETAPA 3 — ENVIAR AO FINANCEIRO
+   Monta o e-mail no formato que o financeiro já recebe e envia, com o termo assinado anexo,
+   para /api/financeiro — função do Vercel que repassa ao fluxo do Power Automate.
+   O link do fluxo fica só no Vercel (variável FINANCEIRO_FLOW_URL), fora deste código público.
+   ══════════════════════════════════════════════════════════════════ */
+const FIN_SOLICITANTE_PADRAO = 'jabez.oliveira@revendamais.com.br';
+// O Vercel aceita até 4,5 MB por envio e o arquivo em base64 cresce ~33%
+const FIN_MAX_ARQUIVO = 3 * 1024 * 1024;
+const FIN_ABERTURA = ['Olá meninas, tudo bem?', 'Solicito realizar a renovação desta loja:'];
+let finArquivo = null;    // termo assinado: { nome, tipo, base64, tamanho }
+let finEnviado = false;
+let BTN_FIN_HTML = '';
+
+function finCarregar(p) {
+  if (!p.onAnual) {
+    renovacaoAtual = null;
+    finPropUI('Esta proposta é só de Mensalidade — na mensalidade não há termo nem envio ao financeiro.');
+    return;
+  }
+  renovacaoAtual = p;
+  const vista = p.tipoAnual === 'vista';
+  const set = function (id, v) { document.getElementById(id).value = v; };
+  const crm = p.aParte.find(function (a) { return /crm/i.test(a.nome); });
+  set('fin_loja', p.cliente);
+  set('fin_planoAtual', planoDaProposta(p));
+  set('fin_novoPlano', 'Manter plano atual');
+  set('fin_altAdic', 'Não, serão mantidos os mesmos produtos');
+  set('fin_crm', crm ? 'Possui contratado — ' + pBRL(crm.valor) + '/mês, boleto à parte' : 'Não possui contratado');
+  pSetMoney('fin_valor', p.anualMes * 12);
+  set('fin_forma', vista ? 'Boleto ou PIX' : 'Cartão de crédito');
+  set('fin_parcelas', vista ? 'À vista' : '12x de ' + pBRL(p.anualMes));
+  set('fin_obs', reforcoFechamento(p));
+  finPropUI();
+  finRender();
+}
+async function finLerProposta(arquivo) {
+  if (!arquivo) return;
+  const p = await lerPropostaArquivo(arquivo);
+  if (p) finCarregar(p);
+  else finPropUI(arquivo.name + MSG_SEM_DADOS);
+}
+function finUsarEtapa1() {
+  const p = propostaEtapa1();
+  if (p) finCarregar(p);
+}
+function finPropUI(erro) {
+  const p = renovacaoAtual;
+  const ok = !erro && !!p;
+  document.getElementById('finProp').classList.toggle('ok', ok);
+  document.getElementById('finPropT').textContent = ok ? 'Proposta nº ' + (p.numero || '—') + ' · ' + p.cliente : 'Nenhuma proposta carregada';
+  document.getElementById('finPropD').innerHTML = erro
+    ? '<span class="fin-erro">' + esc(erro) + '</span>'
+    : ok ? 'Renovação anual — ' + (p.tipoAnual === 'vista' ? pBRL(p.totalAnual) + ' à vista' : '12x de ' + pBRL(p.anualMes)) +
+        '. Dados preenchidos abaixo: confira e complete o ID da loja.'
+    : 'Os dados do e-mail vêm da Proposta de Renovação — ou preencha à mão abaixo.';
+}
+
+/* ── Termo assinado (foto ou PDF) ── */
+function tamanhoTxt(b) {
+  return b >= 1048576 ? (b / 1048576).toFixed(1).replace('.', ',') + ' MB' : Math.max(1, Math.round(b / 1024)) + ' KB';
+}
+function arquivoBase64(arquivo) {
+  return new Promise(function (ok, erro) {
+    const r = new FileReader();
+    r.onload = function () { ok(String(r.result).split(',')[1]); };
+    r.onerror = function () { erro(new Error('Não foi possível ler o arquivo.')); };
+    r.readAsDataURL(arquivo);
   });
-  ['dragleave', 'drop'].forEach(function (ev) {
-    box.addEventListener(ev, function (e) { e.preventDefault(); box.classList.remove('drag'); });
+}
+// Foto do celular: reduz para no máximo 2000 px em JPEG, para caber no envio e não pesar o e-mail
+async function finComprimirImagem(arquivo) {
+  const url = URL.createObjectURL(arquivo);
+  try {
+    const img = await new Promise(function (ok, erro) {
+      const i = new Image();
+      i.onload = function () { ok(i); };
+      i.onerror = function () { erro(new Error('Não foi possível abrir a imagem. Envie em JPG, PNG ou PDF.')); };
+      i.src = url;
+    });
+    let lado = 2000, qualidade = 0.85, base64 = '';
+    for (let tentativa = 0; tentativa < 4; tentativa++) {
+      const k = Math.min(1, lado / Math.max(img.naturalWidth, img.naturalHeight));
+      const c = document.createElement('canvas');
+      c.width = Math.round(img.naturalWidth * k);
+      c.height = Math.round(img.naturalHeight * k);
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#fff';   // fundo branco para PNG com transparência
+      ctx.fillRect(0, 0, c.width, c.height);
+      ctx.drawImage(img, 0, 0, c.width, c.height);
+      base64 = c.toDataURL('image/jpeg', qualidade).split(',')[1];
+      if (base64.length * 3 / 4 <= FIN_MAX_ARQUIVO) break;
+      lado = Math.round(lado * 0.75);
+      qualidade -= 0.1;
+    }
+    return { nome: arquivo.name.replace(/\.[^.]+$/, '') + '.jpg', tipo: 'image/jpeg', base64: base64, tamanho: Math.round(base64.length * 3 / 4) };
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+async function finLerTermo(arquivo) {
+  if (!arquivo) return;
+  const ehPdf = arquivo.type === 'application/pdf' || /\.pdf$/i.test(arquivo.name);
+  try {
+    if (ehPdf) {
+      if (arquivo.size > FIN_MAX_ARQUIVO) throw new Error('PDF grande demais (' + tamanhoTxt(arquivo.size) + '). O limite é 3 MB.');
+      finArquivo = { nome: arquivo.name, tipo: 'application/pdf', base64: await arquivoBase64(arquivo), tamanho: arquivo.size };
+    } else if (/^image\//.test(arquivo.type)) {
+      finArquivo = await finComprimirImagem(arquivo);
+    } else {
+      throw new Error('Envie uma foto (JPG ou PNG) ou um PDF.');
+    }
+    finTermoUI();
+  } catch (e) {
+    finArquivo = null;
+    finTermoUI(e.message);
+  }
+  finRender();
+}
+function finTermoUI(erro) {
+  const a = finArquivo;
+  document.getElementById('finTermo').classList.toggle('ok', !!a);
+  document.getElementById('finTermoT').textContent = a ? a.nome : 'Termo assinado';
+  document.getElementById('finTermoD').innerHTML = erro
+    ? '<span class="fin-erro">' + esc(erro) + '</span>'
+    : a ? (a.tipo === 'application/pdf' ? 'PDF' : 'Foto') + ' · ' + tamanhoTxt(a.tamanho) + ' — vai anexo no e-mail'
+    : 'Foto ou PDF do termo assinado pelo cliente — vai anexo no e-mail. Você também pode arrastar o arquivo para cá.';
+  document.getElementById('finTermoBtn').textContent = a ? 'Trocar' : 'Subir termo';
+}
+
+/* ── E-mail ── */
+function finColetar() {
+  const v = function (id) { return document.getElementById(id).value.trim(); };
+  const valor = pParse(v('fin_valor'));
+  return {
+    solicitante: v('fin_solicitante'),
+    idLoja: v('fin_idLoja'),
+    loja: v('fin_loja'),
+    planoAtual: v('fin_planoAtual'),
+    novoPlano: v('fin_novoPlano'),
+    alteracaoAdicionais: v('fin_altAdic') === 'sim' ? 'Sim' + (v('fin_altAdicTxt') ? ' — ' + v('fin_altAdicTxt') : '') : v('fin_altAdic'),
+    crm: v('fin_crm'),
+    valorRenovacao: valor ? pBRL(valor) : '',
+    formaPagamento: v('fin_forma'),
+    parcelas: v('fin_parcelas'),
+    obs: v('fin_obs'),
+    propostaNumero: renovacaoAtual ? renovacaoAtual.numero || '' : ''
+  };
+}
+// Linhas do e-mail, na mesma ordem que o financeiro já recebe
+function finLinhas(d) {
+  return [
+    ['Solicitante', d.solicitante], ['ID da loja', d.idLoja], ['Loja', d.loja],
+    ['Plano atual', d.planoAtual], ['Novo plano', d.novoPlano],
+    ['Alteração nos produtos adicionais', d.alteracaoAdicionais], ['CRM', d.crm],
+    ['Valor da renovação', d.valorRenovacao], ['Forma de pagamento', d.formaPagamento],
+    ['Em quantas vezes', d.parcelas], ['Obs', d.obs]
+  ];
+}
+function finAssunto(d) {
+  return 'Renovação - ' + (d.loja || 'Loja') + (d.idLoja ? ' (ID ' + d.idLoja + ')' : '');
+}
+function finCorpoHtml(d) {
+  return '<p>' + FIN_ABERTURA[0] + '</p><p>' + FIN_ABERTURA[1] + '</p><p>' +
+    finLinhas(d).map(function (l) { return esc(l[0]) + ': ' + esc(l[1]).replace(/\n/g, '<br>'); }).join('<br>') + '</p>';
+}
+
+function finRender() {
+  document.getElementById('fin_altAdicTxtWrap').classList.toggle('hidden', document.getElementById('fin_altAdic').value !== 'sim');
+  const d = finColetar();
+  document.getElementById('fin_prev').innerHTML =
+    '<div class="ep-cab"><b>Assunto:</b> ' + esc(finAssunto(d)) + '<br><b>Anexo:</b> ' +
+      (finArquivo ? esc(finArquivo.nome) + ' (' + tamanhoTxt(finArquivo.tamanho) + ')' : '<span class="fin-erro">falta subir o termo assinado</span>') +
+    '</div>' +
+    esc(FIN_ABERTURA[0]) + '\n\n' + esc(FIN_ABERTURA[1]) + '\n\n' +
+    finLinhas(d).map(function (l) { return esc(l[0]) + ': ' + esc(l[1]); }).join('\n');
+  // Mudou algo depois de enviar: libera um novo envio
+  if (finEnviado) {
+    finEnviado = false;
+    const btn = document.getElementById('btnFin');
+    btn.disabled = false;
+    btn.innerHTML = BTN_FIN_HTML;
+  }
+}
+
+function finStatus(html, ok) {
+  document.getElementById('finStatus').innerHTML = '<div class="import-msg' + (ok ? ' ok' : '') + '">' + html + '</div>';
+}
+
+async function enviarFinanceiro() {
+  const d = finColetar();
+  const falta = [
+    [d.solicitante, 'fin_solicitante', 'Solicitante'],
+    [d.idLoja, 'fin_idLoja', 'ID da Loja'],
+    [d.loja, 'fin_loja', 'Loja'],
+    [d.valorRenovacao, 'fin_valor', 'Valor da renovação']
+  ].find(function (c) { return !c[0]; });
+  if (falta) { showToast('Preencha: ' + falta[2], 'error'); document.getElementById(falta[1]).focus(); return; }
+  if (!finArquivo) { showToast('Suba o termo assinado', 'error'); return; }
+
+  const btn = document.getElementById('btnFin');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Enviando...';
+  const envio = Object.assign({}, d, {
+    assunto: finAssunto(d),
+    corpoHtml: finCorpoHtml(d),
+    arquivoNome: 'Termo_Renovacao_Assinado_' + nomeArquivo(d.loja) + (finArquivo.tipo === 'application/pdf' ? '.pdf' : '.jpg'),
+    arquivoTipo: finArquivo.tipo,
+    arquivoBase64: finArquivo.base64
   });
-  box.addEventListener('drop', function (e) { impLerArquivo(e.dataTransfer.files[0]); });
+
+  try {
+    const r = await fetch('/api/financeiro', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(envio)
+    });
+    const resp = await r.json().catch(function () { return {}; });
+    if (!r.ok) throw new Error(resp.erro || (r.status === 413 ? 'Arquivo grande demais para o envio.' : 'O envio falhou (erro ' + r.status + ').'));
+
+    try { localStorage.setItem('rm_solicitante', d.solicitante); } catch (e) { /* sem storage, segue */ }
+    const hora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    finStatus('<b>Enviado ao financeiro às ' + hora + '.</b> E-mail "' + esc(envio.assunto) + '" com o termo assinado anexo.', true);
+    showToast('Enviado ao financeiro!', 'success');
+    finEnviado = true;
+    btn.innerHTML = '&#10003; Enviado ao financeiro';
+  } catch (e) {
+    // TypeError = nem chegou ao servidor (sem internet, ou gerador aberto como arquivo local)
+    finStatus('<b>Não foi enviado.</b> ' + esc(e instanceof TypeError
+      ? 'Não foi possível conectar. Abra o gerador pelo site e tente de novo.'
+      : e.message), false);
+    showToast('Não foi enviado ao financeiro', 'error');
+    btn.disabled = false;
+    btn.innerHTML = BTN_FIN_HTML;
+  }
+}
+
+(function finInit() {
+  BTN_FIN_HTML = document.getElementById('btnFin').innerHTML;
+  document.getElementById('fin_novoPlano').innerHTML = ['Manter plano atual'].concat(Object.keys(PLANOS).map(function (k) {
+    return PLANOS[k].nome || 'Plano ' + k;
+  })).map(function (n) { return '<option value="' + n + '">' + n + '</option>'; }).join('');
+  let solicitante = '';
+  try { solicitante = localStorage.getItem('rm_solicitante') || ''; } catch (e) { /* sem storage, usa o padrão */ }
+  document.getElementById('fin_solicitante').value = solicitante || FIN_SOLICITANTE_PADRAO;
+
+  mascaraMoeda(document.getElementById('fin_valor'), finRender);
+  document.querySelectorAll('#viewFinanceiro input:not(#fin_valor):not([type=file]), #viewFinanceiro select, #viewFinanceiro textarea').forEach(function (el) {
+    el.addEventListener('input', finRender);
+    el.addEventListener('change', finRender);
+  });
+  const prop = document.getElementById('finPropArquivo');
+  prop.addEventListener('change', function () { finLerProposta(prop.files[0]); prop.value = ''; });
+  const termo = document.getElementById('finTermoArquivo');
+  termo.addEventListener('change', function () { finLerTermo(termo.files[0]); termo.value = ''; });
+  aceitarArquivoSolto(document.getElementById('finProp'), finLerProposta);
+  aceitarArquivoSolto(document.getElementById('finTermo'), finLerTermo);
+  finRender();
 })();
 
 /* ══════════════════════════════════════════════════════════════════
