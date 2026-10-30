@@ -3933,9 +3933,9 @@ function impPreencherTermo(p) {
 // O Vercel aceita até 4,5 MB por envio e o arquivo em base64 cresce ~33%
 const FIN_MAX_ARQUIVO = 3 * 1024 * 1024;
 const FIN_ABERTURA = ['Olá meninas, tudo bem?', 'Solicito realizar a renovação desta loja:'];
-// false = abre o e-mail pronto no Outlook e a pessoa anexa o termo e envia.
-// true = envio automático pelo Power Automate (api/financeiro.js) — precisa do app no Entra ID
-const FIN_ENVIO_AUTOMATICO = false;
+// Envio automático (api/financeiro.js manda pelo Gmail do gerador) só quando está configurado
+// no Vercel; senão, o e-mail abre pronto no Outlook e a pessoa anexa o termo e envia.
+let finAutomatico = false;
 const FIN_PARA_CHAVE = 'rm_financeiro_email';
 let finArquivo = null;    // termo assinado: { nome, tipo, base64, tamanho }
 let finEnviado = false;
@@ -4134,9 +4134,9 @@ function finRender() {
   const d = finColetar();
   document.getElementById('fin_prev').innerHTML =
     '<div class="ep-cab">' +
-      (FIN_ENVIO_AUTOMATICO ? '' : '<b>Para:</b> ' + (esc(document.getElementById('fin_para').value.trim()) || '<span class="fin-erro">falta o e-mail do financeiro</span>') + '<br>') +
+      (finAutomatico ? '' : '<b>Para:</b> ' + (esc(document.getElementById('fin_para').value.trim()) || '<span class="fin-erro">falta o e-mail do financeiro</span>') + '<br>') +
       '<b>Assunto:</b> ' + esc(finAssunto(d)) + '<br><b>Anexo:</b> ' +
-      (!FIN_ENVIO_AUTOMATICO ? 'o termo assinado — você arrasta no Outlook'
+      (!finAutomatico ? 'o termo assinado — você arrasta no Outlook'
         : finArquivo ? esc(finArquivo.nome) + ' (' + tamanhoTxt(finArquivo.tamanho) + ')' : '<span class="fin-erro">falta subir o termo assinado</span>') +
     '</div>' +
     esc(FIN_ABERTURA[0]) + '\n\n' + esc(FIN_ABERTURA[1]) + '\n\n' +
@@ -4186,7 +4186,7 @@ async function enviarFinanceiro() {
     if (!r.ok) throw new Error(resp.erro || (r.status === 413 ? 'Arquivo grande demais para o envio.' : 'O envio falhou (erro ' + r.status + ').'));
 
     const hora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-    finStatus('<b>Enviado ao financeiro às ' + hora + '.</b> E-mail "' + esc(envio.assunto) + '" com o termo assinado anexo.' +
+    finStatus('<b>Enviado às ' + hora + '.</b> O e-mail "' + esc(envio.assunto) + '" segue para o financeiro com o termo assinado anexo.' +
       '<div class="fin-status-acao"><button type="button" class="next-btn" onclick="novaRenovacao(true)">&#8634; Começar nova renovação</button></div>', true);
     showToast('Enviado ao financeiro!', 'success');
     finEnviado = true;
@@ -4202,14 +4202,29 @@ async function enviarFinanceiro() {
   }
 }
 
+function finAplicarModo() {
+  document.getElementById('finBtnsOutlook').classList.toggle('hidden', finAutomatico);
+  document.getElementById('finBtnsAuto').classList.toggle('hidden', !finAutomatico);
+  document.getElementById('finTermo').classList.toggle('hidden', !finAutomatico);
+  document.getElementById('finTermoNota').classList.toggle('hidden', finAutomatico);
+  document.getElementById('fin_paraWrap').classList.toggle('hidden', finAutomatico);
+  document.getElementById('finCard1T').textContent = finAutomatico ? 'Proposta e Termo Assinado' : 'Proposta e Termo';
+  finRender();
+}
+// Pergunta à função se o Gmail já está configurado (aberto como arquivo local, fica no Outlook)
+async function finDetectarModo() {
+  if (location.protocol === 'file:') return;   // sem servidor não há função para perguntar
+  try {
+    const r = await fetch('/api/financeiro');
+    finAutomatico = r.ok && (await r.json()).automatico === true;
+  } catch (e) {
+    finAutomatico = false;
+  }
+  finAplicarModo();
+}
+
 (function finInit() {
   BTN_FIN_HTML = document.getElementById('btnFin').innerHTML;
-  document.getElementById('finBtnsOutlook').classList.toggle('hidden', FIN_ENVIO_AUTOMATICO);
-  document.getElementById('finBtnsAuto').classList.toggle('hidden', !FIN_ENVIO_AUTOMATICO);
-  document.getElementById('finTermo').classList.toggle('hidden', !FIN_ENVIO_AUTOMATICO);
-  document.getElementById('finTermoNota').classList.toggle('hidden', FIN_ENVIO_AUTOMATICO);
-  document.getElementById('fin_paraWrap').classList.toggle('hidden', FIN_ENVIO_AUTOMATICO);
-  document.getElementById('finCard1T').textContent = FIN_ENVIO_AUTOMATICO ? 'Proposta e Termo Assinado' : 'Proposta e Termo';
   finParaInicial();
   document.getElementById('fin_novoPlano').innerHTML = ['Manter plano atual'].concat(Object.keys(PLANOS).map(function (k) {
     return PLANOS[k].nome || 'Plano ' + k;
@@ -4226,7 +4241,8 @@ async function enviarFinanceiro() {
   termo.addEventListener('change', function () { finLerTermo(termo.files[0]); termo.value = ''; });
   aceitarArquivoSolto(document.getElementById('finProp'), finLerProposta);
   aceitarArquivoSolto(document.getElementById('finTermo'), finLerTermo);
-  finRender();
+  finAplicarModo();
+  finDetectarModo();
 })();
 
 /* ══════════════════════════════════════════════════════════════════
