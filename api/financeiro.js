@@ -8,8 +8,20 @@ const nodemailer = require('nodemailer');
 
 const OBRIGATORIOS = ['idLoja', 'loja', 'assunto', 'corpoHtml', 'arquivoNome', 'arquivoBase64'];
 
+// Valores colados no Vercel às vezes vêm com espaço, quebra de linha ou aspas
+function limpar(v) {
+  return String(v || '').trim().replace(/^["']+|["']+$/g, '').trim();
+}
+function credenciais() {
+  return {
+    usuario: limpar(process.env.GMAIL_USUARIO),
+    senha: limpar(process.env.GMAIL_SENHA_APP).replace(/\s+/g, ''),   // o Google mostra em blocos com espaço
+    destino: limpar(process.env.EMAIL_DESTINO)
+  };
+}
 function configurado() {
-  return !!(process.env.GMAIL_USUARIO && process.env.GMAIL_SENHA_APP && process.env.EMAIL_DESTINO);
+  const c = credenciais();
+  return !!(c.usuario && c.senha && c.destino);
 }
 
 module.exports = async function (req, res) {
@@ -34,15 +46,12 @@ module.exports = async function (req, res) {
     return;
   }
 
+  const c = credenciais();
   try {
-    const transporte = nodemailer.createTransport({
-      service: 'gmail',
-      // O Google mostra a senha de app em blocos com espaço
-      auth: { user: process.env.GMAIL_USUARIO, pass: process.env.GMAIL_SENHA_APP.replace(/\s+/g, '') }
-    });
+    const transporte = nodemailer.createTransport({ service: 'gmail', auth: { user: c.usuario, pass: c.senha } });
     await transporte.sendMail({
-      from: { name: 'Gerador Revenda Mais', address: process.env.GMAIL_USUARIO },
-      to: process.env.EMAIL_DESTINO,
+      from: { name: 'Gerador Revenda Mais', address: c.usuario },
+      to: c.destino,
       subject: dados.assunto,
       html: dados.corpoHtml,
       attachments: [{
@@ -56,6 +65,11 @@ module.exports = async function (req, res) {
   } catch (e) {
     // code/responseCode dizem o motivo (ex.: EAUTH = senha recusada) e não contêm a senha
     console.error('Gmail não enviou: ' + (e.code || '') + ' ' + (e.responseCode || '') + ' ' + String(e.response || e.message).slice(0, 300));
+    // Pistas para conferir as variáveis sem mostrar nenhuma delas
+    if (e.code === 'EAUTH') {
+      console.error('Conferência: usuário é um endereço @gmail.com completo? ' + (/^[^@\s]+@gmail\.com$/i.test(c.usuario) ? 'sim' : 'NÃO') +
+        ' | senha tem 16 letras (senha de app)? ' + (/^[a-z]{16}$/i.test(c.senha) ? 'sim' : 'NÃO (' + c.senha.length + ' caracteres)'));
+    }
     res.status(502).json({
       erro: 'O Gmail não conseguiu enviar.' + (e.code === 'EAUTH'
         ? ' Confira GMAIL_USUARIO e GMAIL_SENHA_APP no Vercel (use a senha de app do Google, não a senha normal).'
