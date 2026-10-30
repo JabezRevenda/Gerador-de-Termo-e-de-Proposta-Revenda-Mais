@@ -30,7 +30,13 @@ module.exports = async function (req, res) {
       body: JSON.stringify(dados)
     });
     if (!r.ok) {
-      res.status(502).json({ erro: 'O fluxo do Power Automate recusou o envio (erro ' + r.status + ').' });
+      // O corpo do erro diz o motivo (ex.: exige login) e não contém o link do fluxo
+      const motivo = (await r.text().catch(function () { return ''; })).slice(0, 500);
+      console.error('Power Automate respondeu ' + r.status + ': ' + motivo);
+      const dica = r.status === 401 || r.status === 403
+        ? ' No gatilho do fluxo, "Quem pode disparar" precisa estar como "Qualquer pessoa"; depois copie a URL de novo (ela termina com sig=...) e atualize FINANCEIRO_FLOW_URL no Vercel.'
+        : '';
+      res.status(502).json({ erro: 'O fluxo do Power Automate recusou o envio (erro ' + r.status + ').' + dica });
       return;
     }
     res.status(200).json({ ok: true });
