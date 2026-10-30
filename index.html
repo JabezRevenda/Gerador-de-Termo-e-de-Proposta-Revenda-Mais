@@ -380,6 +380,8 @@ footer {
 .tabs.com-etapas { margin-bottom: 14px; }
 
 /* ── Etapas da renovação ── */
+.steps-barra { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.steps-barra-t { font-size: 10px; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-muted); }
 .steps { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 36px; }
 .step {
   font-family: 'Poppins', sans-serif; text-align: left;
@@ -832,6 +834,7 @@ footer {
 .email-prev .ep-cab b { color: var(--text-heading); font-weight: 600; }
 .fin-status { margin-top: 14px; }
 .fin-erro { color: var(--error); font-weight: 600; }
+.fin-status-acao { margin-top: 12px; }
 .btn-row.um { grid-template-columns: 1fr; }
 
 /* ══════════════════════════════════════════════════════════
@@ -1008,6 +1011,11 @@ footer {
   </nav>
 
   <!-- Renovação: as três etapas do processo, na ordem em que acontecem -->
+  <div id="renovNav">
+  <div class="steps-barra">
+    <span class="steps-barra-t">Renovação em 3 etapas</span>
+    <button type="button" class="ola-btn" onclick="novaRenovacao(false)">&#8634; Nova renovação</button>
+  </div>
   <nav class="steps" id="renovSteps">
     <button class="step active" id="passo1" onclick="trocarAba('propostaRenov')">
       <span class="step-n">1</span>
@@ -1022,6 +1030,7 @@ footer {
       <span class="step-txt"><span class="step-t">Enviar ao Financeiro</span><span class="step-d">Termo assinado? Mande a renovação ao financeiro</span></span>
     </button>
   </nav>
+  </div>
 
   <section id="viewTermo" class="hidden">
   <div class="page-header">
@@ -2494,7 +2503,7 @@ function trocarAba(aba) {
     document.getElementById(GRUPOS[g].tab).classList.toggle('active', g === grupo);
   });
   document.getElementById('tabsPrincipais').classList.toggle('com-etapas', renovacao);
-  document.getElementById('renovSteps').classList.toggle('hidden', !renovacao);
+  document.getElementById('renovNav').classList.toggle('hidden', !renovacao);
   [1, 2, 3].forEach(function (n) {
     document.getElementById('passo' + n).classList.toggle('active', ABAS[aba].passo === n);
   });
@@ -3731,13 +3740,18 @@ async function gerarPropostaRenov(tipo) {
 }
 
 /* ── Inicialização ───────────────────────────────────────────────── */
-(function rvInit() {
+// Data de hoje, número novo e só a linha do plano — usado ao abrir a página e no "Nova renovação"
+function rvValoresIniciais() {
   const hj = new Date();
   document.getElementById('rv_data').value =
     hj.getFullYear() + '-' + String(hj.getMonth() + 1).padStart(2, '0') + '-' + String(hj.getDate()).padStart(2, '0');
   document.getElementById('rv_numero').value =
     String(hj.getFullYear()).slice(2) + String(hj.getMonth() + 1).padStart(2, '0') + String(Math.floor(Math.random() * 900) + 100);
+  document.getElementById('rv_itens').innerHTML = '';
+  rvAddItem({ plano: true }, false);
+}
 
+(function rvInit() {
   document.getElementById('rv_fone').addEventListener('input', function (e) {
     e.target.value = formatFone(e.target.value);
   });
@@ -3750,7 +3764,7 @@ async function gerarPropostaRenov(tipo) {
   document.getElementById('rv_atalhos').innerHTML = RV_ATALHOS.map(function (a, i) {
     return '<button type="button" onclick="rvAddItem(RV_ATALHOS[' + i + '], true)">+ ' + esc(a.nome) + '</button>';
   }).join('');
-  rvAddItem({ plano: true }, false);
+  rvValoresIniciais();
   window.addEventListener('resize', rvAjustarEscala);
 })();
 
@@ -4109,7 +4123,8 @@ async function enviarFinanceiro() {
     if (!r.ok) throw new Error(resp.erro || (r.status === 413 ? 'Arquivo grande demais para o envio.' : 'O envio falhou (erro ' + r.status + ').'));
 
     const hora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-    finStatus('<b>Enviado ao financeiro às ' + hora + '.</b> E-mail "' + esc(envio.assunto) + '" com o termo assinado anexo.', true);
+    finStatus('<b>Enviado ao financeiro às ' + hora + '.</b> E-mail "' + esc(envio.assunto) + '" com o termo assinado anexo.' +
+      '<div class="fin-status-acao"><button type="button" class="next-btn" onclick="novaRenovacao(true)">&#8634; Começar nova renovação</button></div>', true);
     showToast('Enviado ao financeiro!', 'success');
     finEnviado = true;
     btn.innerHTML = '&#10003; Enviado ao financeiro';
@@ -4442,6 +4457,58 @@ async function gerarTermoIa(tipo) {
   taRender();
 })();
 
+
+/* ══════════════════════════════════════════════════════════════════
+   NOVA RENOVAÇÃO — limpa as três etapas para começar outra do zero.
+   Mantém o perfil e não mexe na Proposta Comercial nem no Termo de Adesão IA.
+   ══════════════════════════════════════════════════════════════════ */
+// Volta os campos ao que está no HTML (value/checked/selected padrão)
+function restaurarCampos(el) {
+  el.querySelectorAll('input, select, textarea').forEach(function (c) {
+    if (c.type === 'file') c.value = '';
+    else if (c.type === 'checkbox' || c.type === 'radio') c.checked = c.defaultChecked;
+    else if (c.tagName === 'SELECT') {
+      c.selectedIndex = Math.max(0, Array.prototype.findIndex.call(c.options, function (o) { return o.defaultSelected; }));
+    } else c.value = c.defaultValue;
+  });
+}
+
+function novaRenovacao(semConfirmar) {
+  const v = function (id) { return document.getElementById(id).value.trim(); };
+  const temDados = v('rv_cliente') || v('nomeEmpresarial') || v('cnpj') || v('fin_idLoja') || finArquivo || renovacaoAtual;
+  if (temDados && !semConfirmar &&
+      !window.confirm('Começar uma nova renovação? O que foi preenchido na proposta, no termo e no envio ao financeiro será apagado.')) return;
+
+  // Etapa 1 — Proposta de Renovação
+  restaurarCampos(document.getElementById('viewPropostaRenov'));
+  rvValoresIniciais();
+
+  // Etapa 2 — Termo de Renovação
+  restaurarCampos(document.getElementById('viewTermo'));
+  document.getElementById('dia').value = hoje.getDate();
+  document.getElementById('mes').value = mesesAcentos[hoje.getMonth()];
+  document.getElementById('parcelas').innerHTML = '<option value="">Selecione as parcelas</option>';
+  document.getElementById('parcelasPreview').classList.add('hidden');
+  onPlanoChange();
+  onPagamentoChange();
+  document.getElementById('impRes').innerHTML = '';
+  document.getElementById('impRes').classList.add('hidden');
+
+  // Etapa 3 — Enviar ao Financeiro
+  restaurarCampos(document.getElementById('viewFinanceiro'));
+  renovacaoAtual = null;
+  finArquivo = null;
+  finEnviado = false;
+  document.getElementById('btnFin').disabled = false;
+  document.getElementById('btnFin').innerHTML = BTN_FIN_HTML;
+  document.getElementById('finStatus').innerHTML = '';
+  finPropUI();
+  finTermoUI();
+
+  aplicarPerfil();   // devolve consultor e solicitante e redesenha as prévias
+  trocarAba('propostaRenov');
+  showToast('Pronto! Comece a nova renovação.', 'success');
+}
 
 /* ══════════════════════════════════════════════════════════════════
    PERFIL — quem está usando, sem login nem banco de dados.
