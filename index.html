@@ -866,7 +866,6 @@ footer {
   .tab { font-size: 10.5px; letter-spacing: 0.05em; padding: 12px 6px; gap: 6px; }
   .subtab { font-size: 11.5px; padding: 10px 8px 11px; flex: 1; }
   .import-top { flex-direction: column; align-items: stretch; }
-  .import-res .tipo-toggle { flex-direction: column; }
   .preview-wrap { padding: 12px; }
 }
 
@@ -913,8 +912,8 @@ footer {
   <div class="import-box" id="impBox">
     <div class="import-top">
       <div class="import-txt">
-        <div class="import-t">O cliente aceitou uma Proposta de Renovação?</div>
-        <div class="import-d">Suba o PDF ou a imagem gerada aqui no gerador (ou arraste o arquivo para esta caixa) e o termo vem preenchido.</div>
+        <div class="import-t">O cliente fechou a Renovação Anual?</div>
+        <div class="import-d">Suba o PDF ou a imagem da Proposta de Renovação gerada aqui no gerador (ou arraste o arquivo para esta caixa) e o termo vem preenchido.</div>
       </div>
       <button type="button" class="import-btn" onclick="document.getElementById('impArquivo').click()">Subir proposta</button>
       <input type="file" id="impArquivo" accept=".pdf,.png,.jpg,.jpeg,application/pdf,image/*" class="hidden"/>
@@ -1579,7 +1578,7 @@ footer {
         Gerar PDF
       </button>
     </div>
-    <p class="rv-guarde">Quando o cliente aceitar, suba este arquivo em <b>Termos › Termo de Renovação</b> e o termo vem preenchido.</p>
+    <p class="rv-guarde" id="rv_guarde">Se o cliente fechar o anual, suba este arquivo em <b>Termos › Termo de Renovação</b> e o termo vem preenchido.</p>
   </section>
 
   <!-- ══════════ TERMO DE ADESÃO IA ══════════ -->
@@ -3321,12 +3320,15 @@ function rvMontarPapel(d) {
       d.condicoes.split('\n').map(function (l) { return '<p>' + esc(l) + '</p>'; }).join('') + '</div>'
     : '';
 
+  // Só o anual tem termo para assinar — na mensalidade o cliente não assina nada,
+  // então proposta só de mensalidade não tem "Como renovar"
   const contato = [esc(d.consultor), esc(d.consultorContato)].filter(Boolean).join(' · ');
-  const passos = [
-    ambos ? ['Escolha a modalidade', 'Mensal ou anual — a que fizer mais sentido para a sua loja.']
+  const passos = !d.onAnual ? [] : [
+    ambos ? ['Escolha a modalidade', 'Mensalidade ou anual — a que fizer mais sentido para a sua loja.']
           : ['Confira os valores', 'Veja os produtos incluídos e o total da renovação.'],
     ['Confirme com o consultor', 'Responda esta proposta' + (contato ? ' para ' + contato : '') + '.'],
-    ['Assine o termo', 'Enviamos o Termo de Renovação para a sua assinatura.']
+    ambos ? ['No anual, assine o termo', 'Enviamos o Termo de Renovação para a sua assinatura. Na mensalidade, não é preciso assinar nada.']
+          : ['Assine o termo', 'Enviamos o Termo de Renovação para a sua assinatura.']
   ];
 
   return '' +
@@ -3363,16 +3365,20 @@ function rvMontarPapel(d) {
       : '') +
     condicoes +
 
-    '<div class="pp-sec">Como Renovar</div>' +
-    '<div class="rv-steps">' + passos.map(function (p, i) {
-      return '<div class="rv-step"><div class="rv-step-n">' + (i + 1) + '</div>' +
-        '<div class="rv-step-t">' + p[0] + '</div><div class="rv-step-d">' + p[1] + '</div></div>';
-    }).join('') + '</div>' +
+    (passos.length
+      ? '<div class="pp-sec">Como Renovar</div>' +
+        '<div class="rv-steps">' + passos.map(function (p, i) {
+          return '<div class="rv-step"><div class="rv-step-n">' + (i + 1) + '</div>' +
+            '<div class="rv-step-t">' + p[0] + '</div><div class="rv-step-d">' + p[1] + '</div></div>';
+        }).join('') + '</div>'
+      : '') +
 
     '<div class="pp-fine">' +
       '<b>Condições gerais:</b> proposta válida por ' + esc(d.validade) + ' dias a contar de ' + d.data + '. ' +
-      'Não serão considerados acordos verbais, apenas os formalizados por escrito. ' +
-      'A renovação é formalizada mediante assinatura do Termo de Renovação.' +
+      'Não serão considerados acordos verbais, apenas os formalizados por escrito.' +
+      (!d.onAnual ? ''
+        : ambos ? ' Na renovação anual, a contratação é formalizada mediante assinatura do Termo de Renovação.'
+        : ' A renovação é formalizada mediante assinatura do Termo de Renovação.') +
     '</div>' +
   '</div>' +
   '<div class="pp-foot"><span>Revenda Mais  ·  revendamais.com.br/planos</span><span>Página 1 | 1</span></div>';
@@ -3395,6 +3401,7 @@ function rvRender() {
   document.getElementById('rv_itensCard').classList.toggle('rv-sem-anual', !d.onAnual);
   document.getElementById('rv_formaMensalWrap').classList.toggle('hidden', !d.onMensal);
   document.getElementById('rv_tipoAnualWrap').classList.toggle('hidden', !d.onAnual);
+  document.getElementById('rv_guarde').classList.toggle('hidden', !d.onAnual);
 
   const anualTxt = d.tipoAnual === 'vista' ? pBRL(d.totalAnual) + ' à vista' : '12x de ' + pBRL(d.anualMes);
   document.getElementById('rv_totalLabel').textContent = d.onMensal ? 'Mensal' : 'Anual';
@@ -3454,10 +3461,9 @@ async function gerarPropostaRenov(tipo) {
 
 /* ══════════════════════════════════════════════════════════════════
    PROPOSTA ACEITA → TERMO DE RENOVAÇÃO
-   Sobe o PDF/PNG da Proposta de Renovação e o termo vem preenchido com a modalidade escolhida
+   Sobe o PDF/PNG da Proposta de Renovação e o termo vem preenchido com a renovação anual.
+   Só o anual tem termo — na mensalidade o cliente não assina nada.
    ══════════════════════════════════════════════════════════════════ */
-let propostaImportada = null;
-
 async function impLerArquivo(arquivo) {
   if (!arquivo) return;
   const txt = new TextDecoder('latin1').decode(await arquivo.arrayBuffer());
@@ -3465,23 +3471,18 @@ async function impLerArquivo(arquivo) {
   let p = null;
   try { p = m ? JSON.parse(deB64Utf8(m[1])) : null; } catch (e) { p = null; }
   if (!p || p.tipo !== 'renovacao') {
-    propostaImportada = null;
     impMostrar('<div class="import-msg"><b>' + esc(arquivo.name) + '</b> não tem os dados de uma Proposta de Renovação. ' +
       'Use o PDF ou a imagem baixados aqui no gerador — a imagem enviada como foto pelo WhatsApp perde esses dados.</div>');
     return;
   }
-  propostaImportada = p;
-  const ambos = p.onMensal && p.onAnual;
-  impMostrar(
-    '<div class="import-res-t">Proposta nº ' + (esc(p.numero) || '—') + ' · ' + esc(p.cliente) + ' <span>· ' + esc(p.data) + '</span></div>' +
-    (ambos ? '<div class="import-d">Qual modalidade o cliente aceitou?</div>' : '') +
-    '<div class="tipo-toggle">' +
-      (p.onMensal ? '<button type="button" class="tipo-btn" id="impBtnMensal" onclick="impAplicar(\'mensal\')">Mensal — ' + pBRL(p.totalMensal) + '/mês</button>' : '') +
-      (p.onAnual ? '<button type="button" class="tipo-btn" id="impBtnAnual" onclick="impAplicar(\'anual\')">Anual — ' +
-        (p.tipoAnual === 'vista' ? pBRL(p.totalAnual) + ' à vista' : '12x de ' + pBRL(p.anualMes)) + '</button>' : '') +
-    '</div>' +
-    '<div id="impMsg"></div>');
-  if (!ambos) impAplicar(p.onMensal ? 'mensal' : 'anual');
+  const titulo = '<div class="import-res-t">Proposta nº ' + (esc(p.numero) || '—') + ' · ' + esc(p.cliente) +
+    ' <span>· ' + esc(p.data) + '</span></div>';
+  if (!p.onAnual) {
+    impMostrar(titulo + '<div class="import-msg">Esta proposta é só de <b>Mensalidade</b> — na mensalidade o cliente não assina termo.</div>');
+    return;
+  }
+  impMostrar(titulo + '<div id="impMsg"></div>');
+  impPreencherTermo(p);
 }
 
 function impMostrar(html) {
@@ -3496,16 +3497,9 @@ function impPlanoTermo(nome) {
   return k ? { valor: k === 'integrador' ? 'Integrador' : k, cfg: PLANOS[k] } : null;
 }
 
-function impAplicar(modalidade) {
-  const p = propostaImportada;
-  if (!p) return;
-  const anual = modalidade === 'anual';
-  const vista = anual && p.tipoAnual === 'vista';
+function impPreencherTermo(p) {
+  const vista = p.tipoAnual === 'vista';
   const set = function (id, v) { document.getElementById(id).value = v; };
-  ['Mensal', 'Anual'].forEach(function (m) {
-    const b = document.getElementById('impBtn' + m);
-    if (b) b.classList.toggle('active', m.toLowerCase() === modalidade);
-  });
 
   // Razão social e CNPJ não estão na proposta — limpa para não sobrar de outro cliente
   set('nomeEmpresarial', '');
@@ -3519,12 +3513,11 @@ function impAplicar(modalidade) {
   set('numVeiculos', pl ? pl.cfg.veiculos : '');
   set('numUsuarios', pl ? pl.cfg.usuarios : '');
 
-  const campo = anual ? 'anual' : 'mensal';
   set('condicoesCombinadas', [
-    (anual ? 'Renovação Anual' : 'Mensalidade') + ' conforme Proposta de Renovação nº ' + (p.numero || '—') + ', de ' + p.data + '.',
+    'Renovação Anual conforme Proposta de Renovação nº ' + (p.numero || '—') + ', de ' + p.data + '.',
     'Valor mensal: ' + p.itens.map(function (i) {
-      return i.nome + ' (' + (i[campo] > 0 ? pBRL(i[campo]) : 'incluso') + ')';
-    }).join(' + ') + ' = ' + pBRL(anual ? p.anualMes : p.totalMensal) + '.',
+      return i.nome + ' (' + (i.anual > 0 ? pBRL(i.anual) : 'incluso') + ')';
+    }).join(' + ') + ' = ' + pBRL(p.anualMes) + '.',
     p.aParte.length ? 'Cobrados à parte, via boleto mensal: ' + p.aParte.map(function (a) {
       return a.nome + ' (' + pBRL(a.valor) + ')';
     }).join(' e ') + '.' : '',
@@ -3532,24 +3525,22 @@ function impAplicar(modalidade) {
     p.condicoes
   ].filter(Boolean).join('\n'));
 
-  // Anual: valor do termo = 12 parcelas. Mensal: o termo só tem fidelidade semestral ou anual,
-  // então valor e fidelidade ficam para o consultor definir
-  pSetMoney('valorPlano', anual ? p.anualMes * 12 : 0);
-  set('fidelidade', anual ? '12' : '');
-  set('formaPagamento', anual
-    ? (vista ? 'boletopix' : 'cartao')
-    : ({ 'Cartão de crédito': 'cartao', 'Boleto / PIX': 'boletopix' }[p.formaMensal] || ''));
+  // Valor do termo = 12 parcelas, fidelidade de 12 meses
+  pSetMoney('valorPlano', p.anualMes * 12);
+  set('fidelidade', '12');
+  set('formaPagamento', vista ? 'boletopix' : 'cartao');
   document.getElementById('parcelas').innerHTML = '<option value="">Selecione as parcelas</option>';
   document.getElementById('parcelasPreview').classList.add('hidden');
   onFidelidadeChange();   // monta as parcelas e mostra/esconde o parcelamento
-  if (anual && !vista) { set('parcelas', '12'); onParcelasChange(); }
+  if (!vista) { set('parcelas', '12'); onParcelasChange(); }
 
-  const confira = pl ? 'confira veículos e usuários (vieram da tabela do plano)' : 'preencha veículos e usuários';
-  document.getElementById('impMsg').innerHTML = anual
-    ? '<div class="import-msg ok"><b>Termo preenchido com a Renovação Anual.</b> Agora complete o <b>Nome Empresarial</b> e o <b>CNPJ</b> e ' + confira + '.' +
-      (vista ? ' Pagamento à vista marcado como Boleto / PIX — troque se for no cartão.' : '') + '</div>'
-    : '<div class="import-msg"><b>Mensalidade:</b> plano, pagamento e condições preenchidos. O termo só tem fidelidade semestral ou anual — ' +
-      '<b>escolha a fidelidade e preencha o valor total</b>. Complete também o <b>Nome Empresarial</b> e o <b>CNPJ</b> e ' + confira + '.</div>';
+  document.getElementById('impMsg').innerHTML =
+    '<div class="import-msg ok"><b>Termo preenchido com a Renovação Anual — ' +
+      (vista ? pBRL(p.totalAnual) + ' à vista' : '12x de ' + pBRL(p.anualMes)) + '.</b> ' +
+      'Agora complete o <b>Nome Empresarial</b> e o <b>CNPJ</b> e ' +
+      (pl ? 'confira veículos e usuários (vieram da tabela do plano)' : 'preencha veículos e usuários') + '.' +
+      (vista ? ' Pagamento à vista marcado como Boleto / PIX — troque se for no cartão.' : '') +
+    '</div>';
   document.getElementById('nomeEmpresarial').focus();
 }
 
