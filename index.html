@@ -382,7 +382,15 @@ footer {
 /* ── Etapas da renovação ── */
 .steps-barra { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
 .steps-barra-t { font-size: 10px; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-muted); }
-.steps { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 36px; }
+.steps { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 36px; }
+.subtabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 36px; }
+.subtab {
+  font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 600; color: var(--text-muted);
+  background: transparent; border: none; border-bottom: 2.5px solid transparent; margin-bottom: -1px;
+  padding: 10px 14px 11px; cursor: pointer; transition: color 0.15s, border-color 0.15s;
+}
+.subtab:hover { color: var(--text-heading); }
+.subtab.active { color: var(--red); border-bottom-color: var(--red); font-weight: 700; }
 .step {
   font-family: 'Poppins', sans-serif; text-align: left;
   display: flex; align-items: flex-start; gap: 12px;
@@ -835,6 +843,7 @@ footer {
 .fin-status { margin-top: 14px; }
 .fin-erro { color: var(--error); font-weight: 600; }
 .fin-status-acao { margin-top: 12px; }
+.fin-leitura { grid-column: span 2; }
 .btn-row.um { grid-template-columns: 1fr; }
 
 /* ══════════════════════════════════════════════════════════
@@ -961,7 +970,8 @@ footer {
   .next-step { flex-direction: column; align-items: stretch; }
   .import-top { flex-direction: column; align-items: stretch; }
   .import-acoes { flex-direction: column; }
-  .fin-arq, .email-prev { grid-column: span 1; }
+  .fin-arq, .email-prev, .fin-leitura { grid-column: span 1; }
+  .subtab { font-size: 11.5px; padding: 10px 8px 11px; flex: 1; }
   .fin-arq { flex-wrap: wrap; }
   .ola { flex-direction: column; align-items: flex-start; }
   .ola-t { font-size: 21px; }
@@ -1000,9 +1010,9 @@ footer {
       <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
       Renovação
     </button>
-    <button class="tab" id="tabGrupoProposta" onclick="trocarGrupo('proposta')">
+    <button class="tab" id="tabGrupoPropostas" onclick="trocarGrupo('propostas')">
       <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
-      Proposta Comercial
+      Propostas
     </button>
     <button class="tab" id="tabGrupoTermoIa" onclick="trocarGrupo('termoIa')">
       <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
@@ -1010,31 +1020,33 @@ footer {
     </button>
   </nav>
 
-  <!-- Renovação: as três etapas do processo, na ordem em que acontecem -->
+  <!-- Propostas: os documentos de venda e de renovação -->
+  <div class="subtabs hidden" id="subPropostas">
+    <button class="subtab" id="tabProposta" onclick="trocarAba('proposta')">Proposta Comercial</button>
+    <button class="subtab" id="tabPropostaRenov" onclick="trocarAba('propostaRenov')">Proposta de Renovação</button>
+  </div>
+
+  <!-- Renovação: as duas etapas do processo, na ordem em que acontecem -->
   <div id="renovNav">
   <div class="steps-barra">
-    <span class="steps-barra-t">Renovação em 3 etapas</span>
+    <span class="steps-barra-t">Renovação em 2 etapas</span>
     <button type="button" class="ola-btn" onclick="novaRenovacao(false)">&#8634; Nova renovação</button>
   </div>
   <nav class="steps" id="renovSteps">
-    <button class="step active" id="passo1" onclick="trocarAba('propostaRenov')">
+    <button class="step active" id="passo1" onclick="trocarAba('termo')">
       <span class="step-n">1</span>
-      <span class="step-txt"><span class="step-t">Proposta de Renovação</span><span class="step-d">Monte a mensalidade e o anual e envie ao cliente</span></span>
+      <span class="step-txt"><span class="step-t">Termo de Renovação</span><span class="step-d">Gere o termo para o cliente assinar</span></span>
     </button>
-    <button class="step" id="passo2" onclick="trocarAba('termo')">
+    <button class="step" id="passo2" onclick="trocarAba('financeiro')">
       <span class="step-n">2</span>
-      <span class="step-txt"><span class="step-t">Termo de Renovação</span><span class="step-d">Cliente fechou o anual? Gere o termo para assinar</span></span>
-    </button>
-    <button class="step" id="passo3" onclick="trocarAba('financeiro')">
-      <span class="step-n">3</span>
-      <span class="step-txt"><span class="step-t">Enviar ao Financeiro</span><span class="step-d">Termo assinado? Mande a renovação ao financeiro</span></span>
+      <span class="step-txt"><span class="step-t">Enviar ao Financeiro</span><span class="step-d">Suba o termo assinado e mande ao financeiro</span></span>
     </button>
   </nav>
   </div>
 
-  <section id="viewTermo" class="hidden">
+  <section id="viewTermo">
   <div class="page-header">
-    <div class="page-eyebrow">Renovação · Etapa 2 de 3</div>
+    <div class="page-eyebrow">Renovação · Etapa 1 de 2</div>
     <h1 class="page-title">Termo de<br/><span>Renovação</span></h1>
   </div>
 
@@ -1042,11 +1054,11 @@ footer {
   <div class="import-box" id="impBox">
     <div class="import-top">
       <div class="import-txt">
-        <div class="import-t">O cliente fechou a Renovação Anual?</div>
-        <div class="import-d">Use a proposta da etapa 1 ou suba o PDF / imagem da proposta gerada aqui (ou arraste o arquivo para esta caixa) e o termo vem preenchido.</div>
+        <div class="import-t">Já fez a Proposta de Renovação? <span style="font-weight:500;color:var(--text-muted)">(opcional)</span></div>
+        <div class="import-d">Puxe os dados dela e o termo vem preenchido. Não fez? É só preencher abaixo.</div>
       </div>
       <div class="import-acoes">
-        <button type="button" class="import-btn sec hidden" id="impUsarEtapa1" onclick="impUsarEtapa1()">Usar proposta da etapa 1</button>
+        <button type="button" class="import-btn sec hidden" id="impUsarEtapa1" onclick="impUsarEtapa1()">Usar a proposta montada</button>
         <button type="button" class="import-btn" onclick="document.getElementById('impArquivo').click()">Subir proposta</button>
       </div>
       <input type="file" id="impArquivo" accept=".pdf,.png,.jpg,.jpeg,application/pdf,image/*" class="hidden"/>
@@ -1178,9 +1190,9 @@ footer {
   <div class="next-step">
     <div class="next-step-txt">
       <div class="next-step-l">Próxima etapa</div>
-      <div class="next-step-t">Mande o termo para o cliente assinar. Voltou assinado (foto ou PDF)? Monte o e-mail da renovação para o financeiro.</div>
+      <div class="next-step-t">Mande o termo para o cliente assinar. Voltou assinado (foto ou PDF)? Envie ao financeiro.</div>
     </div>
-    <button type="button" class="next-btn" onclick="trocarAba('financeiro')">Enviar ao financeiro →</button>
+    <button type="button" class="next-btn" onclick="irParaFinanceiro()">Enviar ao financeiro →</button>
   </div>
   </section>
 
@@ -1583,9 +1595,9 @@ footer {
   </section>
 
   <!-- ══════════ PROPOSTA DE RENOVAÇÃO ══════════ -->
-  <section id="viewPropostaRenov">
+  <section id="viewPropostaRenov" class="hidden">
     <div class="page-header">
-      <div class="page-eyebrow">Renovação · Etapa 1 de 3</div>
+      <div class="page-eyebrow">Revenda Mais</div>
       <h1 class="page-title">Proposta de<br/><span>Renovação</span></h1>
     </div>
 
@@ -1722,9 +1734,9 @@ footer {
     <div class="next-step" id="rv_proximo">
       <div class="next-step-txt">
         <div class="next-step-l">Próxima etapa</div>
-        <div class="next-step-t">Cliente fechou o anual? Gere o Termo de Renovação com os dados desta proposta.</div>
+        <div class="next-step-t">Cliente fechou o anual? Gere o Termo de Renovação já preenchido com esta proposta.</div>
       </div>
-      <button type="button" class="next-btn" onclick="trocarAba('termo')">Gerar o termo →</button>
+      <button type="button" class="next-btn" onclick="gerarTermoDaProposta()">Gerar o termo →</button>
     </div>
     <div class="next-step fim hidden" id="rv_fimMensal">
       <div class="next-step-txt">
@@ -1737,7 +1749,7 @@ footer {
   <!-- ══════════ RENOVAÇÃO · ENVIAR AO FINANCEIRO ══════════ -->
   <section id="viewFinanceiro" class="hidden">
     <div class="page-header">
-      <div class="page-eyebrow">Renovação · Etapa 3 de 3</div>
+      <div class="page-eyebrow">Renovação · Etapa 2 de 2</div>
       <h1 class="page-title">Enviar ao<br/><span>Financeiro</span></h1>
     </div>
 
@@ -1745,37 +1757,22 @@ footer {
     <div class="card">
       <div class="card-header">
         <div class="card-num">01</div>
-        <span class="card-title" id="finCard1T">Proposta e Termo Assinado</span>
+        <span class="card-title">Termo Assinado</span>
       </div>
       <div class="card-body">
-        <div class="fin-arq" id="finProp">
-          <div class="fin-arq-ic"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg></div>
-          <div class="fin-arq-txt">
-            <div class="fin-arq-t" id="finPropT">Nenhuma proposta carregada</div>
-            <div class="fin-arq-d" id="finPropD">Os dados do e-mail vêm da Proposta de Renovação — ou preencha à mão abaixo.</div>
-          </div>
-          <div class="import-acoes">
-            <button type="button" class="import-btn sec hidden" id="finUsarEtapa1" onclick="finUsarEtapa1()">Usar etapa 1</button>
-            <button type="button" class="import-btn sec" onclick="document.getElementById('finPropArquivo').click()">Subir proposta</button>
-          </div>
-          <input type="file" id="finPropArquivo" accept=".pdf,.png,application/pdf,image/png" class="hidden"/>
-        </div>
         <div class="fin-arq" id="finTermo">
           <div class="fin-arq-ic"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg></div>
           <div class="fin-arq-txt">
-            <div class="fin-arq-t" id="finTermoT">Termo assinado</div>
-            <div class="fin-arq-d" id="finTermoD">Foto ou PDF do termo assinado pelo cliente — vai anexo no e-mail. Você também pode arrastar o arquivo para cá.</div>
+            <div class="fin-arq-t" id="finTermoT">Suba o termo assinado</div>
+            <div class="fin-arq-d" id="finTermoD"></div>
           </div>
-          <button type="button" class="import-btn" id="finTermoBtn" onclick="document.getElementById('finTermoArquivo').click()">Subir termo</button>
-          <input type="file" id="finTermoArquivo" accept=".pdf,application/pdf,image/*" class="hidden"/>
-        </div>
-        <div class="fin-arq hidden" id="finTermoNota">
-          <div class="fin-arq-ic"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg></div>
-          <div class="fin-arq-txt">
-            <div class="fin-arq-t">Termo assinado: anexe no Outlook</div>
-            <div class="fin-arq-d">O e-mail abre pronto no Outlook — é só arrastar a foto ou o PDF do termo assinado para ele e clicar em Enviar.</div>
+          <div class="import-acoes">
+            <button type="button" class="import-btn sec hidden" id="finUsarTermo" onclick="finUsarTermo()">Usar o termo da etapa 1</button>
+            <button type="button" class="import-btn" id="finTermoBtn" onclick="document.getElementById('finTermoArquivo').click()">Subir termo</button>
           </div>
+          <input type="file" id="finTermoArquivo" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/*" class="hidden"/>
         </div>
+        <div class="fin-leitura hidden" id="finLeitura"></div>
       </div>
     </div>
 
@@ -2337,14 +2334,22 @@ function coletarDados() {
 }
 
 // ── Gerar DOCX ─────────────────────────────────────────────────────
+// Dados do termo escondidos no arquivo, para a etapa "Enviar ao Financeiro" ler o termo assinado
+function marcaTermo(d) {
+  return MARCA_PROPOSTA + b64Utf8(JSON.stringify(Object.assign({ v: 1, tipo: 'termo-renovacao' }, d))) + MARCA_FIM;
+}
+
 async function gerarDocx(d) {
-  const ct='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="png" ContentType="image/png"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>';
-  const rels='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>';
+  const ct='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="png" ContentType="image/png"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/></Types>';
+  const rels='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/></Relationships>';
+  // Palavras-chave do documento: o Word também as leva para o PDF quando "Salvar como PDF"
+  const core='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:title>Termo de Renovação</dc:title><cp:keywords>'+marcaTermo(d)+'</cp:keywords></cp:coreProperties>';
   const wRels='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/logo.png"/></Relationships>';
   const logoBytes=Uint8Array.from(atob(LOGO_B64),c=>c.charCodeAt(0));
   const zip=new JSZip();
   zip.file('[Content_Types].xml',ct);
   zip.file('_rels/.rels',rels);
+  zip.file('docProps/core.xml',core);
   zip.file('word/document.xml',montarDocXml(d));
   zip.file('word/_rels/document.xml.rels',wRels);
   zip.file('word/media/logo.png',logoBytes);
@@ -2435,6 +2440,7 @@ async function gerarPdfViaHtml(d) {
 
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    pdf.setProperties({ title: 'Termo de Renovação', keywords: marcaTermo(d) });
     for (let i = 0; i < folhas.length; i++) {
       folhas.forEach(function(f, j) { f.style.display = j === i ? '' : 'none'; });
       const canvas = await html2canvas(folhas[i], {
@@ -2492,22 +2498,22 @@ async function gerarDocumento(tipo) {
 /* ══════════════════════════════════════════════════════════════════
    ABAS
    ══════════════════════════════════════════════════════════════════ */
-// Cada tela pertence a uma aba de cima. A Renovação tem três etapas (proposta → termo → financeiro);
-// para incluir uma nova tela, basta acrescentar aqui e criar a <section> correspondente.
+// Cada tela pertence a uma aba de cima. A Renovação tem duas etapas (termo → financeiro) e
+// Propostas tem sub-abas; para incluir uma nova tela, basta acrescentar aqui e criar a <section>.
 const ABAS = {
-  propostaRenov: { view: 'viewPropostaRenov', grupo: 'renovacao', passo: 1 },
-  termo:         { view: 'viewTermo',         grupo: 'renovacao', passo: 2 },
-  financeiro:    { view: 'viewFinanceiro',    grupo: 'renovacao', passo: 3 },
-  proposta:      { view: 'viewProposta',      grupo: 'proposta' },
+  termo:         { view: 'viewTermo',         grupo: 'renovacao', passo: 1 },
+  financeiro:    { view: 'viewFinanceiro',    grupo: 'renovacao', passo: 2 },
+  proposta:      { view: 'viewProposta',      grupo: 'propostas', tab: 'tabProposta' },
+  propostaRenov: { view: 'viewPropostaRenov', grupo: 'propostas', tab: 'tabPropostaRenov' },
   termoIa:       { view: 'viewTermoIa',       grupo: 'termoIa' }
 };
 const GRUPOS = {
-  renovacao: { tab: 'tabGrupoRenovacao', titulo: 'Renovação' },
-  proposta:  { tab: 'tabGrupoProposta',  titulo: 'Gerador de Propostas' },
+  renovacao: { tab: 'tabGrupoRenovacao', nav: 'renovNav',     titulo: 'Renovação' },
+  propostas: { tab: 'tabGrupoPropostas', nav: 'subPropostas', titulo: 'Gerador de Propostas' },
   termoIa:   { tab: 'tabGrupoTermoIa',   titulo: 'Gerador de Termos' }
 };
-// Ao voltar para a Renovação, reabre a etapa em que a pessoa estava
-const ultimaAba = { renovacao: 'propostaRenov', proposta: 'proposta', termoIa: 'termoIa' };
+// Ao voltar para uma aba, reabre a tela em que a pessoa estava
+const ultimaAba = { renovacao: 'termo', propostas: 'proposta', termoIa: 'termoIa' };
 
 function trocarGrupo(grupo) {
   trocarAba(ultimaAba[grupo]);
@@ -2515,17 +2521,17 @@ function trocarGrupo(grupo) {
 
 function trocarAba(aba) {
   const grupo = ABAS[aba].grupo;
-  const renovacao = grupo === 'renovacao';
   ultimaAba[grupo] = aba;
   Object.keys(ABAS).forEach(function (k) {
     document.getElementById(ABAS[k].view).classList.toggle('hidden', k !== aba);
+    if (ABAS[k].tab) document.getElementById(ABAS[k].tab).classList.toggle('active', k === aba);
   });
   Object.keys(GRUPOS).forEach(function (g) {
     document.getElementById(GRUPOS[g].tab).classList.toggle('active', g === grupo);
+    if (GRUPOS[g].nav) document.getElementById(GRUPOS[g].nav).classList.toggle('hidden', g !== grupo);
   });
-  document.getElementById('tabsPrincipais').classList.toggle('com-etapas', renovacao);
-  document.getElementById('renovNav').classList.toggle('hidden', !renovacao);
-  [1, 2, 3].forEach(function (n) {
+  document.getElementById('tabsPrincipais').classList.toggle('com-etapas', !!GRUPOS[grupo].nav);
+  [1, 2].forEach(function (n) {
     document.getElementById('passo' + n).classList.toggle('active', ABAS[aba].passo === n);
   });
   document.getElementById('headerSub').textContent = GRUPOS[grupo].titulo;
@@ -2534,7 +2540,7 @@ function trocarAba(aba) {
   if (aba === 'proposta') setTimeout(pAjustarEscala, 30);
   if (aba === 'termoIa') setTimeout(taAjustarEscala, 30);
   if (aba === 'propostaRenov') setTimeout(rvAjustarEscala, 30);
-  if (aba === 'termo' || aba === 'financeiro') atualizarAtalhosEtapa1();
+  if (aba === 'termo' || aba === 'financeiro') atualizarAtalhos();
 }
 
 /* ══════════════════════════════════════════════════════════════════
@@ -3790,34 +3796,64 @@ function rvValoresIniciais() {
 })();
 
 /* ══════════════════════════════════════════════════════════════════
-   RENOVAÇÃO · ETAPA 2 — PROPOSTA ACEITA → TERMO DE RENOVAÇÃO
-   Usa a proposta da etapa 1 (ou o PDF/PNG dela) e o termo vem preenchido com a renovação anual.
+   RENOVAÇÃO · ETAPA 1 — TERMO DE RENOVAÇÃO
+   Preenchido à mão ou, se a pessoa já fez a Proposta de Renovação, com os dados dela.
    Só o anual tem termo — na mensalidade o cliente não assina nada.
    ══════════════════════════════════════════════════════════════════ */
-// Proposta em andamento: preenche o termo (etapa 2) e o e-mail do financeiro (etapa 3)
-let renovacaoAtual = null;
 const MSG_SEM_DADOS = ' não tem os dados de uma Proposta de Renovação. Use o PDF ou a imagem baixados aqui no gerador — ' +
   'a imagem enviada como foto pelo WhatsApp perde esses dados.';
 
-// Lê os dados escondidos no PDF/PNG da proposta; null se o arquivo não tiver
+// Lê os dados escondidos num arquivo gerado aqui (PDF, PNG ou Word); null se não tiver
+async function lerDadosArquivo(arquivo) {
+  let txt = '';
+  if (/\.docx$/i.test(arquivo.name)) {
+    try {
+      const core = (await JSZip.loadAsync(await arquivo.arrayBuffer())).file('docProps/core.xml');
+      txt = core ? await core.async('string') : '';
+    } catch (e) { return null; }
+  } else {
+    txt = new TextDecoder('latin1').decode(await arquivo.arrayBuffer());
+  }
+  const b64 = acharMarca(txt);
+  try { return b64 ? JSON.parse(deB64Utf8(b64)) : null; } catch (e) { return null; }
+}
+// Acha a marca no texto do arquivo. O Word/LibreOffice, ao "Salvar como PDF", grava as
+// palavras-chave em UTF-16 (em hexadecimal <FEFF0052...> ou com bytes nulos entre as letras)
+// e pode trocar o ":" por ", " (separador de palavras-chave) — o base64 nunca tem esses sinais.
+function acharMarca(txt) {
+  const procurar = function (t) { const m = t.match(/RVMAIS-PROPOSTA[:;,\s]+([A-Za-z0-9+\/=]+)[:;,\s]+FIM/); return m ? m[1] : null; };
+  const direto = procurar(txt) || procurar(txt.replace(/\\000/g, '').replace(/\0/g, ''));
+  if (direto) return direto;
+  const hexas = txt.match(/<FEFF[0-9A-Fa-f\s]+>/g) || [];
+  for (let i = 0; i < hexas.length; i++) {
+    const hex = hexas[i].slice(5, -1).replace(/\s+/g, '');
+    let t = '';
+    for (let k = 0; k + 3 < hex.length; k += 4) t += String.fromCharCode(parseInt(hex.slice(k, k + 4), 16));
+    const achou = procurar(t);
+    if (achou) return achou;
+  }
+  return null;
+}
 async function lerPropostaArquivo(arquivo) {
-  const txt = new TextDecoder('latin1').decode(await arquivo.arrayBuffer());
-  const m = txt.match(/RVMAIS-PROPOSTA:([A-Za-z0-9+\/=]+):FIM/);
-  try {
-    const p = m ? JSON.parse(deB64Utf8(m[1])) : null;
-    return p && p.tipo === 'renovacao' ? p : null;
-  } catch (e) { return null; }
+  const p = await lerDadosArquivo(arquivo);
+  return p && p.tipo === 'renovacao' ? p : null;
 }
 
-// Proposta montada na etapa 1 nesta mesma sessão, se já tiver o anual preenchido
-function propostaEtapa1() {
+// Proposta de Renovação montada na aba Propostas nesta sessão, se já tiver o anual preenchido
+function propostaMontada() {
   const d = rvColetar();
   return d.cliente && d.onAnual && d.anualMes > 0 ? Object.assign({ v: 1, tipo: 'renovacao' }, d) : null;
 }
-function atualizarAtalhosEtapa1() {
-  const tem = !!propostaEtapa1();
-  document.getElementById('impUsarEtapa1').classList.toggle('hidden', !tem);
-  document.getElementById('finUsarEtapa1').classList.toggle('hidden', !tem);
+function atualizarAtalhos() {
+  document.getElementById('impUsarEtapa1').classList.toggle('hidden', !propostaMontada());
+  document.getElementById('finUsarTermo').classList.toggle('hidden', !termoPreenchido());
+}
+// "Gerar o termo" na Proposta de Renovação: abre o termo já preenchido com ela
+function gerarTermoDaProposta() {
+  const p = propostaMontada();
+  if (!p) { showToast('Preencha o cliente e os valores do anual', 'error'); return; }
+  trocarAba('termo');
+  impCarregar(p);
 }
 
 function aceitarArquivoSolto(el, aoSoltar) {
@@ -3852,7 +3888,7 @@ async function impLerArquivo(arquivo) {
   impCarregar(p);
 }
 function impUsarEtapa1() {
-  const p = propostaEtapa1();
+  const p = propostaMontada();
   if (p) impCarregar(p);
 }
 function impCarregar(p) {
@@ -3864,7 +3900,6 @@ function impCarregar(p) {
   }
   impMostrar(titulo + '<div id="impMsg"></div>');
   impPreencherTermo(p);
-  finCarregar(p);   // a etapa 3 já fica preenchida com a mesma proposta
 }
 
 function impMostrar(html) {
@@ -3925,8 +3960,10 @@ function impPreencherTermo(p) {
 })();
 
 /* ══════════════════════════════════════════════════════════════════
-   RENOVAÇÃO · ETAPA 3 — ENVIAR AO FINANCEIRO
-   Monta o e-mail no formato que o financeiro já recebe e envia, com o termo assinado anexo,
+   RENOVAÇÃO · ETAPA 2 — ENVIAR AO FINANCEIRO
+   Lê o termo assinado quando ele foi gerado aqui (os dados vão escondidos no PDF/Word); foto ou
+   PDF de fora não dá para ler, e a pessoa preenche. Monta o e-mail no formato que o financeiro
+   já recebe e envia, com o termo assinado anexo,
    para /api/financeiro — função do Vercel que repassa ao fluxo do Power Automate.
    O link do fluxo fica só no Vercel (variável FINANCEIRO_FLOW_URL), fora deste código público.
    ══════════════════════════════════════════════════════════════════ */
@@ -3941,48 +3978,40 @@ let finArquivo = null;    // termo assinado: { nome, tipo, base64, tamanho }
 let finEnviado = false;
 let BTN_FIN_HTML = '';
 
-function finCarregar(p) {
-  if (!p.onAnual) {
-    renovacaoAtual = null;
-    finPropUI('Esta proposta é só de Mensalidade — na mensalidade não há termo nem envio ao financeiro.');
-    return;
-  }
-  renovacaoAtual = p;
-  const vista = p.tipoAnual === 'vista';
+// Termo de Renovação preenchido na etapa 1 nesta sessão (dados mínimos: empresa e valor)
+function termoPreenchido() {
+  return document.getElementById('nomeEmpresarial').value.trim() && document.getElementById('valorPlano').value.trim()
+    ? coletarDados() : null;
+}
+// Dados do termo (lidos do arquivo ou da etapa 1) → campos do e-mail do financeiro
+function finCarregarTermo(t) {
   const set = function (id, v) { document.getElementById(id).value = v; };
-  const crm = p.aParte.find(function (a) { return /crm/i.test(a.nome); });
-  set('fin_loja', p.cliente);
-  set('fin_planoAtual', planoDaProposta(p));
+  set('fin_loja', t.nome || '');
+  set('fin_planoAtual', /^\d/.test(t.plano || '') ? 'Plano ' + t.plano : (t.plano || ''));
   set('fin_novoPlano', 'Manter plano atual');
   set('fin_altAdic', 'Não, serão mantidos os mesmos produtos');
-  set('fin_crm', crm ? 'Possui contratado — ' + pBRL(crm.valor) + '/mês, boleto à parte' : 'Não possui contratado');
-  pSetMoney('fin_valor', p.anualMes * 12);
-  set('fin_forma', vista ? 'Boleto ou PIX' : 'Cartão de crédito');
-  set('fin_parcelas', vista ? 'À vista' : '12x de ' + pBRL(p.anualMes));
-  set('fin_obs', reforcoFechamento(p));
-  finPropUI();
+  set('fin_crm', /\bCRM\b/i.test(t.condicoes || '') ? 'Possui contratado — boleto à parte' : 'Não possui contratado');
+  pSetMoney('fin_valor', pParse(String(t.valor || '').replace(/[^\d.,]/g, '')));
+  set('fin_forma', t.forma === 'cartao' ? 'Cartão de crédito' : 'Boleto ou PIX');
+  set('fin_parcelas', t.forma === 'cartao' && t.parcelas ? t.parcelas + 'x de ' + t.valorParcela : '');
+  set('fin_obs', t.condicoes || '');
   finRender();
 }
-async function finLerProposta(arquivo) {
-  if (!arquivo) return;
-  const p = await lerPropostaArquivo(arquivo);
-  if (p) finCarregar(p);
-  else finPropUI(arquivo.name + MSG_SEM_DADOS);
+function finUsarTermo() {
+  const t = termoPreenchido();
+  if (!t) return;
+  finCarregarTermo(t);
+  finLeituraUI('<b>Dados do termo da etapa 1 preenchidos.</b> Confira abaixo e complete o ID da loja.', true);
 }
-function finUsarEtapa1() {
-  const p = propostaEtapa1();
-  if (p) finCarregar(p);
+// "Enviar ao financeiro" do termo: já leva os dados se a etapa 2 ainda estiver vazia
+function irParaFinanceiro() {
+  trocarAba('financeiro');
+  if (!document.getElementById('fin_loja').value.trim() && termoPreenchido()) finUsarTermo();
 }
-function finPropUI(erro) {
-  const p = renovacaoAtual;
-  const ok = !erro && !!p;
-  document.getElementById('finProp').classList.toggle('ok', ok);
-  document.getElementById('finPropT').textContent = ok ? 'Proposta nº ' + (p.numero || '—') + ' · ' + p.cliente : 'Nenhuma proposta carregada';
-  document.getElementById('finPropD').innerHTML = erro
-    ? '<span class="fin-erro">' + esc(erro) + '</span>'
-    : ok ? 'Renovação anual — ' + (p.tipoAnual === 'vista' ? pBRL(p.totalAnual) + ' à vista' : '12x de ' + pBRL(p.anualMes)) +
-        '. Dados preenchidos abaixo: confira e complete o ID da loja.'
-    : 'Os dados do e-mail vêm da Proposta de Renovação — ou preencha à mão abaixo.';
+function finLeituraUI(html, ok) {
+  const el = document.getElementById('finLeitura');
+  el.innerHTML = html ? '<div class="import-msg' + (ok ? ' ok' : '') + '">' + html + '</div>' : '';
+  el.classList.toggle('hidden', !html);
 }
 
 /* ── Termo assinado (foto ou PDF) ── */
@@ -4027,33 +4056,52 @@ async function finComprimirImagem(arquivo) {
     URL.revokeObjectURL(url);
   }
 }
+const TIPO_DOCX = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
 async function finLerTermo(arquivo) {
   if (!arquivo) return;
   const ehPdf = arquivo.type === 'application/pdf' || /\.pdf$/i.test(arquivo.name);
+  const ehDocx = /\.docx$/i.test(arquivo.name);
   try {
-    if (ehPdf) {
-      if (arquivo.size > FIN_MAX_ARQUIVO) throw new Error('PDF grande demais (' + tamanhoTxt(arquivo.size) + '). O limite é 3 MB.');
-      finArquivo = { nome: arquivo.name, tipo: 'application/pdf', base64: await arquivoBase64(arquivo), tamanho: arquivo.size };
+    if (ehPdf || ehDocx) {
+      if (arquivo.size > FIN_MAX_ARQUIVO) throw new Error('Arquivo grande demais (' + tamanhoTxt(arquivo.size) + '). O limite é 3 MB.');
+      finArquivo = { nome: arquivo.name, tipo: ehPdf ? 'application/pdf' : TIPO_DOCX, base64: await arquivoBase64(arquivo), tamanho: arquivo.size };
     } else if (/^image\//.test(arquivo.type)) {
       finArquivo = await finComprimirImagem(arquivo);
     } else {
-      throw new Error('Envie uma foto (JPG ou PNG) ou um PDF.');
+      throw new Error('Envie o PDF, o Word ou uma foto (JPG ou PNG) do termo assinado.');
     }
     finTermoUI();
   } catch (e) {
     finArquivo = null;
     finTermoUI(e.message);
+    finLeituraUI('');
+    finRender();
+    return;
+  }
+
+  // Termo gerado aqui leva os dados escondidos; foto ou PDF de fora a pessoa preenche
+  const dados = await lerDadosArquivo(arquivo);
+  if (dados && dados.tipo === 'termo-renovacao') {
+    finCarregarTermo(dados);
+    finLeituraUI('<b>Dados lidos do termo.</b> Confira abaixo e complete o ID da loja.', true);
+  } else if (dados && dados.tipo === 'renovacao') {
+    finArquivo = null;
+    finTermoUI();
+    finLeituraUI('<b>Esse arquivo é a Proposta de Renovação</b>, não o termo assinado. Suba o termo que o cliente assinou.');
+  } else {
+    finLeituraUI('<b>Não deu para ler os dados deste arquivo</b> (foto ou PDF assinado fora do gerador). Preencha os campos abaixo — o arquivo vai anexo normalmente.');
   }
   finRender();
 }
 function finTermoUI(erro) {
   const a = finArquivo;
   document.getElementById('finTermo').classList.toggle('ok', !!a);
-  document.getElementById('finTermoT').textContent = a ? a.nome : 'Termo assinado';
+  document.getElementById('finTermoT').textContent = a ? a.nome : 'Suba o termo assinado';
   document.getElementById('finTermoD').innerHTML = erro
     ? '<span class="fin-erro">' + esc(erro) + '</span>'
-    : a ? (a.tipo === 'application/pdf' ? 'PDF' : 'Foto') + ' · ' + tamanhoTxt(a.tamanho) + ' — vai anexo no e-mail'
-    : 'Foto ou PDF do termo assinado pelo cliente — vai anexo no e-mail. Você também pode arrastar o arquivo para cá.';
+    : a ? (a.tipo === 'application/pdf' ? 'PDF' : a.tipo === TIPO_DOCX ? 'Word' : 'Foto') + ' · ' + tamanhoTxt(a.tamanho) +
+        (finAutomatico ? ' — vai anexo no e-mail' : ' — no Outlook, arraste este arquivo para o e-mail')
+    : 'PDF, Word ou foto. Se for o termo gerado aqui, os dados se preenchem sozinhos. Também dá para arrastar o arquivo para cá.';
   document.getElementById('finTermoBtn').textContent = a ? 'Trocar' : 'Subir termo';
 }
 
@@ -4072,8 +4120,7 @@ function finColetar() {
     valorRenovacao: valor ? pBRL(valor) : '',
     formaPagamento: v('fin_forma'),
     parcelas: v('fin_parcelas'),
-    obs: v('fin_obs'),
-    propostaNumero: renovacaoAtual ? renovacaoAtual.numero || '' : ''
+    obs: v('fin_obs')
   };
 }
 // Linhas do e-mail, na mesma ordem que o financeiro já recebe
@@ -4136,7 +4183,7 @@ function finRender() {
     '<div class="ep-cab">' +
       (finAutomatico ? '' : '<b>Para:</b> ' + (esc(document.getElementById('fin_para').value.trim()) || '<span class="fin-erro">falta o e-mail do financeiro</span>') + '<br>') +
       '<b>Assunto:</b> ' + esc(finAssunto(d)) + '<br><b>Anexo:</b> ' +
-      (!finAutomatico ? 'o termo assinado — você arrasta no Outlook'
+      (!finAutomatico ? 'o termo assinado — você anexa no Outlook'
         : finArquivo ? esc(finArquivo.nome) + ' (' + tamanhoTxt(finArquivo.tamanho) + ')' : '<span class="fin-erro">falta subir o termo assinado</span>') +
     '</div>' +
     esc(FIN_ABERTURA[0]) + '\n\n' + esc(FIN_ABERTURA[1]) + '\n\n' +
@@ -4205,10 +4252,8 @@ async function enviarFinanceiro() {
 function finAplicarModo() {
   document.getElementById('finBtnsOutlook').classList.toggle('hidden', finAutomatico);
   document.getElementById('finBtnsAuto').classList.toggle('hidden', !finAutomatico);
-  document.getElementById('finTermo').classList.toggle('hidden', !finAutomatico);
-  document.getElementById('finTermoNota').classList.toggle('hidden', finAutomatico);
   document.getElementById('fin_paraWrap').classList.toggle('hidden', finAutomatico);
-  document.getElementById('finCard1T').textContent = finAutomatico ? 'Proposta e Termo Assinado' : 'Proposta e Termo';
+  finTermoUI();
   finRender();
 }
 // Pergunta à função se o Gmail já está configurado (aberto como arquivo local, fica no Outlook)
@@ -4235,11 +4280,8 @@ async function finDetectarModo() {
     el.addEventListener('input', finRender);
     el.addEventListener('change', finRender);
   });
-  const prop = document.getElementById('finPropArquivo');
-  prop.addEventListener('change', function () { finLerProposta(prop.files[0]); prop.value = ''; });
   const termo = document.getElementById('finTermoArquivo');
   termo.addEventListener('change', function () { finLerTermo(termo.files[0]); termo.value = ''; });
-  aceitarArquivoSolto(document.getElementById('finProp'), finLerProposta);
   aceitarArquivoSolto(document.getElementById('finTermo'), finLerTermo);
   finAplicarModo();
   finDetectarModo();
@@ -4545,8 +4587,8 @@ async function gerarTermoIa(tipo) {
 
 
 /* ══════════════════════════════════════════════════════════════════
-   NOVA RENOVAÇÃO — limpa as três etapas para começar outra do zero.
-   Mantém o perfil e não mexe na Proposta Comercial nem no Termo de Adesão IA.
+   NOVA RENOVAÇÃO — limpa o termo e o envio ao financeiro para começar outra do zero.
+   Mantém o perfil e não mexe nas Propostas nem no Termo de Adesão IA.
    ══════════════════════════════════════════════════════════════════ */
 // Volta os campos ao que está no HTML (value/checked/selected padrão)
 function restaurarCampos(el) {
@@ -4561,15 +4603,11 @@ function restaurarCampos(el) {
 
 function novaRenovacao(semConfirmar) {
   const v = function (id) { return document.getElementById(id).value.trim(); };
-  const temDados = v('rv_cliente') || v('nomeEmpresarial') || v('cnpj') || v('fin_idLoja') || finArquivo || renovacaoAtual;
+  const temDados = v('nomeEmpresarial') || v('cnpj') || v('valorPlano') || v('fin_idLoja') || v('fin_loja') || finArquivo;
   if (temDados && !semConfirmar &&
-      !window.confirm('Começar uma nova renovação? O que foi preenchido na proposta, no termo e no envio ao financeiro será apagado.')) return;
+      !window.confirm('Começar uma nova renovação? O que foi preenchido no termo e no envio ao financeiro será apagado.')) return;
 
-  // Etapa 1 — Proposta de Renovação
-  restaurarCampos(document.getElementById('viewPropostaRenov'));
-  rvValoresIniciais();
-
-  // Etapa 2 — Termo de Renovação
+  // Etapa 1 — Termo de Renovação
   restaurarCampos(document.getElementById('viewTermo'));
   document.getElementById('dia').value = hoje.getDate();
   document.getElementById('mes').value = mesesAcentos[hoje.getMonth()];
@@ -4580,20 +4618,19 @@ function novaRenovacao(semConfirmar) {
   document.getElementById('impRes').innerHTML = '';
   document.getElementById('impRes').classList.add('hidden');
 
-  // Etapa 3 — Enviar ao Financeiro
+  // Etapa 2 — Enviar ao Financeiro
   restaurarCampos(document.getElementById('viewFinanceiro'));
   finParaInicial();
-  renovacaoAtual = null;
   finArquivo = null;
   finEnviado = false;
   document.getElementById('btnFin').disabled = false;
   document.getElementById('btnFin').innerHTML = BTN_FIN_HTML;
   document.getElementById('finStatus').innerHTML = '';
-  finPropUI();
+  finLeituraUI('');
   finTermoUI();
 
   aplicarPerfil();   // devolve consultor e solicitante e redesenha as prévias
-  trocarAba('propostaRenov');
+  trocarAba('termo');
   showToast('Pronto! Comece a nova renovação.', 'success');
 }
 
