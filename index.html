@@ -4144,10 +4144,33 @@ function jpegsDoPdf(bytes) {
   return imagens;
 }
 
+// Foto do WhatsApp chega pequena (~900 px de largura): ampliada, o leitor erra bem menos
+// (0 lido como O, acento a mais, "CNPJ" lido como "CNP)")
+async function ampliarParaLeitura(imagem) {
+  try {
+    const bmp = await createImageBitmap(imagem, { imageOrientation: 'from-image' });
+    if (bmp.width >= 1300) return imagem;
+    const k = Math.min(2.5, 2200 / bmp.width);
+    const c = document.createElement('canvas');
+    c.width = Math.round(bmp.width * k);
+    c.height = Math.round(bmp.height * k);
+    const ctx = c.getContext('2d');
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(bmp, 0, 0, c.width, c.height);
+    return await new Promise(function (ok) { c.toBlob(function (b) { ok(b || imagem); }, 'image/png'); });
+  } catch (e) {
+    return imagem;
+  }
+}
+
 async function finLerPorOcr(arquivo, vez) {
-  let imagens = [];
-  if (/^image\//.test(arquivo.type)) imagens = [arquivo];
-  else if (arquivo.type === 'application/pdf' || /\.pdf$/i.test(arquivo.name)) {
+  let imagens = [], ehFoto = false;
+  if (/^image\//.test(arquivo.type)) {
+    // Foto: ampliada primeiro; a original fica de reserva para completar o que faltar
+    ehFoto = true;
+    const ampliada = await ampliarParaLeitura(arquivo);
+    imagens = ampliada === arquivo ? [arquivo] : [ampliada, arquivo];
+  } else if (arquivo.type === 'application/pdf' || /\.pdf$/i.test(arquivo.name)) {
     imagens = jpegsDoPdf(new Uint8Array(await arquivo.arrayBuffer())).slice(0, 2).map(function (b) {
       return new Blob([b], { type: 'image/jpeg' });
     });
@@ -4171,9 +4194,10 @@ async function finLerPorOcr(arquivo, vez) {
     });
     let texto = '', campos = null;
     for (; pagina <= imagens.length; pagina++) {
-      texto += '\n' + (await worker.recognize(imagens[pagina - 1])).data.text;
-      campos = camposDoTermo(texto);
-      if (campos && campos.nome && campos.valor) break;   // a página 1 já bastou
+      const lido = (await worker.recognize(imagens[pagina - 1])).data.text;
+      if (ehFoto) campos = juntarCampos(campos, camposDoTermo(lido, arquivo.name));   // mesma página, outra leitura
+      else campos = camposDoTermo(texto += '\n' + lido, arquivo.name);              // PDF: páginas seguidas
+      if (camposCompletos(campos)) break;   // a primeira leitura já bastou
     }
     return campos;
   } catch (e) {
@@ -4184,21 +4208,41 @@ async function finLerPorOcr(arquivo, vez) {
   }
 }
 
+function camposCompletos(t) {
+  return !!(t && t.nome && t.valor && t.plano && t.forma && (t.forma !== 'cartao' || t.parcelas));
+}
+// Completa a leitura a com o que só a leitura b achou
+function juntarCampos(a, b) {
+  if (!a || !b) return a || b;
+  const t = Object.assign({}, a);
+  Object.keys(b).forEach(function (k) { if (!t[k]) t[k] = b[k]; });
+  if (t.forma === 'cartao' && !a.parcelas && b.parcelas) { t.parcelas = b.parcelas; t.valorParcela = b.valorParcela; }
+  return t;
+}
+
 // Campos do Termo de Renovação a partir do texto lido, pelas frases fixas do modelo.
 // Tolerante a erros comuns de leitura (R$ lido como RS, espaços a mais, acentos trocados).
-function camposDoTermo(texto) {
+// nomeArquivo: o PDF do gerador leva o nome da loja no nome do arquivo (último recurso para o nome)
+function camposDoTermo(texto, nomeArquivo) {
   const linhas = texto.split(/\r?\n/).map(function (l) { return l.trim(); }).filter(Boolean);
   const corrido = linhas.join(' ').replace(/\s+/g, ' ');
   const RS = 'R\\s?[$S5]\\s*', DIN = '(\\d{1,3}(?:[.\\s]?\\d{3})*,\\s?\\d{2})';
   const din = function (v) { return 'R$ ' + v.replace(/\s/g, ''); };
   const t = {};
-  let m = corrido.match(new RegExp('termo [ée] de\\s*' + RS + DIN, 'i'));
+  let m = corrido.match(new RegExp('termo [ée€] de\\s*' + RS + DIN, 'i'));   // "é" às vezes sai como "€"
   if (m) t.valor = din(m[1]);
-  m = corrido.match(/renova[çc][ãa]o do Plano\s+(.+?)\s+e pelo per/i);
-  if (m) t.plano = m[1].trim().replace(/^(\d)[,.](\d)$/, '$1.$2');
+  // Só "Plano X e pelo período": numa foto o começo da frase pode sair cortado na borda,
+  // e o "e" às vezes sai como "€"; sem a frase, o primeiro "Plano 0.5/1.0…" do texto
+  m = corrido.match(/Plano\s+(.{1,40}?)\s+[e€&]\s+pelo\s+per/) || corrido.match(/Plano\s+([0-9OoIl|][.,][0-9OoIl|])(?=[\s.,;]|$)/);
+  if (m) {
+    t.plano = m[1].trim();
+    if (/^[0-9OoIl|][.,][0-9OoIl|]$/.test(t.plano)) {   // "O.5" → "0.5", "1,0" → "1.0"
+      t.plano = t.plano.replace(/[Oo]/g, '0').replace(/[Il|]/g, '1').replace(',', '.');
+    }
+  }
   m = corrido.match(/fidelidade de\s*(\d+)\s*mes/i);
   if (m) t.fidelidade = m[1];
-  m = corrido.match(new RegExp('cr[ée]dito em\\s*(\\d+)\\s*[xX×]\\s*de\\s*' + RS + DIN, 'i'));
+  m = corrido.match(new RegExp('cr[ée]dito\\s*(?:em\\s*)?(\\d+)\\s*[xX×]\\s*de\\s*' + RS + DIN, 'i'));   // o "em" pode sumir
   if (m) { t.forma = 'cartao'; t.parcelas = m[1]; t.valorParcela = din(m[2]); }
   else if (/via\s+Boleto/i.test(corrido)) t.forma = 'boletopix';
   m = corrido.match(/Ve[íi]culos\s*:?\s*(\d+)/i);
@@ -4209,26 +4253,48 @@ function camposDoTermo(texto) {
   // Outras condições: o que vem depois do título até "Para dirimir…"
   const iCond = linhas.findIndex(function (l) { return /Outras condi/i.test(l); });
   if (iCond >= 0) {
-    const iFim = linhas.findIndex(function (l, k) { return k > iCond && /Para dirimir|^Curitiba,/i.test(l); });
-    const resto = linhas[iCond].replace(/.*Outras condi\S*\s*:?/i, '').trim();
-    t.condicoes = [resto].concat(linhas.slice(iCond + 1, iFim > iCond ? iFim : iCond + 6)).filter(Boolean).join('\n');
+    // Fim: "Para dirimir…" — ou o que vem depois, quando essa linha sai ilegível
+    // (CONTRATANTE/CONTRATADA só em maiúsculas: "contratado" pode estar na própria condição)
+    const iFim = linhas.findIndex(function (l, k) {
+      return k > iCond && (/^Para\s+d|lit[íi]gio|foro de|Curitiba/i.test(l) || /CONTRATA(?:NTE|DA)|CNP[JI)]/.test(l));
+    });
+    let resto = linhas[iCond].replace(/.*Outras condi\S*\s*:?/i, '').trim();
+    if (resto.length <= 2) resto = '';   // borda da tabela lida como "É", "iz", "|"…
+    t.condicoes = [resto].concat(linhas.slice(iCond + 1, iFim > iCond ? Math.min(iFim, iCond + 5) : iCond + 3))
+      .map(function (l) { return l.replace(/(\s+[^\s\d])+$/, '').replace(/^[^\s\d]$/, '').trim(); })   // borda da tabela lida como "É", "|"
+      .filter(Boolean).join('\n');
   }
 
-  // Contratante: o CNPJ que não é o da Revenda Mais, e o nome na linha de baixo de "CONTRATANTE"
-  const cnpjs = (corrido.match(/\d{2}\s?[.,]?\s?\d{3}\s?[.,]?\s?\d{3}\s?\/?\s?\d{4}\s?-?\s?\d{2}/g) || [])
-    .map(function (c) { return c.replace(/\D/g, ''); })
-    .filter(function (c) { return c.length === 14 && c !== CNPJ_CONTRATADA; });
-  if (cnpjs[0]) t.cnpj = cnpjs[0].replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
+  // Contratante: o CNPJ que não é o da Revenda Mais
+  const RE_CNPJ = /\d{2}\s?[.,]?\s?\d{3}\s?[.,]?\s?\d{3}\s?\/?\s?\d{4}\s?-?\s?\d{2}/g;
+  const ehCnpjCliente = function (c) { c = c.replace(/\D/g, ''); return c.length === 14 && c !== CNPJ_CONTRATADA; };
+  const cnpj = (corrido.match(RE_CNPJ) || []).find(ehCnpjCliente);
+  if (cnpj) t.cnpj = cnpj.replace(/\D/g, '').replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
+
+  // Nome da loja: a linha logo acima do CNPJ do cliente (continua legível mesmo quando a
+  // assinatura passa por cima do "CONTRATANTE:"); senão, a de baixo do "CONTRATANTE"
+  const limparNome = function (l) {
+    let n = l.replace(/CONTRATANTE\s*:?/ig, '').replace(/CONTRATADA\s*:?/ig, '')
+      .replace(/\s*MARC\s?H?\s?ETT.*$/i, '')               // coluna da contratada (MARCHETTI…) na mesma linha
+      .replace(/\b[LUI1][TMI1][DOB]A\b/g, 'LTDA')           // "LTDA" lido como UTDA/UMDA/LIDA/LTBA
+      .replace(/\s[UÚLI1]?[TMI1U][DOB]A(?=\W*$)/, ' LTDA')    // …e como UDA/TDA no fim do nome
+      .replace(/^[^A-Za-zÀ-ÿ0-9]+/, '').replace(/\s+/g, ' ').trim();
+    const sufixo = n.match(/^(.*\b(?:LTDA|EIRELI|EPP|ME|S\.?\s?A\.?|S\/A))(?=\W|$)/i);
+    n = sufixo ? sufixo[1] : n.replace(/(\s+\S)+$/, '');   // risco da assinatura depois do nome
+    return n.replace(/[^A-Za-zÀ-ÿ0-9.)]+$/, '').trim();
+  };
+  const pareceNome = function (n) { return (n.match(/[A-Za-zÀ-ÿ]{2,}/g) || []).length >= 2 && !/^CNPJ/i.test(n); };
+  const iCnpj = linhas.findIndex(function (l) { return (l.match(RE_CNPJ) || []).some(ehCnpjCliente); });
   const iCt = linhas.findIndex(function (l) { return /CONTRATANTE/i.test(l); });
-  if (iCt >= 0) {
-    const limpar = function (l) {
-      return l.replace(/CONTRATANTE\s*:?/ig, '').replace(/CONTRATADA\s*:?/ig, '')
-        .replace(/\s*MARC\s?H?\s?ETT.*$/i, '')   // coluna da contratada (MARCHETTI…) lida na mesma linha
-        .replace(/\s+/g, ' ').trim()
-        .replace(/\s[LUI1][TMI1][DO]A$/i, ' LTDA');   // "LTDA" lido como UTDA/UMDA em foto
-    };
-    const nome = [limpar(linhas[iCt]), limpar(linhas[iCt + 1] || '')].find(function (l) { return l && !/^CNPJ/i.test(l); });
-    if (nome) t.nome = nome;
+  const candidatos = [];
+  if (iCnpj > 0) candidatos.push(linhas[iCnpj - 1], linhas[iCnpj - 2] || '');
+  if (iCt >= 0) candidatos.push(linhas[iCt], linhas[iCt + 1] || '');
+  const nome = candidatos.map(limparNome).find(pareceNome);
+  if (nome) t.nome = nome;
+  else {
+    // Último recurso: o nome do arquivo que o gerador cria (Termo_Renovacao_NOME_DA_LOJA_28_outubro_2026…)
+    const pelo = String(nomeArquivo || '').match(/Termo_Renova\w*?_(.+?)_\d{1,2}_[A-Za-zçÇ]+_\d{4}/);
+    if (pelo) t.nome = pelo[1].replace(/_/g, ' ');
   }
   return t.valor || t.nome ? t : null;
 }
