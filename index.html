@@ -1514,7 +1514,7 @@ footer {
       </div>
       <div class="card-body">
         <div class="chk-grid">
-          <label class="chk"><input type="checkbox" id="rv_onMensal" checked/><span>Mostrar Renovação Mensal</span></label>
+          <label class="chk"><input type="checkbox" id="rv_onMensal" checked/><span>Mostrar Mensalidade</span></label>
           <label class="chk"><input type="checkbox" id="rv_onAnual" checked/><span>Mostrar Renovação Anual</span></label>
         </div>
         <div class="field" id="rv_formaMensalWrap">
@@ -3291,7 +3291,7 @@ function rvMontarPapel(d) {
 
   const mensal = !d.onMensal ? '' :
     '<div class="rv-opt">' +
-      '<div class="rv-opt-h"><div class="rv-opt-t">Renovação Mensal</div><div class="rv-opt-s">Pagamento mês a mês</div></div>' +
+      '<div class="rv-opt-h"><div class="rv-opt-t">Mensalidade</div><div class="rv-opt-s">Pagamento mês a mês</div></div>' +
       '<div class="rv-opt-b">' + linhas('mensal') + '</div>' +
       '<div class="rv-opt-f"><div class="rv-tot-l">Total</div>' +
         '<div class="rv-tot-v">' + pBRL(d.totalMensal) + ' <small>/mês</small></div>' +
@@ -3414,7 +3414,7 @@ function rvValidar(d) {
   if (!d.cliente) { showToast('Preencha: Nome do Cliente', 'error'); document.getElementById('rv_cliente').focus(); return false; }
   if (!d.itens.length) { showToast('Inclua ao menos um produto', 'error'); return false; }
   if (!d.onMensal && !d.onAnual) { showToast('Escolha ao menos uma modalidade', 'error'); return false; }
-  if (d.onMensal && !d.totalMensal) { showToast('Preencha os valores da renovação mensal', 'error'); return false; }
+  if (d.onMensal && !d.totalMensal) { showToast('Preencha os valores da mensalidade', 'error'); return false; }
   if (d.onAnual && !d.anualMes) { showToast('Preencha os valores da renovação anual', 'error'); return false; }
   return true;
 }
@@ -3521,7 +3521,7 @@ function impAplicar(modalidade) {
 
   const campo = anual ? 'anual' : 'mensal';
   set('condicoesCombinadas', [
-    'Renovação ' + (anual ? 'Anual' : 'Mensal') + ' conforme Proposta de Renovação nº ' + (p.numero || '—') + ', de ' + p.data + '.',
+    (anual ? 'Renovação Anual' : 'Mensalidade') + ' conforme Proposta de Renovação nº ' + (p.numero || '—') + ', de ' + p.data + '.',
     'Valor mensal: ' + p.itens.map(function (i) {
       return i.nome + ' (' + (i[campo] > 0 ? pBRL(i[campo]) : 'incluso') + ')';
     }).join(' + ') + ' = ' + pBRL(anual ? p.anualMes : p.totalMensal) + '.',
@@ -3548,7 +3548,7 @@ function impAplicar(modalidade) {
   document.getElementById('impMsg').innerHTML = anual
     ? '<div class="import-msg ok"><b>Termo preenchido com a Renovação Anual.</b> Agora complete o <b>Nome Empresarial</b> e o <b>CNPJ</b> e ' + confira + '.' +
       (vista ? ' Pagamento à vista marcado como Boleto / PIX — troque se for no cartão.' : '') + '</div>'
-    : '<div class="import-msg"><b>Renovação Mensal:</b> plano, pagamento e condições preenchidos. O termo só tem fidelidade semestral ou anual — ' +
+    : '<div class="import-msg"><b>Mensalidade:</b> plano, pagamento e condições preenchidos. O termo só tem fidelidade semestral ou anual — ' +
       '<b>escolha a fidelidade e preencha o valor total</b>. Complete também o <b>Nome Empresarial</b> e o <b>CNPJ</b> e ' + confira + '.</div>';
   document.getElementById('nomeEmpresarial').focus();
 }
