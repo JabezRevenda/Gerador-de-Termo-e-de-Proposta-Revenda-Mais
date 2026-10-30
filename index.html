@@ -834,6 +834,41 @@ footer {
 .fin-erro { color: var(--error); font-weight: 600; }
 .btn-row.um { grid-template-columns: 1fr; }
 
+/* ══════════════════════════════════════════════════════════
+   PERFIL — quem está usando (salvo só neste navegador, sem login)
+   ══════════════════════════════════════════════════════════ */
+.ola { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+.ola-t { font-size: 24px; font-weight: 800; color: var(--text-heading); letter-spacing: -0.01em; line-height: 1.2; }
+.ola-t span { color: var(--red); }
+.ola-d { font-size: 13px; color: var(--text-muted); font-weight: 500; margin-top: 2px; }
+.ola-acoes { display: flex; gap: 8px; flex-shrink: 0; }
+.ola-btn {
+  font-family: 'Poppins', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--text-label); background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px;
+  padding: 9px 13px; cursor: pointer; transition: color 0.15s, border-color 0.15s;
+}
+.ola-btn:hover { color: var(--red); border-color: var(--border-focus); }
+
+.perfil-modal {
+  position: fixed; inset: 0; z-index: 300; background: rgba(17,24,39,0.55);
+  display: flex; align-items: center; justify-content: center; padding: 16px;
+}
+.perfil-card {
+  background: var(--bg-card); border-radius: 12px; width: 100%; max-width: 440px;
+  padding: 30px 30px 26px; box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+  display: flex; flex-direction: column; gap: 16px; animation: fadeUp 0.3s ease both;
+}
+.perfil-titulo { font-size: 26px; font-weight: 900; text-transform: uppercase; color: var(--text-heading); line-height: 1.05; }
+.perfil-titulo span { color: var(--red); }
+.perfil-sub { font-size: 13px; color: var(--text-muted); line-height: 1.55; margin-top: -6px; }
+.perfil-card .page-eyebrow { margin-bottom: -8px; }
+.perfil-acoes { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+.perfil-cancelar {
+  font-family: 'Poppins', sans-serif; font-size: 12px; font-weight: 600; color: var(--text-muted);
+  background: none; border: none; padding: 8px; cursor: pointer;
+}
+.perfil-cancelar:hover { color: var(--text-heading); }
+
 .rv-intro { font-size: 12px; color: #4b5563; line-height: 1.65; margin-bottom: 22px; }
 .rv-intro b { color: #111827; font-weight: 700; }
 
@@ -925,6 +960,9 @@ footer {
   .import-acoes { flex-direction: column; }
   .fin-arq, .email-prev { grid-column: span 1; }
   .fin-arq { flex-wrap: wrap; }
+  .ola { flex-direction: column; align-items: flex-start; }
+  .ola-t { font-size: 21px; }
+  .perfil-card { padding: 24px 20px 20px; }
   .fin-arq .import-acoes, .fin-arq > .import-btn { width: 100%; }
   .preview-wrap { padding: 12px; }
 }
@@ -943,6 +981,17 @@ footer {
 </header>
 
 <main>
+  <div class="ola">
+    <div>
+      <div class="ola-t">Olá, <span id="olaNome">tudo bem</span>!</div>
+      <div class="ola-d" id="olaSub">O que vamos fazer hoje?</div>
+    </div>
+    <div class="ola-acoes">
+      <button type="button" class="ola-btn" onclick="abrirPerfil(true)">Editar perfil</button>
+      <button type="button" class="ola-btn" onclick="copiarLinkPerfil()">Copiar meu link</button>
+    </div>
+  </div>
+
   <nav class="tabs com-etapas" id="tabsPrincipais">
     <button class="tab active" id="tabGrupoRenovacao" onclick="trocarGrupo('renovacao')">
       <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
@@ -1722,8 +1771,8 @@ footer {
       </div>
       <div class="card-body">
         <div class="field">
-          <label>Solicitante (e-mail)</label>
-          <input id="fin_solicitante" type="email" placeholder="seu.email@revendamais.com.br"/>
+          <label>Solicitante</label>
+          <input id="fin_solicitante" type="text" placeholder="Nome (e-mail)"/>
         </div>
         <div class="field destaque">
           <label>ID da Loja *</label>
@@ -1900,6 +1949,31 @@ footer {
   <img class="footer-logo" id="footerLogo" alt="Revenda Mais"/>
   <span class="footer-text">Ferramenta interna · Equipe Comercial</span>
 </footer>
+
+<!-- Perfil: pedido no primeiro acesso; preenche consultor e solicitante sozinho -->
+<div class="perfil-modal hidden" id="perfilModal" role="dialog" aria-modal="true" aria-labelledby="pf_titulo">
+  <div class="perfil-card">
+    <div class="page-eyebrow" id="pf_eyebrow">Primeiro acesso</div>
+    <h2 class="perfil-titulo" id="pf_titulo">Quem está<br/><span>usando?</span></h2>
+    <p class="perfil-sub">Seus dados preenchem sozinhos o consultor das propostas e o solicitante no envio ao financeiro. Ficam salvos só neste navegador.</p>
+    <div class="field">
+      <label for="pf_nome">Seu nome</label>
+      <input id="pf_nome" type="text" placeholder="Nome e sobrenome" autocomplete="name"/>
+    </div>
+    <div class="field">
+      <label for="pf_email">E-mail</label>
+      <input id="pf_email" type="email" placeholder="nome@revendamais.com.br" autocomplete="email"/>
+    </div>
+    <div class="field">
+      <label for="pf_fone">Telefone / WhatsApp</label>
+      <input id="pf_fone" type="text" placeholder="(00) 00000-0000" autocomplete="tel"/>
+    </div>
+    <div class="perfil-acoes">
+      <button type="button" class="btn btn-pdf" id="pf_salvar" onclick="salvarPerfil()">Começar</button>
+      <button type="button" class="perfil-cancelar hidden" id="pf_cancelar" onclick="fecharPerfil()">Cancelar</button>
+    </div>
+  </div>
+</div>
 
 <div class="toast" id="toast"></div>
 
@@ -3338,8 +3412,6 @@ async function exportarPapel(html, base, tipo, btnId, dados) {
   const hj = new Date();
   document.getElementById('p_data').value =
     hj.getFullYear() + '-' + String(hj.getMonth() + 1).padStart(2, '0') + '-' + String(hj.getDate()).padStart(2, '0');
-  document.getElementById('p_consultor').value = 'Jabez';
-  document.getElementById('p_consultorContato').value = '(41) 9107-5457';
   document.getElementById('p_numero').value =
     String(hj.getFullYear()).slice(2) + String(hj.getMonth() + 1).padStart(2, '0') + String(Math.floor(Math.random() * 900) + 100);
 
@@ -3663,8 +3735,6 @@ async function gerarPropostaRenov(tipo) {
   const hj = new Date();
   document.getElementById('rv_data').value =
     hj.getFullYear() + '-' + String(hj.getMonth() + 1).padStart(2, '0') + '-' + String(hj.getDate()).padStart(2, '0');
-  document.getElementById('rv_consultor').value = 'Jabez';
-  document.getElementById('rv_consultorContato').value = '(41) 9107-5457';
   document.getElementById('rv_numero').value =
     String(hj.getFullYear()).slice(2) + String(hj.getMonth() + 1).padStart(2, '0') + String(Math.floor(Math.random() * 900) + 100);
 
@@ -3825,7 +3895,6 @@ function impPreencherTermo(p) {
    para /api/financeiro — função do Vercel que repassa ao fluxo do Power Automate.
    O link do fluxo fica só no Vercel (variável FINANCEIRO_FLOW_URL), fora deste código público.
    ══════════════════════════════════════════════════════════════════ */
-const FIN_SOLICITANTE_PADRAO = 'jabez.oliveira@revendamais.com.br';
 // O Vercel aceita até 4,5 MB por envio e o arquivo em base64 cresce ~33%
 const FIN_MAX_ARQUIVO = 3 * 1024 * 1024;
 const FIN_ABERTURA = ['Olá meninas, tudo bem?', 'Solicito realizar a renovação desta loja:'];
@@ -4039,7 +4108,6 @@ async function enviarFinanceiro() {
     const resp = await r.json().catch(function () { return {}; });
     if (!r.ok) throw new Error(resp.erro || (r.status === 413 ? 'Arquivo grande demais para o envio.' : 'O envio falhou (erro ' + r.status + ').'));
 
-    try { localStorage.setItem('rm_solicitante', d.solicitante); } catch (e) { /* sem storage, segue */ }
     const hora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
     finStatus('<b>Enviado ao financeiro às ' + hora + '.</b> E-mail "' + esc(envio.assunto) + '" com o termo assinado anexo.', true);
     showToast('Enviado ao financeiro!', 'success');
@@ -4061,9 +4129,6 @@ async function enviarFinanceiro() {
   document.getElementById('fin_novoPlano').innerHTML = ['Manter plano atual'].concat(Object.keys(PLANOS).map(function (k) {
     return PLANOS[k].nome || 'Plano ' + k;
   })).map(function (n) { return '<option value="' + n + '">' + n + '</option>'; }).join('');
-  let solicitante = '';
-  try { solicitante = localStorage.getItem('rm_solicitante') || ''; } catch (e) { /* sem storage, usa o padrão */ }
-  document.getElementById('fin_solicitante').value = solicitante || FIN_SOLICITANTE_PADRAO;
 
   mascaraMoeda(document.getElementById('fin_valor'), finRender);
   document.querySelectorAll('#viewFinanceiro input:not(#fin_valor):not([type=file]), #viewFinanceiro select, #viewFinanceiro textarea').forEach(function (el) {
@@ -4377,6 +4442,114 @@ async function gerarTermoIa(tipo) {
   taRender();
 })();
 
+
+/* ══════════════════════════════════════════════════════════════════
+   PERFIL — quem está usando, sem login nem banco de dados.
+   Fica salvo só neste navegador; o "link pessoal" leva o perfil para outro aparelho
+   (vai depois do #, então nem chega ao servidor).
+   ══════════════════════════════════════════════════════════════════ */
+const PERFIL_CHAVE = 'rm_perfil';
+let perfil = null;   // { nome, email, fone }
+
+function lerPerfilSalvo() {
+  try { return JSON.parse(localStorage.getItem(PERFIL_CHAVE) || 'null'); } catch (e) { return null; }
+}
+function guardarPerfil(p) {
+  try { localStorage.setItem(PERFIL_CHAVE, JSON.stringify(p)); } catch (e) { /* sem storage: vale só nesta visita */ }
+}
+function perfilDoLink() {
+  const m = location.hash.match(/perfil=([^&]+)/);
+  if (!m) return null;
+  try {
+    const p = JSON.parse(deB64Utf8(decodeURIComponent(m[1])));
+    return p && p.nome && p.email ? p : null;
+  } catch (e) { return null; }
+}
+function primeiroNome(nome) {
+  return String(nome || '').trim().split(/\s+/)[0];
+}
+
+// Preenche com o perfil os campos de quem está usando e redesenha as prévias
+function aplicarPerfil() {
+  const p = perfil || { nome: '', email: '', fone: '' };
+  const set = function (id, v) { document.getElementById(id).value = v; };
+  set('p_consultor', p.nome);
+  set('rv_consultor', p.nome);
+  set('p_consultorContato', p.fone);
+  set('rv_consultorContato', p.fone);
+  set('fin_solicitante', p.nome ? p.nome + (p.email ? ' (' + p.email + ')' : '') : '');
+  document.getElementById('olaNome').textContent = primeiroNome(p.nome) || 'tudo bem';
+  const h = new Date().getHours();
+  document.getElementById('olaSub').textContent =
+    (h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite') + '! O que vamos fazer hoje?';
+  pRender();
+  rvRender();
+  finRender();
+}
+
+function abrirPerfil(editando) {
+  const p = perfil || {};
+  document.getElementById('pf_nome').value = p.nome || '';
+  document.getElementById('pf_email').value = p.email || '';
+  document.getElementById('pf_fone').value = p.fone || '';
+  document.getElementById('pf_eyebrow').textContent = editando ? 'Seu perfil' : 'Primeiro acesso';
+  document.getElementById('pf_titulo').innerHTML = editando ? 'Editar<br/><span>perfil</span>' : 'Quem está<br/><span>usando?</span>';
+  document.getElementById('pf_salvar').textContent = editando ? 'Salvar' : 'Começar';
+  document.getElementById('pf_cancelar').classList.toggle('hidden', !(editando && perfil));
+  document.getElementById('perfilModal').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  document.getElementById('pf_nome').focus();
+}
+function fecharPerfil() {
+  document.getElementById('perfilModal').classList.add('hidden');
+  document.body.style.overflow = '';
+}
+function salvarPerfil() {
+  const nome = document.getElementById('pf_nome').value.trim().replace(/\s+/g, ' ');
+  const email = document.getElementById('pf_email').value.trim();
+  const fone = document.getElementById('pf_fone').value.trim();
+  if (!nome) { showToast('Preencha: Seu nome', 'error'); document.getElementById('pf_nome').focus(); return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showToast('Preencha um e-mail válido', 'error'); document.getElementById('pf_email').focus(); return; }
+  perfil = { nome: nome, email: email, fone: fone };
+  guardarPerfil(perfil);
+  fecharPerfil();
+  aplicarPerfil();
+  showToast('Tudo pronto, ' + primeiroNome(nome) + '!', 'success');
+}
+
+async function copiarLinkPerfil() {
+  if (!perfil) { abrirPerfil(false); return; }
+  const link = location.origin + location.pathname + '#perfil=' + encodeURIComponent(b64Utf8(JSON.stringify(perfil)));
+  try {
+    await navigator.clipboard.writeText(link);
+    showToast('Seu link foi copiado!', 'success');
+  } catch (e) {
+    window.prompt('Copie o seu link pessoal:', link);
+  }
+}
+
+(function perfilInit() {
+  document.getElementById('pf_fone').addEventListener('input', function (e) {
+    e.target.value = formatFone(e.target.value);
+  });
+  document.getElementById('perfilModal').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') salvarPerfil();
+    if (e.key === 'Escape' && perfil) fecharPerfil();
+  });
+
+  // Veio pelo link pessoal: guarda o perfil e limpa o endereço
+  const doLink = perfilDoLink();
+  if (doLink) {
+    perfil = { nome: doLink.nome, email: doLink.email, fone: doLink.fone || '' };
+    guardarPerfil(perfil);
+    history.replaceState(null, '', location.pathname + location.search);
+  } else {
+    perfil = lerPerfilSalvo();
+  }
+  aplicarPerfil();
+  if (!perfil) abrirPerfil(false);
+  else if (doLink) showToast('Olá, ' + primeiroNome(perfil.nome) + '!', 'success');
+})();
 </script>
 </body>
 </html>
