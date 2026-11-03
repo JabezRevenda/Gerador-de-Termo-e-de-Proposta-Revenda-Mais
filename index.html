@@ -840,6 +840,11 @@ footer {
 }
 .email-prev .ep-cab { font-size: 11.5px; color: var(--text-muted); border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 10px; white-space: normal; }
 .email-prev .ep-cab b { color: var(--text-heading); font-weight: 600; }
+.email-prev .ep-corpo { white-space: normal; }
+.email-prev .ep-corpo p { margin: 0 0 10px; }
+.email-prev .ep-corpo ul { margin: 0 0 12px 20px; padding: 0; }
+.email-prev .ep-corpo li { margin: 0 0 2px; }
+.email-prev .ep-corpo b { color: var(--text-heading); font-weight: 700; }
 .fin-status { margin-top: 14px; }
 .fin-erro { color: var(--error); font-weight: 600; }
 .fin-status-acao { margin-top: 12px; }
@@ -3969,7 +3974,8 @@ function impPreencherTermo(p) {
    ══════════════════════════════════════════════════════════════════ */
 // O Vercel aceita até 4,5 MB por envio e o arquivo em base64 cresce ~33%
 const FIN_MAX_ARQUIVO = 3 * 1024 * 1024;
-const FIN_ABERTURA = ['Olá meninas, tudo bem?', 'Solicito realizar a renovação desta loja:'];
+const FIN_ABERTURA = 'Time, solicito realizar a renovação desta loja:';
+const FIN_FECHO = 'Obrigado';
 // Envio automático (api/financeiro.js manda pelo Gmail do gerador) só quando está configurado
 // no Vercel; senão, o e-mail abre pronto no Outlook e a pessoa anexa o termo e envia.
 let finAutomatico = false;
@@ -4260,7 +4266,13 @@ function camposDoTermo(texto, nomeArquivo) {
     });
     let resto = linhas[iCond].replace(/.*Outras condi\S*\s*:?/i, '').trim();
     if (resto.length <= 2) resto = '';   // borda da tabela lida como "É", "iz", "|"…
-    t.condicoes = [resto].concat(linhas.slice(iCond + 1, iFim > iCond ? Math.min(iFim, iCond + 5) : iCond + 3))
+    // Ruído (risco da assinatura sobre a borda da tabela) vira linha de pedacinhos: "E ADO CREA : ú e"
+    const ehRuido = function (l) {
+      const pedacos = l.split(/\s+/).filter(Boolean);
+      const curtos = pedacos.filter(function (p) { return p.replace(/[^A-Za-zÀ-ÿ0-9]/g, '').length <= 1; }).length;
+      return pedacos.length >= 3 && curtos / pedacos.length > 0.5;
+    };
+    t.condicoes = [resto].concat(linhas.slice(iCond + 1, iFim > iCond ? Math.min(iFim, iCond + 5) : iCond + 3).filter(function (l) { return !ehRuido(l); }))
       .map(function (l) { return l.replace(/(\s+[^\s\d])+$/, '').replace(/^[^\s\d]$/, '').trim(); })   // borda da tabela lida como "É", "|"
       .filter(Boolean).join('\n');
   }
@@ -4328,20 +4340,22 @@ function finColetar() {
     obs: v('fin_obs')
   };
 }
-// Linhas do e-mail, na mesma ordem que o financeiro já recebe
+// Linhas do e-mail, no modelo que o financeiro já recebe: [rótulo, valor, valor também em negrito]
 function finLinhas(d) {
   return [
-    ['Solicitante', d.solicitante], ['ID da loja', d.idLoja], ['Loja', d.loja],
+    ['Solicitante', d.solicitante],
+    ['Loja', [d.idLoja, d.loja].filter(Boolean).join(' '), true],
     ['Plano atual', d.planoAtual], ['Novo plano', d.novoPlano],
-    ['Alteração nos produtos adicionais', d.alteracaoAdicionais], ['CRM', d.crm],
+    ['Alteração nos produtos adicionais', d.alteracaoAdicionais, true], ['CRM', d.crm],
     ['Valor da renovação', d.valorRenovacao], ['Forma de pagamento', d.formaPagamento],
-    ['Em quantas vezes', d.parcelas], ['Obs', d.obs]
+    ['Em quantas vezes', d.parcelas], ['Obs', d.obs, true]
   ];
 }
-// Mesmo texto da prévia, para o corpo do e-mail aberto no Outlook
+// Texto simples para o e-mail aberto no Outlook (o link não leva negrito)
 function finCorpoTexto(d) {
-  return FIN_ABERTURA[0] + '\r\n\r\n' + FIN_ABERTURA[1] + '\r\n\r\n' +
-    finLinhas(d).map(function (l) { return l[0] + ': ' + l[1]; }).join('\r\n').replace(/\r?\n/g, '\r\n');
+  return (FIN_ABERTURA + '\n\n' +
+    finLinhas(d).map(function (l) { return '• ' + l[0] + ': ' + l[1]; }).join('\n') +
+    '\n\n' + FIN_FECHO).replace(/\r?\n/g, '\r\n');
 }
 function finParaInicial() {
   let para = '';
@@ -4374,11 +4388,16 @@ function abrirNoOutlook(onde) {
 }
 
 function finAssunto(d) {
-  return 'Renovação - ' + (d.loja || 'Loja') + (d.idLoja ? ' (ID ' + d.idLoja + ')' : '');
+  return 'Renovação - ' + ([d.idLoja, d.loja].filter(Boolean).join(' ') || 'Loja');
 }
+// Lista com os rótulos em negrito (e o valor também, nas linhas de destaque)
 function finCorpoHtml(d) {
-  return '<p>' + FIN_ABERTURA[0] + '</p><p>' + FIN_ABERTURA[1] + '</p><p>' +
-    finLinhas(d).map(function (l) { return esc(l[0]) + ': ' + esc(l[1]).replace(/\n/g, '<br>'); }).join('<br>') + '</p>';
+  return '<p>' + esc(FIN_ABERTURA) + '</p><ul>' +
+    finLinhas(d).map(function (l) {
+      const valor = esc(l[1]).replace(/\n/g, '<br>');
+      return '<li><b>' + esc(l[0]) + ':' + (l[2] ? ' ' + valor + '</b>' : '</b> ' + valor) + '</li>';
+    }).join('') +
+    '</ul><p>' + esc(FIN_FECHO) + '</p>';
 }
 
 function finRender() {
@@ -4391,8 +4410,7 @@ function finRender() {
       (!finAutomatico ? 'o termo assinado — você anexa no Outlook'
         : finArquivo ? esc(finArquivo.nome) + ' (' + tamanhoTxt(finArquivo.tamanho) + ')' : '<span class="fin-erro">falta subir o termo assinado</span>') +
     '</div>' +
-    esc(FIN_ABERTURA[0]) + '\n\n' + esc(FIN_ABERTURA[1]) + '\n\n' +
-    finLinhas(d).map(function (l) { return esc(l[0]) + ': ' + esc(l[1]); }).join('\n');
+    '<div class="ep-corpo">' + finCorpoHtml(d) + '</div>';
   // Mudou algo depois de enviar: libera um novo envio
   if (finEnviado) {
     finEnviado = false;
