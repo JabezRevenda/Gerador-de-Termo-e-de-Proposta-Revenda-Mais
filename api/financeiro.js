@@ -4,7 +4,13 @@
 //
 // Variáveis no Vercel: GMAIL_USUARIO, GMAIL_SENHA_APP (senha de app do Google, não a senha
 // normal) e EMAIL_DESTINO. O destino é fixo: a função não manda e-mail para outro endereço.
+//
+// O e-mail do solicitante vai no "Responder para" (não dispara envio): o fluxo o põe em cópia
+// no e-mail ao financeiro. Só vale e-mail da empresa — o site é público, e um endereço qualquer
+// faria a conta de quem reenvia copiar estranhos; fora do domínio, vai o próprio EMAIL_DESTINO.
 const nodemailer = require('nodemailer');
+
+const DOMINIO_SOLICITANTE = /@revendamais\.com\.br$/i;
 
 const OBRIGATORIOS = ['idLoja', 'loja', 'assunto', 'corpoHtml', 'arquivoNome', 'arquivoBase64'];
 
@@ -47,11 +53,14 @@ module.exports = async function (req, res) {
   }
 
   const c = credenciais();
+  const solicitante = limpar(dados.solicitanteEmail).toLowerCase();
+  const responderPara = /^[^\s@]+@[^\s@]+$/.test(solicitante) && DOMINIO_SOLICITANTE.test(solicitante) ? solicitante : c.destino;
   try {
     const transporte = nodemailer.createTransport({ service: 'gmail', auth: { user: c.usuario, pass: c.senha } });
     await transporte.sendMail({
       from: { name: 'Gerador Revenda Mais', address: c.usuario },
       to: c.destino,
+      replyTo: responderPara,
       subject: dados.assunto,
       html: dados.corpoHtml,
       attachments: [{

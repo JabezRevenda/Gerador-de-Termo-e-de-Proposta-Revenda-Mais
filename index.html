@@ -4438,7 +4438,10 @@ async function enviarFinanceiro() {
   const btn = document.getElementById('btnFin');
   btn.disabled = true;
   btn.innerHTML = '<div class="spinner"></div> Enviando...';
+  // E-mail do solicitante (vai em cópia para o financeiro): o do campo, ou o do perfil
+  const emailSol = (d.solicitante.match(/[^\s()<>]+@[^\s()<>]+\.[^\s()<>]+/) || [])[0] || (perfil && perfil.email) || '';
   const envio = Object.assign({}, d, {
+    solicitanteEmail: emailSol,
     assunto: finAssunto(d),
     corpoHtml: finCorpoHtml(d),
     arquivoNome: 'Termo_Renovacao_Assinado_' + nomeArquivo(d.loja) + (finArquivo.tipo === 'application/pdf' ? '.pdf' : '.jpg'),
