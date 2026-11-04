@@ -360,6 +360,10 @@ footer {
   .page-title { font-size: 30px; }
   .card-body { grid-template-columns: 1fr; }
   .field.span2 { grid-column: span 1; }
+  /* O que ocupa "2 colunas" no computador não pode abrir uma coluna fantasma no celular */
+  .card-body > *,
+  .card-body > [style*="contents"] > *,
+  .card-body > [style*="contents"] > [style*="contents"] > * { grid-column: 1 / -1 !important; }
   .btn-row { grid-template-columns: 1fr; }
   footer { padding: 16px 20px; }
 }
@@ -674,6 +678,8 @@ footer {
 .pp-mod.on .pp-mod-t { color: #E8003D; }
 .pp-mod-v { font-size: 16px; font-weight: 800; color: #111827; letter-spacing: -0.01em; line-height: 1.2; }
 .pp-mod-v small { font-size: 9.5px; font-weight: 600; color: #6b7280; }
+.pp-mod-alt { font-size: 10.5px; font-weight: 700; color: #374151; margin-top: 3px; line-height: 1.3; }
+.pp-mod.on .pp-mod-alt { color: #E8003D; }
 .pp-mod-d { font-size: 9.5px; color: #6b7280; font-weight: 500; margin-top: 5px; line-height: 1.4; }
 .pp-mod.on .pp-mod-d b { color: #E8003D; font-weight: 700; }
 .pp-pay { display: flex; justify-content: space-between; background: #f8f9fa; border-radius: 8px; padding: 10px 18px; margin-bottom: 14px; font-size: 10.5px; color: #4b5563; font-weight: 500; }
@@ -711,10 +717,7 @@ footer {
 .price-stack { text-align: right; }
 .price-stack .ps-de { display: block; font-size: 9.5px; font-weight: 500; color: var(--text-dim); text-decoration: line-through; margin-bottom: 1px; }
 .price-stack .ps-final { font-size: 14px; font-weight: 700; color: var(--text-heading); white-space: nowrap; }
-.rr-tipo-select {
-  margin: 0 !important; padding: 6px 24px 6px 10px !important; font-size: 12px !important;
-  width: auto !important; display: inline-block;
-}
+.price-stack .ps-alt { display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); margin-top: 2px; white-space: nowrap; }
 .crm-nested {
   display: flex; align-items: center; gap: 8px; margin-top: 8px;
   font-size: 12px; color: var(--text-muted); font-weight: 500;
@@ -1336,6 +1339,18 @@ footer {
       </div>
       <div class="card-body">
 
+        <!-- Forma de pagamento: define como trimestral e anual aparecem (parcelado, total ou os dois) -->
+        <div class="field span2" id="campoFormaWrap">
+          <label>Forma de Pagamento</label>
+          <select id="p_forma">
+            <option value="Cartão de crédito">Cartão de crédito</option>
+            <option value="Boleto / PIX">Boleto / PIX</option>
+            <option value="Cartão de crédito ou Boleto / PIX" selected>Cartão ou Boleto / PIX</option>
+          </select>
+          <div class="hint" id="p_formaDica" style="margin-top:6px"></div>
+        </div>
+        <div class="hint hidden" id="campoFormaFixa">Forma de pagamento: pós-pago, exclusivamente via boleto.</div>
+
         <!-- ═══ Investimento: Software Gerencial ═══ -->
         <div id="blocoInvSoftware" style="display:contents">
           <div class="hint">Valores de tabela do plano, não editáveis. Use o desconto abaixo para negociar — ele abate igualmente do mensal, trimestral e anual, e não afeta a adesão.</div>
@@ -1348,29 +1363,19 @@ footer {
               </div>
             </div>
             <div class="readonly-row">
-              <div><div class="rr-label">Trimestral</div><div class="rr-desc">Sem adesão</div></div>
-              <div style="display:flex;align-items:center;gap:8px">
-                <select id="p_tipoTri" class="rr-tipo-select">
-                  <option value="parcelado" selected>3x de</option>
-                  <option value="vista">À vista</option>
-                </select>
-                <div class="price-stack">
-                  <small class="ps-de hidden" id="p_triDe"></small>
-                  <span class="ps-final" id="p_triView">R$ 0,00</span>
-                </div>
+              <div><div class="rr-label">Trimestral</div><div class="rr-desc" id="p_triDesc">Sem adesão</div></div>
+              <div class="price-stack">
+                <small class="ps-de hidden" id="p_triDe"></small>
+                <span class="ps-final" id="p_triView">R$ 0,00</span>
+                <small class="ps-alt hidden" id="p_triAlt"></small>
               </div>
             </div>
             <div class="readonly-row">
-              <div><div class="rr-label">Anual</div><div class="rr-desc">Sem adesão</div></div>
-              <div style="display:flex;align-items:center;gap:8px">
-                <select id="p_tipoAnual" class="rr-tipo-select">
-                  <option value="parcelado" selected>12x de</option>
-                  <option value="vista">À vista</option>
-                </select>
-                <div class="price-stack">
-                  <small class="ps-de hidden" id="p_anualDe"></small>
-                  <span class="ps-final" id="p_anualView">R$ 0,00</span>
-                </div>
+              <div><div class="rr-label">Anual</div><div class="rr-desc" id="p_anualDesc">Sem adesão</div></div>
+              <div class="price-stack">
+                <small class="ps-de hidden" id="p_anualDe"></small>
+                <span class="ps-final" id="p_anualView">R$ 0,00</span>
+                <small class="ps-alt hidden" id="p_anualAlt"></small>
               </div>
             </div>
           </div>
@@ -1418,12 +1423,12 @@ footer {
                 <div class="price-stack"><small class="ps-de hidden" id="av_nfMensalDe"></small><span class="ps-final" id="av_nfMensalView">R$ 400,00</span></div>
               </div>
               <div class="readonly-row">
-                <div><div class="rr-label">Trimestral</div><div class="rr-desc">3x de (tabela)</div></div>
-                <div class="price-stack"><small class="ps-de hidden" id="av_nfTriDe"></small><span class="ps-final" id="av_nfTriView">R$ 400,00</span></div>
+                <div><div class="rr-label">Trimestral</div><div class="rr-desc" id="av_nfTriDesc">Tabela</div></div>
+                <div class="price-stack"><small class="ps-de hidden" id="av_nfTriDe"></small><span class="ps-final" id="av_nfTriView">R$ 400,00</span><small class="ps-alt hidden" id="av_nfTriAlt"></small></div>
               </div>
               <div class="readonly-row">
-                <div><div class="rr-label">Anual</div><div class="rr-desc">12x de (tabela)</div></div>
-                <div class="price-stack"><small class="ps-de hidden" id="av_nfAnualDe"></small><span class="ps-final" id="av_nfAnualView">R$ 350,00</span></div>
+                <div><div class="rr-label">Anual</div><div class="rr-desc" id="av_nfAnualDesc">Tabela</div></div>
+                <div class="price-stack"><small class="ps-de hidden" id="av_nfAnualDe"></small><span class="ps-final" id="av_nfAnualView">R$ 350,00</span><small class="ps-alt hidden" id="av_nfAnualAlt"></small></div>
               </div>
             </div>
             <div class="field">
@@ -1460,15 +1465,6 @@ footer {
         </div>
 
         <!-- ═══ Campos compartilhados ═══ -->
-        <div class="field span2" id="campoFormaWrap">
-          <label>Forma de Pagamento</label>
-          <select id="p_forma">
-            <option value="Cartão de crédito">Cartão de crédito</option>
-            <option value="Boleto / PIX">Boleto / PIX</option>
-            <option value="Cartão de crédito ou Boleto / PIX" selected>Cartão ou Boleto / PIX</option>
-          </select>
-        </div>
-        <div class="hint hidden" id="campoFormaFixa">Forma de pagamento: pós-pago, exclusivamente via boleto.</div>
         <div class="field span2">
           <label>Condições Especiais</label>
           <textarea id="p_condicoes" placeholder="Ex: 1º mês de cortesia. Implantação parcelada em 3x.&#10;Use Enter para novas linhas. Deixe vazio para ocultar do documento."></textarea>
@@ -2684,6 +2680,44 @@ function pBRL(v) {
   return 'R$ ' + (v || 0).toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 }
 // Atualiza um par "de/por" em tempo real no formulário (tabela riscada + valor final)
+// Forma de pagamento → como trimestral e anual aparecem:
+// cartão = parcelado (3x / 12x de), boleto/PIX = valor total do período, os dois = total no boleto/PIX e, embaixo, o parcelado
+function modoPagamento(forma) {
+  if (forma === 'Boleto / PIX') return 'boleto';
+  if (forma === 'Cartão de crédito') return 'cartao';
+  return 'ambos';
+}
+// Modalidade de n meses: mes = valor por mês já com desconto; mesTabela = sem desconto
+function modalidade(modo, n, mes, mesTabela) {
+  const cheio = modo !== 'cartao';   // boleto/PIX: o período inteiro de uma vez
+  return {
+    modo: modo, n: n, mes: mes,
+    valor: cheio ? mes * n : mes,
+    tabela: cheio ? mesTabela * n : mesTabela,
+    parcelado: n + 'x de ' + pBRL(mes),
+    // como a forma aparece no card da proposta
+    detalhe: modo === 'cartao' ? n + 'x de (por mês) no cartão'
+      : modo === 'boleto' ? 'Total de ' + n + ' meses no boleto/PIX'
+      : 'Total no boleto/PIX',
+    // linha do parcelado embaixo do total, quando aceita os dois
+    alt: modo === 'ambos' ? 'ou ' + n + 'x de ' + pBRL(mes) + ' no cartão' : ''
+  };
+}
+// Resumo curto (total do formulário)
+function resumoModalidade(m) {
+  if (!m.mes) return '—';
+  if (m.modo === 'cartao') return m.parcelado;
+  return pBRL(m.valor) + ' no boleto/PIX' + (m.modo === 'ambos' ? ' ou ' + m.parcelado : '');
+}
+// Linha do formulário (card de Investimento): valor, "De", descrição e a linha do parcelado
+function setLinhaModalidade(prefixo, m, descBase) {
+  setPriceStack(prefixo + 'View', prefixo + 'De', m.tabela, m.valor);
+  const desc = document.getElementById(prefixo + 'Desc');
+  if (desc) desc.textContent = descBase + ' · ' + m.detalhe;
+  const alt = document.getElementById(prefixo + 'Alt');
+  if (alt) { alt.textContent = m.alt; alt.classList.toggle('hidden', !m.alt); }
+}
+
 function setPriceStack(idFinal, idDe, tabela, final) {
   const elFinal = document.getElementById(idFinal);
   const elDe = document.getElementById(idDe);
@@ -2881,8 +2915,8 @@ function pColetar() {
   // CRM e IA: boleto mensal à parte — aparecem embaixo de cada modalidade para o cliente ver a mensalidade total
   const aParte = selecionados.filter(function (a) { return a.fora; });
   const somaParte = aParte.reduce(function (s, a) { return s + a.valor; }, 0);
-  const tipoTri = document.getElementById('p_tipoTri').value;
-  const tipoAnual = document.getElementById('p_tipoAnual').value;
+  const forma = document.getElementById('p_forma').value;
+  const modo = modoPagamento(forma);
 
   const dataIso = document.getElementById('p_data').value;
   const dt = dataIso ? new Date(dataIso + 'T12:00:00') : new Date();
@@ -2909,33 +2943,35 @@ function pColetar() {
     somaAdd: somaAdd,
     somaAddAnual: somaAddAnual,
     aParte: aParte, somaParte: somaParte,
-    vTri: vTri, tipoTri: tipoTri,
-    vAnual: vAnual, tipoAnual: tipoAnual,
-    // Totais: plano (já descontado) + adicionais (CRM/IA fora). No à vista, plano e adicionais entram pelo período cheio
-    total:      mensalidade + somaAdd,
-    totalTri:   (vTri   + somaAdd)      * (tipoTri   === 'vista' ? 3  : 1),
-    totalAnual: (vAnual + somaAddAnual) * (tipoAnual === 'vista' ? 12 : 1),
-    forma: document.getElementById('p_forma').value,
+    vTri: vTri, vAnual: vAnual,
+    // Por mês: plano (já descontado) + adicionais (CRM/IA fora). A forma de pagamento decide se aparece
+    // o parcelado, o total do período (boleto/PIX) ou os dois
+    total: mensalidade + somaAdd,
+    tri:   modalidade(modo, 3,  vTri + somaAdd,         triTabela + somaAdd),
+    anual: modalidade(modo, 12, vAnual + somaAddAnual,  anualTabela + somaAddAnual),
+    forma: forma,
     condicoes: document.getElementById('p_condicoes').value.trim()
   };
 }
 
 /* ── Montagem do documento ───────────────────────────────────────── */
 // Card de preço estilo "De/Por" — usado tanto no Software Gerencial quanto no fluxo avulso
-function precoCard(titulo, tabela, final, detalhe, destaque, extra) {
+// alt = linha do parcelado embaixo do total (quando aceita cartão e boleto/PIX)
+function precoCard(titulo, tabela, final, detalhe, destaque, extra, alt) {
   const temDesc = final < tabela;
   return '<div class="pp-mod' + (destaque ? ' on' : '') + '">' +
     '<div class="pp-mod-t">' + titulo + '</div>' +
     (temDesc ? '<div class="pp-mod-de">De ' + pBRL(tabela) + '</div>' : '') +
     '<div class="pp-mod-v">' + pBRL(final) + '</div>' +
+    (alt ? '<div class="pp-mod-alt">' + alt + '</div>' : '') +
     '<div class="pp-mod-d">' + detalhe + '</div>' +
     (temDesc ? '<div class="pp-mod-desc-tag">− ' + pBRL(tabela - final) + '</div>' : '') +
     (extra || '') +
   '</div>';
 }
 // Itens cobrados à parte (CRM / IA) + mensalidade total do cliente naquela modalidade.
-// porMes = valor mensal do card; null quando a modalidade é à vista (não há parcela mensal para somar)
-function blocoAParte(itens, somaParte, porMes) {
+// porMes = valor mensal do card; null quando é só boleto/PIX (não há parcela mensal para somar)
+function blocoAParte(itens, somaParte, porMes, rotulo) {
   if (!itens.length) return '';
   return '<div class="pp-mod-extra">' +
     itens.map(function (a) {
@@ -2943,7 +2979,7 @@ function blocoAParte(itens, somaParte, porMes) {
     }).join('') +
     (porMes === null
       ? '<div class="pp-mod-tot"><span>Boleto/mês</span><b>' + pBRL(somaParte) + '</b></div>'
-      : '<div class="pp-mod-tot"><span>Total/mês</span><b>' + pBRL(porMes + somaParte) + '</b></div>') +
+      : '<div class="pp-mod-tot"><span>' + (rotulo || 'Total/mês') + '</span><b>' + pBRL(porMes + somaParte) + '</b></div>') +
   '</div>';
 }
 
@@ -2967,20 +3003,17 @@ function pMontarPapel(d) {
       }).join('')
     : '';
 
-  function parcelaTxt(tipo, n) {
-    return tipo === 'vista' ? 'à vista (' + n + ' meses)' : n + 'x de (por mês)';
-  }
   const mensalBruto = d.mensalTabela + d.somaAdd;
-  const triBruto = (d.triTabela + d.somaAdd) * (d.tipoTri === 'vista' ? 3 : 1);
-  const anualBruto = (d.anualTabela + d.somaAddAnual) * (d.tipoAnual === 'vista' ? 12 : 1);
   const detAdd = d.somaAdd ? '<br/>Já inclui os adicionais' : '';
+  // CRM/IA à parte: no cartão soma com a parcela; só no boleto/PIX não há parcela mensal para somar
+  function aParteMod(m) {
+    return blocoAParte(d.aParte, d.somaParte, m.modo === 'boleto' ? null : m.mes, m.modo === 'ambos' ? 'Total/mês no cartão' : '');
+  }
   const modalidades = '<div class="pp-mods">' +
     precoCard('Mensal', mensalBruto, d.total, 'Adesão de <b>' + pBRL(d.adesao) + '</b>' + detAdd, false,
       blocoAParte(d.aParte, d.somaParte, d.total)) +
-    precoCard('Trimestral', triBruto, d.totalTri, 'Sem adesão · ' + parcelaTxt(d.tipoTri, 3) + detAdd, false,
-      blocoAParte(d.aParte, d.somaParte, d.tipoTri === 'vista' ? null : d.totalTri)) +
-    precoCard('Anual', anualBruto, d.totalAnual, 'Sem adesão · ' + parcelaTxt(d.tipoAnual, 12) + detAdd, true,
-      blocoAParte(d.aParte, d.somaParte, d.tipoAnual === 'vista' ? null : d.totalAnual)) +
+    precoCard('Trimestral', d.tri.tabela, d.tri.valor, 'Sem adesão · ' + d.tri.detalhe + detAdd, false, aParteMod(d.tri), d.tri.alt) +
+    precoCard('Anual', d.anual.tabela, d.anual.valor, 'Sem adesão · ' + d.anual.detalhe + detAdd, true, aParteMod(d.anual), d.anual.alt) +
   '</div>';
 
   const condicoes = d.condicoes
@@ -3113,6 +3146,9 @@ function avColetar() {
     nfMensalTabela: AV_TABELA.nfMensal, nfTriTabela: AV_TABELA.nfTrimestral, nfAnualTabela: AV_TABELA.nfAnual,
     mensalBruto: mensalBruto, triBruto: triBruto, anualBruto: anualBruto,
     totalMensal: totalMensal, totalTri: totalTri, totalAnual: totalAnual,
+    // Como trimestral e anual aparecem depende da forma de pagamento (parcelado, total ou os dois)
+    tri:   modalidade(modoPagamento(base.forma), 3,  totalTri,   triBruto),
+    anual: modalidade(modoPagamento(base.forma), 12, totalAnual, anualBruto),
     mensalidade: totalMensal
   });
 }
@@ -3178,8 +3214,8 @@ function avMontarPapel(d) {
 
     const modalidades = '<div class="pp-mods">' +
       precoCard('Mensal', d.mensalBruto, d.totalMensal, 'por mês', false) +
-      precoCard('Trimestral', d.triBruto, d.totalTri, '3x de (por mês)', false) +
-      precoCard('Anual', d.anualBruto, d.totalAnual, '12x de (por mês)', true) +
+      precoCard('Trimestral', d.tri.tabela, d.tri.valor, d.tri.detalhe, false, '', d.tri.alt) +
+      precoCard('Anual', d.anual.tabela, d.anual.valor, d.anual.detalhe, true, '', d.anual.alt) +
     '</div>';
 
     secaoInvestimento =
@@ -3265,10 +3301,20 @@ function pRender() {
     pRenderNotas(d);
     // Preview "De/Por" em tempo real no card de Investimento
     setPriceStack('p_mensalView', 'p_mensalDe', d.mensalTabela, d.mensalidade);
-    setPriceStack('p_triView', 'p_triDe', d.triTabela, d.vTri);
-    setPriceStack('p_anualView', 'p_anualDe', d.anualTabela, d.vAnual);
+    // Só o plano (sem adicionais), como antes — a forma de pagamento decide parcelado, total ou os dois
+    setLinhaModalidade('p_tri', modalidade(d.tri.modo, 3, d.vTri, d.triTabela), 'Sem adesão');
+    setLinhaModalidade('p_anual', modalidade(d.anual.modo, 12, d.vAnual, d.anualTabela), 'Sem adesão');
   } else if (document.getElementById('p_notas')) {
     document.getElementById('p_notas').innerHTML = '';
+  }
+  const dica = document.getElementById('p_formaDica');
+  if (dica) {
+    // IA avulso só tem mensal: a dica não se aplica
+    dica.classList.toggle('hidden', tipoProposta === 'avulso' && d.avPlano !== 'nf');
+    const modo = modoPagamento(document.getElementById('p_forma').value);
+    dica.textContent = modo === 'cartao' ? 'Trimestral e anual aparecem parcelados: 3x e 12x no cartão.'
+      : modo === 'boleto' ? 'Trimestral e anual aparecem com o valor total do período: 3 e 12 meses no boleto/PIX.'
+      : 'Trimestral e anual aparecem com o total no boleto/PIX e, embaixo, o parcelado no cartão.';
   }
 
   if (tipoProposta === 'avulso' && d.avPlano === 'crm') {
@@ -3289,10 +3335,8 @@ function pRender() {
         : d.cnpjQtd + ' × ' + pBRL(AV_TABELA.cnpjUnit) + ' por CNPJ/mês');
     setPriceStack('av_nfMensalView', 'av_nfMensalDe', AV_TABELA.nfMensal,
       Math.max(0, AV_TABELA.nfMensal - Math.min(d.desconto, AV_TABELA.nfMensal)));
-    setPriceStack('av_nfTriView', 'av_nfTriDe', AV_TABELA.nfTrimestral,
-      Math.max(0, AV_TABELA.nfTrimestral - Math.min(d.desconto, AV_TABELA.nfTrimestral)));
-    setPriceStack('av_nfAnualView', 'av_nfAnualDe', AV_TABELA.nfAnual,
-      Math.max(0, AV_TABELA.nfAnual - Math.min(d.desconto, AV_TABELA.nfAnual)));
+    setLinhaModalidade('av_nfTri', modalidade(d.tri.modo, 3, Math.max(0, AV_TABELA.nfTrimestral - Math.min(d.desconto, AV_TABELA.nfTrimestral)), AV_TABELA.nfTrimestral), 'Tabela');
+    setLinhaModalidade('av_nfAnual', modalidade(d.anual.modo, 12, Math.max(0, AV_TABELA.nfAnual - Math.min(d.desconto, AV_TABELA.nfAnual)), AV_TABELA.nfAnual), 'Tabela');
   }
 
   document.getElementById('p_paper').innerHTML = tipoProposta === 'avulso' ? avMontarPapel(d) : pMontarPapel(d);
@@ -3314,7 +3358,7 @@ function pRender() {
     } else {
       document.getElementById('p_totalView').textContent = pBRL(d.totalMensal);
       document.getElementById('p_totalSub').innerHTML =
-        'Trimestral: 3x de ' + pBRL(d.totalTri) + '  ·  Anual: 12x de ' + pBRL(d.totalAnual) +
+        'Trimestral: ' + resumoModalidade(d.tri) + '<br/>Anual: ' + resumoModalidade(d.anual) +
         (d.desconto > 0 ? '<br/>Desconto de ' + pBRL(d.desconto) + ' aplicado em todas as modalidades' : '');
     }
     pAjustarEscala();
@@ -3323,14 +3367,10 @@ function pRender() {
 
   document.getElementById('p_totalLabel').textContent = 'Mensal';
   document.getElementById('p_totalView').textContent = pBRL(d.total);
-  function resumoMod(v, tipo, n) {
-    if (!v) return '—';
-    return tipo === 'vista' ? pBRL(v) + ' à vista' : n + 'x de ' + pBRL(v);
-  }
   document.getElementById('p_totalSub').innerHTML =
     'Adesão ' + pBRL(d.adesao) + ' (só no mensal)' +
-    '<br/>Trimestral: ' + resumoMod(d.totalTri, d.tipoTri, 3) +
-    '  ·  Anual: ' + resumoMod(d.totalAnual, d.tipoAnual, 12) +
+    '<br/>Trimestral: ' + resumoModalidade(d.tri) +
+    '<br/>Anual: ' + resumoModalidade(d.anual) +
     (d.somaAdd ? '<br/>Inclui ' + pBRL(d.somaAdd) + ' de adicionais' : '') +
     (d.somaParte ? '<br/>+ ' + pBRL(d.somaParte) + '/mês à parte (' + d.aParte.map(function (a) { return a.nome.replace(' com WhatsApp', ''); }).join(' + ') + ')' +
       ' · mensalidade total ' + pBRL(d.total + d.somaParte) : '');
