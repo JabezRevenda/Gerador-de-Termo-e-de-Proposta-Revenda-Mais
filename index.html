@@ -1850,15 +1850,11 @@ footer {
         <span class="card-title">E-mail que o Financeiro vai receber</span>
       </div>
       <div class="card-body">
-        <div class="field span2" id="fin_paraWrap">
-          <label>Para (e-mail do financeiro)</label>
-          <input id="fin_para" type="email" placeholder="financeiro@revendamais.com.br"/>
-        </div>
         <div class="field span2">
           <label>Cópia — CC (opcional)</label>
           <input id="fin_cc" type="text" placeholder="Ex: supervisor@revendamais.com.br — separe vários com vírgula"/>
         </div>
-        <div class="hint">O e-mail sai do seu Outlook da empresa. Se o solicitante for outra pessoa, ele entra em cópia sozinho.</div>
+        <div class="hint">Vai para <b>financeiro@revendamais.com.br</b>, saindo do seu Outlook da empresa. Se o solicitante for outra pessoa, ele entra em cópia sozinho.</div>
         <div class="email-prev" id="fin_prev"></div>
       </div>
     </div>
@@ -4019,7 +4015,7 @@ function impPreencherTermo(p) {
 const FIN_MAX_ARQUIVO = 3 * 1024 * 1024;
 const FIN_ABERTURA = 'Time, solicito realizar a renovação desta loja:';
 const FIN_FECHO = 'Obrigado';
-const FIN_PARA_CHAVE = 'rm_financeiro_email';
+const FIN_PARA = 'financeiro@revendamais.com.br';   // destino fixo, igual para todo mundo
 const FIN_CC_CHAVE = 'rm_financeiro_cc';
 let finArquivo = null;    // termo assinado: { nome, tipo, base64, tamanho }
 
@@ -4396,12 +4392,11 @@ function finCorpoTexto(d) {
     '\n\n' + FIN_FECHO).replace(/\r?\n/g, '\r\n');
 }
 function finParaInicial() {
-  let para = '', cc = '';
+  let cc = '';
   try {
-    para = localStorage.getItem(FIN_PARA_CHAVE) || '';
     cc = localStorage.getItem(FIN_CC_CHAVE) || '';
+    localStorage.removeItem('rm_financeiro_email');   // o Para digitado de antes: agora é fixo
   } catch (e) { /* sem storage: digita de novo */ }
-  document.getElementById('fin_para').value = para;
   document.getElementById('fin_cc').value = cc;
 }
 
@@ -4417,7 +4412,7 @@ function finCopias(d) {
   try { eu = (perfil && perfil.email || '').toLowerCase(); } catch (e) { /* perfil ainda não carregado */ }
   const lista = emailsDe(document.getElementById('fin_cc').value);
   if (sol && sol.toLowerCase() !== eu) lista.push(sol);
-  const para = document.getElementById('fin_para').value.trim().toLowerCase();
+  const para = FIN_PARA.toLowerCase();
   return lista.filter(function (e, i) {
     const k = e.toLowerCase();
     return k !== para && lista.findIndex(function (x) { return x.toLowerCase() === k; }) === i;
@@ -4426,18 +4421,16 @@ function finCopias(d) {
 
 function abrirNoOutlook(onde) {
   const d = finColetar();
-  const para = document.getElementById('fin_para').value.trim();
+  const para = FIN_PARA;
   const ccDigitado = emailsDe(document.getElementById('fin_cc').value);
   const falta = [
     [d.idLoja, 'fin_idLoja', 'ID da Loja'],
     [d.loja, 'fin_loja', 'Loja'],
     [d.valorRenovacao, 'fin_valor', 'Valor da renovação'],
-    [RE_EMAIL.test(para), 'fin_para', 'Para (e-mail do financeiro)'],
     [ccDigitado.every(function (e) { return RE_EMAIL.test(e); }), 'fin_cc', 'Cópia — confira os e-mails']
   ].find(function (c) { return !c[0]; });
   if (falta) { showToast('Preencha: ' + falta[2], 'error'); document.getElementById(falta[1]).focus(); return; }
   try {
-    localStorage.setItem(FIN_PARA_CHAVE, para);
     localStorage.setItem(FIN_CC_CHAVE, ccDigitado.join(', '));
   } catch (e) { /* sem storage, segue */ }
 
@@ -4451,7 +4444,7 @@ function abrirNoOutlook(onde) {
       '?' + (cc ? 'cc=' + encodeURIComponent(cc.replace(/;/g, ',')) + '&' : '') +
       'subject=' + encodeURIComponent(assunto) + '&body=' + encodeURIComponent(corpo);
   }
-  finStatus('<b>E-mail aberto no Outlook.</b> Confira o Para e a Cópia, arraste o termo assinado' +
+  finStatus('<b>E-mail aberto no Outlook.</b> Confira a Cópia, arraste o termo assinado' +
     (finArquivo ? ' (<b>' + esc(finArquivo.nome) + '</b>)' : '') + ' para o e-mail e clique em Enviar.' +
     '<div class="fin-status-acao"><button type="button" class="next-btn" onclick="novaRenovacao(true)">&#8634; Começar nova renovação</button></div>', true);
 }
@@ -4499,7 +4492,7 @@ function finRender() {
   const d = finColetar();
   document.getElementById('fin_prev').innerHTML =
     '<div class="ep-cab">' +
-      '<b>Para:</b> ' + (esc(document.getElementById('fin_para').value.trim()) || '<span class="fin-erro">falta o e-mail do financeiro</span>') + '<br>' +
+      '<b>Para:</b> ' + FIN_PARA + '<br>' +
       (finCopias(d).length ? '<b>Cópia:</b> ' + esc(finCopias(d).join(', ')) + '<br>' : '') +
       '<b>Assunto:</b> ' + esc(finAssunto(d)) + '<br><b>Anexo:</b> ' +
       (finArquivo ? esc(finArquivo.nome) + ' — você arrasta para o e-mail no Outlook' : 'o termo assinado — você anexa no Outlook') +
