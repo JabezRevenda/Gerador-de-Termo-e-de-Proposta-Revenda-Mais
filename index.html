@@ -852,6 +852,9 @@ footer {
 .fin-erro { color: var(--error); font-weight: 600; }
 .fin-status-acao { margin-top: 12px; }
 .fin-leitura { grid-column: span 2; }
+.btn-row.um { grid-template-columns: 1fr; }
+.fin-aviso { margin: 4px 0 14px; padding: 12px 16px; border-radius: 8px; background: #fff7e6; border: 1px solid #f5c26b; border-left: 4px solid #d97706; font-size: 13px; line-height: 1.55; color: #78350f; }
+.fin-aviso b { color: #78350f; }
 .fin-copiar { display: flex; align-items: center; gap: 12px; margin-top: 12px; flex-wrap: wrap; }
 .fin-copiar .btn-ghost { padding: 9px 14px; font-size: 11px; }
 .fin-copiar span { flex: 1; min-width: 200px; font-size: 11.5px; color: var(--text-muted); }
@@ -1850,32 +1853,28 @@ footer {
         <span class="card-title">E-mail que o Financeiro vai receber</span>
       </div>
       <div class="card-body">
-        <div class="field span2" id="fin_paraWrap">
-          <label>Para (e-mail do financeiro)</label>
-          <input id="fin_para" type="email" placeholder="financeiro@revendamais.com.br"/>
-        </div>
         <div class="field span2">
           <label>Cópia — CC (opcional)</label>
           <input id="fin_cc" type="text" placeholder="Ex: supervisor@revendamais.com.br — separe vários com vírgula"/>
         </div>
-        <div class="hint">O e-mail sai do seu Outlook da empresa. Se o solicitante for outra pessoa, ele entra em cópia sozinho.</div>
+        <div class="hint">Vai para <b>financeiro@revendamais.com.br</b>, saindo do seu Outlook da empresa. Se o solicitante for outra pessoa, ele entra em cópia sozinho.</div>
         <div class="email-prev" id="fin_prev"></div>
       </div>
     </div>
 
-    <div class="btn-row" id="finBtnsOutlook">
-      <button class="btn btn-pdf" id="btnOutlookWeb" onclick="abrirNoOutlook('web')">
+    <div class="fin-aviso" id="finAvisoAnexo">
+      <b>Atenção: anexe o termo assinado novamente.</b> O Outlook abre o e-mail pronto, mas <b>sem o anexo</b>.
+      Antes de enviar, arraste o termo assinado<span id="finAvisoNome"></span> para o e-mail.
+    </div>
+    <div class="btn-row um" id="finBtnsOutlook">
+      <button class="btn btn-pdf" id="btnOutlook" onclick="abrirNoOutlook()">
         <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
         Abrir no Outlook
-      </button>
-      <button class="btn btn-docx" id="btnOutlookApp" onclick="abrirNoOutlook('app')">
-        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-        Outlook do computador
       </button>
     </div>
     <div class="fin-copiar">
       <button type="button" class="btn-ghost" onclick="copiarCorpoFormatado()">Copiar o texto com negrito</button>
-      <span>O Outlook abre o texto sem negrito. Se quiser a formatação, copie aqui e cole no corpo do e-mail.</span>
+      <span>O e-mail abre com o texto sem negrito. Se quiser a formatação, copie aqui e cole no corpo do e-mail.</span>
     </div>
     <div class="fin-status" id="finStatus"></div>
   </section>
@@ -4019,7 +4018,7 @@ function impPreencherTermo(p) {
 const FIN_MAX_ARQUIVO = 3 * 1024 * 1024;
 const FIN_ABERTURA = 'Time, solicito realizar a renovação desta loja:';
 const FIN_FECHO = 'Obrigado';
-const FIN_PARA_CHAVE = 'rm_financeiro_email';
+const FIN_PARA = 'financeiro@revendamais.com.br';   // destino fixo, igual para todo mundo
 const FIN_CC_CHAVE = 'rm_financeiro_cc';
 let finArquivo = null;    // termo assinado: { nome, tipo, base64, tamanho }
 
@@ -4350,12 +4349,14 @@ function camposDoTermo(texto, nomeArquivo) {
 }
 function finTermoUI(erro) {
   const a = finArquivo;
+  const avisoNome = document.getElementById('finAvisoNome');
+  if (avisoNome) avisoNome.innerHTML = a ? ' (<b>' + esc(a.nome) + '</b>)' : '';
   document.getElementById('finTermo').classList.toggle('ok', !!a);
   document.getElementById('finTermoT').textContent = a ? a.nome : 'Suba o termo assinado';
   document.getElementById('finTermoD').innerHTML = erro
     ? '<span class="fin-erro">' + esc(erro) + '</span>'
     : a ? (a.tipo === 'application/pdf' ? 'PDF' : a.tipo === TIPO_DOCX ? 'Word' : 'Foto') + ' · ' + tamanhoTxt(a.tamanho) +
-        ' — no Outlook, arraste este arquivo para o e-mail'
+        ' — anexe este arquivo novamente no e-mail do Outlook'
     : 'PDF, Word ou foto. Se for o termo gerado aqui, os dados se preenchem sozinhos. Também dá para arrastar o arquivo para cá.';
   document.getElementById('finTermoBtn').textContent = a ? 'Trocar' : 'Subir termo';
 }
@@ -4396,12 +4397,11 @@ function finCorpoTexto(d) {
     '\n\n' + FIN_FECHO).replace(/\r?\n/g, '\r\n');
 }
 function finParaInicial() {
-  let para = '', cc = '';
+  let cc = '';
   try {
-    para = localStorage.getItem(FIN_PARA_CHAVE) || '';
     cc = localStorage.getItem(FIN_CC_CHAVE) || '';
+    localStorage.removeItem('rm_financeiro_email');   // o Para digitado de antes: agora é fixo
   } catch (e) { /* sem storage: digita de novo */ }
-  document.getElementById('fin_para').value = para;
   document.getElementById('fin_cc').value = cc;
 }
 
@@ -4417,42 +4417,35 @@ function finCopias(d) {
   try { eu = (perfil && perfil.email || '').toLowerCase(); } catch (e) { /* perfil ainda não carregado */ }
   const lista = emailsDe(document.getElementById('fin_cc').value);
   if (sol && sol.toLowerCase() !== eu) lista.push(sol);
-  const para = document.getElementById('fin_para').value.trim().toLowerCase();
+  const para = FIN_PARA.toLowerCase();
   return lista.filter(function (e, i) {
     const k = e.toLowerCase();
     return k !== para && lista.findIndex(function (x) { return x.toLowerCase() === k; }) === i;
   });
 }
 
-function abrirNoOutlook(onde) {
+function abrirNoOutlook() {
   const d = finColetar();
-  const para = document.getElementById('fin_para').value.trim();
+  const para = FIN_PARA;
   const ccDigitado = emailsDe(document.getElementById('fin_cc').value);
   const falta = [
     [d.idLoja, 'fin_idLoja', 'ID da Loja'],
     [d.loja, 'fin_loja', 'Loja'],
     [d.valorRenovacao, 'fin_valor', 'Valor da renovação'],
-    [RE_EMAIL.test(para), 'fin_para', 'Para (e-mail do financeiro)'],
     [ccDigitado.every(function (e) { return RE_EMAIL.test(e); }), 'fin_cc', 'Cópia — confira os e-mails']
   ].find(function (c) { return !c[0]; });
   if (falta) { showToast('Preencha: ' + falta[2], 'error'); document.getElementById(falta[1]).focus(); return; }
   try {
-    localStorage.setItem(FIN_PARA_CHAVE, para);
     localStorage.setItem(FIN_CC_CHAVE, ccDigitado.join(', '));
   } catch (e) { /* sem storage, segue */ }
 
-  const assunto = finAssunto(d), corpo = finCorpoTexto(d), cc = finCopias(d).join(';');
-  if (onde === 'web') {
-    window.open('https://outlook.office.com/mail/deeplink/compose?to=' + encodeURIComponent(para) +
-      (cc ? '&cc=' + encodeURIComponent(cc) : '') +
-      '&subject=' + encodeURIComponent(assunto) + '&body=' + encodeURIComponent(corpo), '_blank');
-  } else {
-    window.location.href = 'mailto:' + encodeURIComponent(para) +
-      '?' + (cc ? 'cc=' + encodeURIComponent(cc.replace(/;/g, ',')) + '&' : '') +
-      'subject=' + encodeURIComponent(assunto) + '&body=' + encodeURIComponent(corpo);
-  }
-  finStatus('<b>E-mail aberto no Outlook.</b> Confira o Para e a Cópia, arraste o termo assinado' +
-    (finArquivo ? ' (<b>' + esc(finArquivo.nome) + '</b>)' : '') + ' para o e-mail e clique em Enviar.' +
+  // mailto abre o aplicativo de e-mail do computador (Outlook); o anexo vai à mão
+  const assunto = finAssunto(d), corpo = finCorpoTexto(d), cc = finCopias(d).join(',');
+  window.location.href = 'mailto:' + encodeURIComponent(para) +
+    '?' + (cc ? 'cc=' + encodeURIComponent(cc) + '&' : '') +
+    'subject=' + encodeURIComponent(assunto) + '&body=' + encodeURIComponent(corpo);
+  finStatus('<b>E-mail aberto no Outlook. Agora anexe o termo assinado novamente</b>' +
+    (finArquivo ? ' (<b>' + esc(finArquivo.nome) + '</b>)' : '') + ': arraste o arquivo para o e-mail, confira a Cópia e clique em Enviar.' +
     '<div class="fin-status-acao"><button type="button" class="next-btn" onclick="novaRenovacao(true)">&#8634; Começar nova renovação</button></div>', true);
 }
 
@@ -4499,10 +4492,10 @@ function finRender() {
   const d = finColetar();
   document.getElementById('fin_prev').innerHTML =
     '<div class="ep-cab">' +
-      '<b>Para:</b> ' + (esc(document.getElementById('fin_para').value.trim()) || '<span class="fin-erro">falta o e-mail do financeiro</span>') + '<br>' +
+      '<b>Para:</b> ' + FIN_PARA + '<br>' +
       (finCopias(d).length ? '<b>Cópia:</b> ' + esc(finCopias(d).join(', ')) + '<br>' : '') +
       '<b>Assunto:</b> ' + esc(finAssunto(d)) + '<br><b>Anexo:</b> ' +
-      (finArquivo ? esc(finArquivo.nome) + ' — você arrasta para o e-mail no Outlook' : 'o termo assinado — você anexa no Outlook') +
+      '<span class="fin-erro">anexe o termo assinado novamente no Outlook' + (finArquivo ? ' (' + esc(finArquivo.nome) + ')' : '') + '</span>' +
     '</div>' +
     '<div class="ep-corpo">' + finCorpoHtml(d) + '</div>';
 }
