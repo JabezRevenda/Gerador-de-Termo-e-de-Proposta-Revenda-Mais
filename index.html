@@ -852,7 +852,9 @@ footer {
 .fin-erro { color: var(--error); font-weight: 600; }
 .fin-status-acao { margin-top: 12px; }
 .fin-leitura { grid-column: span 2; }
-.btn-row.um { grid-template-columns: 1fr; }
+.fin-copiar { display: flex; align-items: center; gap: 12px; margin-top: 12px; flex-wrap: wrap; }
+.fin-copiar .btn-ghost { padding: 9px 14px; font-size: 11px; }
+.fin-copiar span { flex: 1; min-width: 200px; font-size: 11.5px; color: var(--text-muted); }
 
 /* ══════════════════════════════════════════════════════════
    PERFIL — quem está usando (salvo só neste navegador, sem login)
@@ -1852,6 +1854,11 @@ footer {
           <label>Para (e-mail do financeiro)</label>
           <input id="fin_para" type="email" placeholder="financeiro@revendamais.com.br"/>
         </div>
+        <div class="field span2">
+          <label>Cópia — CC (opcional)</label>
+          <input id="fin_cc" type="text" placeholder="Ex: supervisor@revendamais.com.br — separe vários com vírgula"/>
+        </div>
+        <div class="hint">O e-mail sai do seu Outlook da empresa. Se o solicitante for outra pessoa, ele entra em cópia sozinho.</div>
         <div class="email-prev" id="fin_prev"></div>
       </div>
     </div>
@@ -1866,11 +1873,9 @@ footer {
         Outlook do computador
       </button>
     </div>
-    <div class="btn-row um hidden" id="finBtnsAuto">
-      <button class="btn btn-pdf" id="btnFin" onclick="enviarFinanceiro()">
-        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-        Enviar para o financeiro
-      </button>
+    <div class="fin-copiar">
+      <button type="button" class="btn-ghost" onclick="copiarCorpoFormatado()">Copiar o texto com negrito</button>
+      <span>O Outlook abre o texto sem negrito. Se quiser a formatação, copie aqui e cole no corpo do e-mail.</span>
     </div>
     <div class="fin-status" id="finStatus"></div>
   </section>
@@ -4006,23 +4011,17 @@ function impPreencherTermo(p) {
 
 /* ══════════════════════════════════════════════════════════════════
    RENOVAÇÃO · ETAPA 2 — ENVIAR AO FINANCEIRO
-   Lê o termo assinado quando ele foi gerado aqui (os dados vão escondidos no PDF/Word); foto ou
-   PDF de fora não dá para ler, e a pessoa preenche. Monta o e-mail no formato que o financeiro
-   já recebe e envia, com o termo assinado anexo,
-   para /api/financeiro — função do Vercel que repassa ao fluxo do Power Automate.
-   O link do fluxo fica só no Vercel (variável FINANCEIRO_FLOW_URL), fora deste código público.
+   Lê o termo assinado (dados escondidos no arquivo gerado aqui, ou OCR no próprio navegador) e
+   monta o e-mail no formato que o financeiro já recebe. O envio é feito pelo Outlook da empresa
+   de quem usa: o gerador só abre o e-mail pronto. Nenhum dado passa por servidor ou e-mail externo.
    ══════════════════════════════════════════════════════════════════ */
-// O Vercel aceita até 4,5 MB por envio e o arquivo em base64 cresce ~33%
+// Tamanho alvo da foto do termo (é comprimida para ler e anexar com folga)
 const FIN_MAX_ARQUIVO = 3 * 1024 * 1024;
 const FIN_ABERTURA = 'Time, solicito realizar a renovação desta loja:';
 const FIN_FECHO = 'Obrigado';
-// Envio automático (api/financeiro.js manda pelo Gmail do gerador) só quando está configurado
-// no Vercel; senão, o e-mail abre pronto no Outlook e a pessoa anexa o termo e envia.
-let finAutomatico = false;
 const FIN_PARA_CHAVE = 'rm_financeiro_email';
+const FIN_CC_CHAVE = 'rm_financeiro_cc';
 let finArquivo = null;    // termo assinado: { nome, tipo, base64, tamanho }
-let finEnviado = false;
-let BTN_FIN_HTML = '';
 
 // Termo de Renovação preenchido na etapa 1 nesta sessão (dados mínimos: empresa e valor)
 function termoPreenchido() {
@@ -4109,7 +4108,6 @@ async function finLerTermo(arquivo) {
   const ehDocx = /\.docx$/i.test(arquivo.name);
   try {
     if (ehPdf || ehDocx) {
-      if (arquivo.size > FIN_MAX_ARQUIVO) throw new Error('Arquivo grande demais (' + tamanhoTxt(arquivo.size) + '). O limite é 3 MB.');
       finArquivo = { nome: arquivo.name, tipo: ehPdf ? 'application/pdf' : TIPO_DOCX, base64: await arquivoBase64(arquivo), tamanho: arquivo.size };
     } else if (/^image\//.test(arquivo.type)) {
       finArquivo = await finComprimirImagem(arquivo);
@@ -4357,7 +4355,7 @@ function finTermoUI(erro) {
   document.getElementById('finTermoD').innerHTML = erro
     ? '<span class="fin-erro">' + esc(erro) + '</span>'
     : a ? (a.tipo === 'application/pdf' ? 'PDF' : a.tipo === TIPO_DOCX ? 'Word' : 'Foto') + ' · ' + tamanhoTxt(a.tamanho) +
-        (finAutomatico ? ' — vai anexo no e-mail' : ' — no Outlook, arraste este arquivo para o e-mail')
+        ' — no Outlook, arraste este arquivo para o e-mail'
     : 'PDF, Word ou foto. Se for o termo gerado aqui, os dados se preenchem sozinhos. Também dá para arrastar o arquivo para cá.';
   document.getElementById('finTermoBtn').textContent = a ? 'Trocar' : 'Subir termo';
 }
@@ -4398,33 +4396,89 @@ function finCorpoTexto(d) {
     '\n\n' + FIN_FECHO).replace(/\r?\n/g, '\r\n');
 }
 function finParaInicial() {
-  let para = '';
-  try { para = localStorage.getItem(FIN_PARA_CHAVE) || ''; } catch (e) { /* sem storage: digita de novo */ }
+  let para = '', cc = '';
+  try {
+    para = localStorage.getItem(FIN_PARA_CHAVE) || '';
+    cc = localStorage.getItem(FIN_CC_CHAVE) || '';
+  } catch (e) { /* sem storage: digita de novo */ }
   document.getElementById('fin_para').value = para;
+  document.getElementById('fin_cc').value = cc;
+}
+
+const RE_EMAIL = /^[^\s@,;]+@[^\s@,;]+\.[^\s@,;]+$/;
+function emailsDe(texto) {
+  return String(texto || '').split(/[,;\s]+/).map(function (e) { return e.trim(); }).filter(Boolean);
+}
+// Cópia: o que a pessoa digitou + o solicitante, quando ele não é quem está enviando (o perfil)
+function finCopias(d) {
+  const sol = (d.solicitante.match(/[^\s()<>,;]+@[^\s()<>,;]+\.[^\s()<>,;]+/) || [])[0] || '';
+  // O perfil é carregado mais adiante no script; na primeira prévia ele ainda não existe
+  let eu = '';
+  try { eu = (perfil && perfil.email || '').toLowerCase(); } catch (e) { /* perfil ainda não carregado */ }
+  const lista = emailsDe(document.getElementById('fin_cc').value);
+  if (sol && sol.toLowerCase() !== eu) lista.push(sol);
+  const para = document.getElementById('fin_para').value.trim().toLowerCase();
+  return lista.filter(function (e, i) {
+    const k = e.toLowerCase();
+    return k !== para && lista.findIndex(function (x) { return x.toLowerCase() === k; }) === i;
+  });
 }
 
 function abrirNoOutlook(onde) {
   const d = finColetar();
   const para = document.getElementById('fin_para').value.trim();
+  const ccDigitado = emailsDe(document.getElementById('fin_cc').value);
   const falta = [
     [d.idLoja, 'fin_idLoja', 'ID da Loja'],
     [d.loja, 'fin_loja', 'Loja'],
     [d.valorRenovacao, 'fin_valor', 'Valor da renovação'],
-    [/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(para), 'fin_para', 'Para (e-mail do financeiro)']
+    [RE_EMAIL.test(para), 'fin_para', 'Para (e-mail do financeiro)'],
+    [ccDigitado.every(function (e) { return RE_EMAIL.test(e); }), 'fin_cc', 'Cópia — confira os e-mails']
   ].find(function (c) { return !c[0]; });
   if (falta) { showToast('Preencha: ' + falta[2], 'error'); document.getElementById(falta[1]).focus(); return; }
-  try { localStorage.setItem(FIN_PARA_CHAVE, para); } catch (e) { /* sem storage, segue */ }
+  try {
+    localStorage.setItem(FIN_PARA_CHAVE, para);
+    localStorage.setItem(FIN_CC_CHAVE, ccDigitado.join(', '));
+  } catch (e) { /* sem storage, segue */ }
 
-  const assunto = finAssunto(d), corpo = finCorpoTexto(d);
+  const assunto = finAssunto(d), corpo = finCorpoTexto(d), cc = finCopias(d).join(';');
   if (onde === 'web') {
     window.open('https://outlook.office.com/mail/deeplink/compose?to=' + encodeURIComponent(para) +
+      (cc ? '&cc=' + encodeURIComponent(cc) : '') +
       '&subject=' + encodeURIComponent(assunto) + '&body=' + encodeURIComponent(corpo), '_blank');
   } else {
     window.location.href = 'mailto:' + encodeURIComponent(para) +
-      '?subject=' + encodeURIComponent(assunto) + '&body=' + encodeURIComponent(corpo);
+      '?' + (cc ? 'cc=' + encodeURIComponent(cc.replace(/;/g, ',')) + '&' : '') +
+      'subject=' + encodeURIComponent(assunto) + '&body=' + encodeURIComponent(corpo);
   }
-  finStatus('<b>E-mail aberto no Outlook.</b> Arraste o termo assinado (foto ou PDF) para o e-mail e clique em Enviar.' +
+  finStatus('<b>E-mail aberto no Outlook.</b> Confira o Para e a Cópia, arraste o termo assinado' +
+    (finArquivo ? ' (<b>' + esc(finArquivo.nome) + '</b>)' : '') + ' para o e-mail e clique em Enviar.' +
     '<div class="fin-status-acao"><button type="button" class="next-btn" onclick="novaRenovacao(true)">&#8634; Começar nova renovação</button></div>', true);
+}
+
+// Corpo com negrito para colar no Outlook (o link do Outlook só leva texto simples)
+async function copiarCorpoFormatado() {
+  const d = finColetar();
+  const html = '<div style="font-family:Calibri,Arial,sans-serif;font-size:11pt">' + finCorpoHtml(d) + '</div>';
+  const texto = finCorpoTexto(d);
+  try {
+    await navigator.clipboard.write([new ClipboardItem({
+      'text/html': new Blob([html], { type: 'text/html' }),
+      'text/plain': new Blob([texto], { type: 'text/plain' })
+    })]);
+  } catch (e) {
+    // Navegador sem ClipboardItem: copia pela seleção de um bloco escondido
+    const div = document.createElement('div');
+    div.innerHTML = html;
+    div.style.cssText = 'position:fixed;left:-9999px;top:0';
+    document.body.appendChild(div);
+    const r = document.createRange(); r.selectNodeContents(div);
+    const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+    const ok = document.execCommand('copy');
+    sel.removeAllRanges(); div.remove();
+    if (!ok) { showToast('Não deu para copiar. Selecione o texto da prévia e copie.', 'error'); return; }
+  }
+  showToast('Texto copiado! No Outlook, apague o corpo e cole (Ctrl+V).', 'success');
 }
 
 function finAssunto(d) {
@@ -4445,97 +4499,19 @@ function finRender() {
   const d = finColetar();
   document.getElementById('fin_prev').innerHTML =
     '<div class="ep-cab">' +
-      (finAutomatico ? '' : '<b>Para:</b> ' + (esc(document.getElementById('fin_para').value.trim()) || '<span class="fin-erro">falta o e-mail do financeiro</span>') + '<br>') +
+      '<b>Para:</b> ' + (esc(document.getElementById('fin_para').value.trim()) || '<span class="fin-erro">falta o e-mail do financeiro</span>') + '<br>' +
+      (finCopias(d).length ? '<b>Cópia:</b> ' + esc(finCopias(d).join(', ')) + '<br>' : '') +
       '<b>Assunto:</b> ' + esc(finAssunto(d)) + '<br><b>Anexo:</b> ' +
-      (!finAutomatico ? 'o termo assinado — você anexa no Outlook'
-        : finArquivo ? esc(finArquivo.nome) + ' (' + tamanhoTxt(finArquivo.tamanho) + ')' : '<span class="fin-erro">falta subir o termo assinado</span>') +
+      (finArquivo ? esc(finArquivo.nome) + ' — você arrasta para o e-mail no Outlook' : 'o termo assinado — você anexa no Outlook') +
     '</div>' +
     '<div class="ep-corpo">' + finCorpoHtml(d) + '</div>';
-  // Mudou algo depois de enviar: libera um novo envio
-  if (finEnviado) {
-    finEnviado = false;
-    const btn = document.getElementById('btnFin');
-    btn.disabled = false;
-    btn.innerHTML = BTN_FIN_HTML;
-  }
 }
 
 function finStatus(html, ok) {
   document.getElementById('finStatus').innerHTML = '<div class="import-msg' + (ok ? ' ok' : '') + '">' + html + '</div>';
 }
 
-async function enviarFinanceiro() {
-  const d = finColetar();
-  const falta = [
-    [d.solicitante, 'fin_solicitante', 'Solicitante'],
-    [d.idLoja, 'fin_idLoja', 'ID da Loja'],
-    [d.loja, 'fin_loja', 'Loja'],
-    [d.valorRenovacao, 'fin_valor', 'Valor da renovação']
-  ].find(function (c) { return !c[0]; });
-  if (falta) { showToast('Preencha: ' + falta[2], 'error'); document.getElementById(falta[1]).focus(); return; }
-  if (!finArquivo) { showToast('Suba o termo assinado', 'error'); return; }
-
-  const btn = document.getElementById('btnFin');
-  btn.disabled = true;
-  btn.innerHTML = '<div class="spinner"></div> Enviando...';
-  // E-mail do solicitante (vai em cópia para o financeiro): o do campo, ou o do perfil
-  const emailSol = (d.solicitante.match(/[^\s()<>]+@[^\s()<>]+\.[^\s()<>]+/) || [])[0] || (perfil && perfil.email) || '';
-  const envio = Object.assign({}, d, {
-    solicitanteEmail: emailSol,
-    assunto: finAssunto(d),
-    corpoHtml: finCorpoHtml(d),
-    arquivoNome: 'Termo_Renovacao_Assinado_' + nomeArquivo(d.loja) + (finArquivo.tipo === 'application/pdf' ? '.pdf' : '.jpg'),
-    arquivoTipo: finArquivo.tipo,
-    arquivoBase64: finArquivo.base64
-  });
-
-  try {
-    const r = await fetch('/api/financeiro', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(envio)
-    });
-    const resp = await r.json().catch(function () { return {}; });
-    if (!r.ok) throw new Error(resp.erro || (r.status === 413 ? 'Arquivo grande demais para o envio.' : 'O envio falhou (erro ' + r.status + ').'));
-
-    const hora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-    finStatus('<b>Enviado às ' + hora + '.</b> O e-mail "' + esc(envio.assunto) + '" segue para o financeiro com o termo assinado anexo.' +
-      '<div class="fin-status-acao"><button type="button" class="next-btn" onclick="novaRenovacao(true)">&#8634; Começar nova renovação</button></div>', true);
-    showToast('Enviado ao financeiro!', 'success');
-    finEnviado = true;
-    btn.innerHTML = '&#10003; Enviado ao financeiro';
-  } catch (e) {
-    // TypeError = nem chegou ao servidor (sem internet, ou gerador aberto como arquivo local)
-    finStatus('<b>Não foi enviado.</b> ' + esc(e instanceof TypeError
-      ? 'Não foi possível conectar. Abra o gerador pelo site e tente de novo.'
-      : e.message), false);
-    showToast('Não foi enviado ao financeiro', 'error');
-    btn.disabled = false;
-    btn.innerHTML = BTN_FIN_HTML;
-  }
-}
-
-function finAplicarModo() {
-  document.getElementById('finBtnsOutlook').classList.toggle('hidden', finAutomatico);
-  document.getElementById('finBtnsAuto').classList.toggle('hidden', !finAutomatico);
-  document.getElementById('fin_paraWrap').classList.toggle('hidden', finAutomatico);
-  finTermoUI();
-  finRender();
-}
-// Pergunta à função se o Gmail já está configurado (aberto como arquivo local, fica no Outlook)
-async function finDetectarModo() {
-  if (location.protocol === 'file:') return;   // sem servidor não há função para perguntar
-  try {
-    const r = await fetch('/api/financeiro');
-    finAutomatico = r.ok && (await r.json()).automatico === true;
-  } catch (e) {
-    finAutomatico = false;
-  }
-  finAplicarModo();
-}
-
 (function finInit() {
-  BTN_FIN_HTML = document.getElementById('btnFin').innerHTML;
   finParaInicial();
   document.getElementById('fin_novoPlano').innerHTML = ['Manter plano atual'].concat(Object.keys(PLANOS).map(function (k) {
     return PLANOS[k].nome || 'Plano ' + k;
@@ -4549,8 +4525,8 @@ async function finDetectarModo() {
   const termo = document.getElementById('finTermoArquivo');
   termo.addEventListener('change', function () { finLerTermo(termo.files[0]); termo.value = ''; });
   aceitarArquivoSolto(document.getElementById('finTermo'), finLerTermo);
-  finAplicarModo();
-  finDetectarModo();
+  finTermoUI();
+  finRender();
 })();
 
 /* ══════════════════════════════════════════════════════════════════
@@ -4888,9 +4864,6 @@ function novaRenovacao(semConfirmar) {
   restaurarCampos(document.getElementById('viewFinanceiro'));
   finParaInicial();
   finArquivo = null;
-  finEnviado = false;
-  document.getElementById('btnFin').disabled = false;
-  document.getElementById('btnFin').innerHTML = BTN_FIN_HTML;
   document.getElementById('finStatus').innerHTML = '';
   finLeituraUI('');
   finTermoUI();
