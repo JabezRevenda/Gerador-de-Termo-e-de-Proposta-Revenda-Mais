@@ -1,0 +1,5 @@
+{
+  "functions": {
+    "api/analisar-reuniao.js": { "maxDuration": 300 }
+  }
+}
