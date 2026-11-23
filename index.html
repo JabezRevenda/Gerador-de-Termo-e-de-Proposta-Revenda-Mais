@@ -2041,12 +2041,12 @@ footer {
         </div>
         <div class="ia-acoes">
           <button type="button" class="import-btn" id="iaBtn" onclick="iaAnalisar()">Gerar ficha e proposta</button>
-          <button type="button" class="import-btn sec" onclick="iaCopiarPedido()" title="Cole o pedido no Claude (claude.ai) e traga a resposta de volta">Copiar pedido para o Claude</button>
+          <button type="button" class="import-btn sec" onclick="iaCopiarPedido()" title="Cole o pedido no ChatGPT ou no Claude e traga a resposta de volta">Copiar pedido para o ChatGPT</button>
         </div>
         <div class="hidden ia-manual" id="iaManualBox">
           <div class="field">
-            <label>Resposta do Claude</label>
-            <textarea id="iaRespManual" class="ia-texto" style="min-height:90px" placeholder="Cole aqui a resposta inteira que o Claude devolveu (o bloco que começa com { )."></textarea>
+            <label>Resposta da IA</label>
+            <textarea id="iaRespManual" class="ia-texto" style="min-height:90px" placeholder="Cole aqui a resposta inteira que o ChatGPT (ou o Claude) devolveu — o bloco que começa com { ."></textarea>
           </div>
           <div class="ia-acoes">
             <button type="button" class="import-btn" onclick="iaAplicarManual()">Aplicar resposta</button>
@@ -3699,11 +3699,11 @@ async function exportarPapel(html, base, tipo, btnId, dados) {
 
 /* ══════════════════════════════════════════════════════════════════
    CRM — transcrição da reunião → ficha do lead + proposta comercial
-   A transcrição vai para a função /api/analisar-reuniao (Vercel), que pergunta ao Claude
-   e devolve um JSON no formato de iaSchema(): a ficha do lead para o CRM e os campos da
-   proposta, que são preenchidos na aba Proposta Comercial. A chave da Anthropic fica só
-   na Vercel (ANTHROPIC_API_KEY). Sem a IA ligada, dá para copiar o mesmo pedido, colar no
-   Claude (claude.ai) e trazer a resposta de volta.
+   A transcrição vai para a função /api/analisar-reuniao (Vercel), que pergunta à IA
+   (OpenAI ou Claude) e devolve um JSON no formato de iaSchema(): a ficha do lead para o CRM
+   e os campos da proposta, que são preenchidos na aba Proposta Comercial. A chave fica só
+   na Vercel (OPENAI_API_KEY ou ANTHROPIC_API_KEY). Sem a IA ligada, dá para copiar o mesmo
+   pedido, colar no ChatGPT ou no Claude e trazer a resposta de volta.
    ══════════════════════════════════════════════════════════════════ */
 const IA_ENDPOINT = '/api/analisar-reuniao';
 const IA_NAO_IDENTIFICADO = 'Não identificado na reunião';
@@ -3903,14 +3903,14 @@ async function iaAnalisar() {
       });
     } catch (e) {
       throw new Error(location.protocol === 'file:'
-        ? 'A IA só funciona no site publicado (Vercel), não no arquivo aberto no computador. Use Copiar pedido para o Claude.'
+        ? 'A IA só funciona no site publicado (Vercel), não no arquivo aberto no computador. Use Copiar pedido para o ChatGPT.'
         : 'Sem conexão com a IA. Confira a internet e tente de novo.');
     }
     const dados = await resp.json().catch(function () { return {}; });
     if (resp.status === 503 && dados.codigo === 'sem_chave') {
-      throw new Error('A IA ainda não está ligada: falta configurar a chave da Anthropic na Vercel. Enquanto isso, use o botão Copiar pedido para o Claude.');
+      throw new Error('A IA ainda não está ligada: falta configurar a chave (OpenAI) na Vercel. Enquanto isso, use o botão Copiar pedido para o ChatGPT.');
     }
-    if (resp.status === 404) throw new Error('A função da IA ainda não foi publicada neste endereço. Use Copiar pedido para o Claude.');
+    if (resp.status === 404) throw new Error('A função da IA ainda não foi publicada neste endereço. Use Copiar pedido para o ChatGPT.');
     if (!resp.ok || !dados.resultado) throw new Error(dados.erro || 'Não deu para analisar a reunião (erro ' + resp.status + '). Tente de novo.');
     iaAplicar(dados.resultado);
   } catch (e) {
@@ -3937,7 +3937,7 @@ async function iaCopiarPedido() {
     return;
   }
   document.getElementById('iaManualBox').classList.remove('hidden');
-  iaStatus('<b>Pedido copiado.</b> Abra o Claude (claude.ai), cole e envie. Depois copie a resposta inteira e cole no campo abaixo.', true);
+  iaStatus('<b>Pedido copiado.</b> Abra o ChatGPT (ou o Claude), cole e envie. Depois copie a resposta inteira e cole no campo abaixo.', true);
   document.getElementById('iaRespManual').focus();
 }
 
@@ -3948,7 +3948,7 @@ function iaAplicarManual() {
     if (ini < 0 || fim <= ini) throw new Error();
     iaAplicar(JSON.parse(txt.slice(ini, fim + 1)));
   } catch (e) {
-    iaStatus('Não reconheci a resposta. Copie a resposta inteira do Claude — o bloco que começa com { e termina com }.');
+    iaStatus('Não reconheci a resposta. Copie a resposta inteira da IA — o bloco que começa com { e termina com }.');
   }
 }
 
