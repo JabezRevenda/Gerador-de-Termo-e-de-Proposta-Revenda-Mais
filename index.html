@@ -707,6 +707,16 @@ footer {
   border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; grid-column: span 2;
 }
 .readonly-row .rr-label { font-size: 13px; font-weight: 600; color: var(--text-heading); }
+/* Checkbox ao lado de Mensal / Trimestral / Anual: desmarcada, a modalidade sai da proposta */
+.mod-chk { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; cursor: pointer; user-select: none; }
+.mod-chk input[type=checkbox] {
+  appearance: checkbox; -webkit-appearance: checkbox;
+  width: 18px; height: 18px; margin: 0; padding: 0; flex-shrink: 0;
+  accent-color: var(--red); cursor: pointer; background: transparent; border: none; border-radius: 0;
+}
+.readonly-row.off { background: #f7f8fa; }
+.readonly-row.off .rr-label { text-decoration: line-through; color: var(--text-muted); }
+.readonly-row.off .rr-desc, .readonly-row.off .price-stack { opacity: 0.4; }
 .readonly-row .rr-desc { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
 .readonly-row .rr-val { font-size: 14px; font-weight: 700; color: var(--text-heading); white-space: nowrap; }
 .readonly-row .rr-val small { display: block; font-size: 9.5px; font-weight: 500; color: var(--text-dim); text-decoration: line-through; }
@@ -1358,17 +1368,17 @@ footer {
 
         <!-- ═══ Investimento: Software Gerencial ═══ -->
         <div id="blocoInvSoftware" style="display:contents">
-          <div class="hint">Valores de tabela do plano, não editáveis. Use o desconto abaixo para negociar — ele abate igualmente do mensal, trimestral e anual, e não afeta a adesão.</div>
+          <div class="hint">Valores de tabela do plano, não editáveis. Use o desconto abaixo para negociar — ele abate igualmente do mensal, trimestral e anual, e não afeta a adesão. Desmarque a modalidade que não deve aparecer na proposta.</div>
           <div style="grid-column:span 2;display:flex;flex-direction:column;gap:10px">
             <div class="readonly-row">
-              <div><div class="rr-label">Mensal</div><div class="rr-desc">Adesão de R$ 1.000,00</div></div>
+              <label class="mod-chk"><input type="checkbox" class="mod-on" data-mod="mensal" checked onchange="pOnModalidade(this)" title="Incluir na proposta"/><div><div class="rr-label">Mensal</div><div class="rr-desc">Adesão de R$ 1.000,00</div></div></label>
               <div class="price-stack">
                 <small class="ps-de hidden" id="p_mensalDe"></small>
                 <span class="ps-final" id="p_mensalView">R$ 0,00</span>
               </div>
             </div>
             <div class="readonly-row">
-              <div><div class="rr-label">Trimestral</div><div class="rr-desc" id="p_triDesc">Sem adesão</div></div>
+              <label class="mod-chk"><input type="checkbox" class="mod-on" data-mod="trimestral" checked onchange="pOnModalidade(this)" title="Incluir na proposta"/><div><div class="rr-label">Trimestral</div><div class="rr-desc" id="p_triDesc">Sem adesão</div></div></label>
               <div class="price-stack">
                 <small class="ps-de hidden" id="p_triDe"></small>
                 <span class="ps-final" id="p_triView">R$ 0,00</span>
@@ -1376,7 +1386,7 @@ footer {
               </div>
             </div>
             <div class="readonly-row">
-              <div><div class="rr-label">Anual</div><div class="rr-desc" id="p_anualDesc">Sem adesão</div></div>
+              <label class="mod-chk"><input type="checkbox" class="mod-on" data-mod="anual" checked onchange="pOnModalidade(this)" title="Incluir na proposta"/><div><div class="rr-label">Anual</div><div class="rr-desc" id="p_anualDesc">Sem adesão</div></div></label>
               <div class="price-stack">
                 <small class="ps-de hidden" id="p_anualDe"></small>
                 <span class="ps-final" id="p_anualView">R$ 0,00</span>
@@ -1421,18 +1431,18 @@ footer {
 
           <!-- Nota Fiscal: tabela fixa nas 3 modalidades -->
           <div id="avBlocoInvNf" style="display:contents">
-            <div class="hint">Valores de tabela, não editáveis. Use o desconto abaixo para negociar — ele abate igualmente do mensal, trimestral e anual, e também dos adicionais marcados.</div>
+            <div class="hint">Valores de tabela, não editáveis. Use o desconto abaixo para negociar — ele abate igualmente do mensal, trimestral e anual, e também dos adicionais marcados. Desmarque a modalidade que não deve aparecer na proposta.</div>
             <div style="grid-column:span 2;display:flex;flex-direction:column;gap:10px">
               <div class="readonly-row">
-                <div><div class="rr-label">Mensal</div><div class="rr-desc">Tabela</div></div>
+                <label class="mod-chk"><input type="checkbox" class="mod-on" data-mod="mensal" checked onchange="pOnModalidade(this)" title="Incluir na proposta"/><div><div class="rr-label">Mensal</div><div class="rr-desc">Tabela</div></div></label>
                 <div class="price-stack"><small class="ps-de hidden" id="av_nfMensalDe"></small><span class="ps-final" id="av_nfMensalView">R$ 400,00</span></div>
               </div>
               <div class="readonly-row">
-                <div><div class="rr-label">Trimestral</div><div class="rr-desc" id="av_nfTriDesc">Tabela</div></div>
+                <label class="mod-chk"><input type="checkbox" class="mod-on" data-mod="trimestral" checked onchange="pOnModalidade(this)" title="Incluir na proposta"/><div><div class="rr-label">Trimestral</div><div class="rr-desc" id="av_nfTriDesc">Tabela</div></div></label>
                 <div class="price-stack"><small class="ps-de hidden" id="av_nfTriDe"></small><span class="ps-final" id="av_nfTriView">R$ 400,00</span><small class="ps-alt hidden" id="av_nfTriAlt"></small></div>
               </div>
               <div class="readonly-row">
-                <div><div class="rr-label">Anual</div><div class="rr-desc" id="av_nfAnualDesc">Tabela</div></div>
+                <label class="mod-chk"><input type="checkbox" class="mod-on" data-mod="anual" checked onchange="pOnModalidade(this)" title="Incluir na proposta"/><div><div class="rr-label">Anual</div><div class="rr-desc" id="av_nfAnualDesc">Tabela</div></div></label>
                 <div class="price-stack"><small class="ps-de hidden" id="av_nfAnualDe"></small><span class="ps-final" id="av_nfAnualView">R$ 350,00</span><small class="ps-alt hidden" id="av_nfAnualAlt"></small></div>
               </div>
             </div>
@@ -2762,6 +2772,54 @@ function esc(s) {
   return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+/* ── Modalidades na proposta (mensal / trimestral / anual) ─────────────
+   Checkbox ao lado de cada modalidade, no Software Gerencial e na Nota Fiscal avulsa.
+   A escolha é uma só para os dois fluxos — desmarcada, a modalidade some do documento. */
+const MODALIDADES = ['mensal', 'trimestral', 'anual'];
+const MOD_NOME = { mensal: 'Mensal', trimestral: 'Trimestral', anual: 'Anual' };
+function pModalidades() {
+  const on = {};
+  MODALIDADES.forEach(function (m) {
+    const ck = document.querySelector('.mod-on[data-mod="' + m + '"]');
+    on[m] = !ck || ck.checked;
+  });
+  return on;
+}
+function setModalidades(on) {
+  if (!on.mensal && !on.trimestral && !on.anual) on = { mensal: true, trimestral: true, anual: true };
+  document.querySelectorAll('.mod-on').forEach(function (ck) {
+    ck.checked = on[ck.dataset.mod] !== false;
+    ck.closest('.readonly-row').classList.toggle('off', !ck.checked);
+  });
+}
+function pOnModalidade(el) {
+  const on = pModalidades();
+  on[el.dataset.mod] = el.checked;
+  if (!on.mensal && !on.trimestral && !on.anual) {
+    el.checked = true;
+    showToast('Deixe pelo menos uma modalidade na proposta', 'error');
+    return;
+  }
+  setModalidades(on);
+  pRender();
+}
+// "mensal, trimestral ou anual" com só as modalidades marcadas
+function listaModalidades(on) {
+  const l = MODALIDADES.filter(function (m) { return on[m]; });
+  return l.length > 1 ? l.slice(0, -1).join(', ') + ' ou ' + l[l.length - 1] : l.join('');
+}
+// A modalidade em destaque é a mais longa que ficou marcada (anual > trimestral > mensal)
+function modDestaque(on) {
+  return on.anual ? 'anual' : on.trimestral ? 'trimestral' : 'mensal';
+}
+// Grade de cards no documento: as colunas acompanham quantas modalidades ficaram
+function gradeModalidades(cards) {
+  const n = cards.length;
+  return '<div class="pp-mods" style="grid-template-columns:repeat(' + n + ',1fr)' +
+    (n === 1 ? ';max-width:300px;margin-left:auto;margin-right:auto' : n === 2 ? ';max-width:560px;margin-left:auto;margin-right:auto' : '') + '">' +
+    cards.join('') + '</div>';
+}
+
 /* ── Render dos recursos ─────────────────────────────────────────── */
 function pRenderRecursos() {
   const cfg = PLANOS[document.getElementById('p_plano').value] || { desmarcados: [] };
@@ -2954,6 +3012,7 @@ function pColetar() {
     tri:   modalidade(modo, 3,  vTri + somaAdd,         triTabela + somaAdd),
     anual: modalidade(modo, 12, vAnual + somaAddAnual,  anualTabela + somaAddAnual),
     forma: forma,
+    mods: pModalidades(),
     condicoes: document.getElementById('p_condicoes').value.trim()
   };
 }
@@ -3013,12 +3072,14 @@ function pMontarPapel(d) {
   function aParteMod(m) {
     return blocoAParte(d.aParte, d.somaParte, m.modo === 'boleto' ? null : m.mes, m.modo === 'ambos' ? 'Total/mês no cartão' : '');
   }
-  const modalidades = '<div class="pp-mods">' +
-    precoCard('Mensal', mensalBruto, d.total, 'Adesão de <b>' + pBRL(d.adesao) + '</b>' + detAdd, false,
-      blocoAParte(d.aParte, d.somaParte, d.total)) +
-    precoCard('Trimestral', d.tri.tabela, d.tri.valor, 'Sem adesão · ' + d.tri.detalhe + detAdd, false, aParteMod(d.tri), d.tri.alt) +
-    precoCard('Anual', d.anual.tabela, d.anual.valor, 'Sem adesão · ' + d.anual.detalhe + detAdd, true, aParteMod(d.anual), d.anual.alt) +
-  '</div>';
+  // Só as modalidades marcadas no formulário; o destaque vai para a mais longa delas
+  const dest = modDestaque(d.mods);
+  const cards = [];
+  if (d.mods.mensal) cards.push(precoCard('Mensal', mensalBruto, d.total, 'Adesão de <b>' + pBRL(d.adesao) + '</b>' + detAdd, dest === 'mensal',
+      blocoAParte(d.aParte, d.somaParte, d.total)));
+  if (d.mods.trimestral) cards.push(precoCard('Trimestral', d.tri.tabela, d.tri.valor, 'Sem adesão · ' + d.tri.detalhe + detAdd, dest === 'trimestral', aParteMod(d.tri), d.tri.alt));
+  if (d.mods.anual) cards.push(precoCard('Anual', d.anual.tabela, d.anual.valor, 'Sem adesão · ' + d.anual.detalhe + detAdd, dest === 'anual', aParteMod(d.anual), d.anual.alt));
+  const modalidades = gradeModalidades(cards);
 
   const condicoes = d.condicoes
     ? '<div class="pp-cond"><div class="l">Condições Especiais</div>' +
@@ -3063,7 +3124,8 @@ function pMontarPapel(d) {
     modalidades +
     '<div class="pp-pay">' +
       '<span>Forma de pagamento: <b>' + esc(d.forma) + '</b></span>' +
-      '<span>Adesão apenas na modalidade mensal</span>' +
+      '<span>' + (!d.mods.mensal ? 'Sem adesão'
+        : d.mods.trimestral || d.mods.anual ? 'Adesão apenas na modalidade mensal' : 'Adesão de ' + pBRL(d.adesao)) + '</span>' +
     '</div>' +
     condicoes +
 
@@ -3093,6 +3155,7 @@ function avColetar() {
     data: dt.toLocaleDateString('pt-BR'),
     validade: document.getElementById('p_validade').value || '7',
     forma: document.getElementById('p_forma').value,
+    mods: pModalidades(),
     condicoes: document.getElementById('p_condicoes').value.trim()
   };
 
@@ -3214,18 +3277,19 @@ function avMontarPapel(d) {
     secaoPlano =
       '<div class="pp-sec">Solução Contratada</div>' +
       '<div class="pp-plan"><div><div class="pp-plan-n">Nota Fiscal</div>' +
-      '<div class="pp-plan-s">Emissão de NF-e — mensal, trimestral ou anual</div></div></div>';
+      '<div class="pp-plan-s">Emissão de NF-e — ' + listaModalidades(d.mods) + '</div></div></div>';
 
-    const modalidades = '<div class="pp-mods">' +
-      precoCard('Mensal', d.mensalBruto, d.totalMensal, 'por mês', false) +
-      precoCard('Trimestral', d.tri.tabela, d.tri.valor, d.tri.detalhe, false, '', d.tri.alt) +
-      precoCard('Anual', d.anual.tabela, d.anual.valor, d.anual.detalhe, true, '', d.anual.alt) +
-    '</div>';
+    const dest = modDestaque(d.mods);
+    const cards = [];
+    if (d.mods.mensal) cards.push(precoCard('Mensal', d.mensalBruto, d.totalMensal, 'por mês', dest === 'mensal'));
+    if (d.mods.trimestral) cards.push(precoCard('Trimestral', d.tri.tabela, d.tri.valor, d.tri.detalhe, dest === 'trimestral', '', d.tri.alt));
+    if (d.mods.anual) cards.push(precoCard('Anual', d.anual.tabela, d.anual.valor, d.anual.detalhe, dest === 'anual', '', d.anual.alt));
+    const modalidades = gradeModalidades(cards);
 
     secaoInvestimento =
       '<div class="pp-sec">Investimento</div>' + modalidades +
       '<div class="pp-pay"><span>Forma de pagamento: <b>' + esc(d.forma) + '</b></span>' +
-      (d.desconto > 0 ? '<span>Desconto de ' + pBRL(d.desconto) + ' aplicado em todas as modalidades</span>' : '<span>Valores de tabela</span>') +
+      (d.desconto > 0 ? '<span>Desconto de ' + pBRL(d.desconto) + ' aplicado' + (cards.length > 1 ? ' em todas as modalidades' : '') + '</span>' : '<span>Valores de tabela</span>') +
       '</div>';
 
     const itensAdd = [];
@@ -3314,7 +3378,8 @@ function pRender() {
   const dica = document.getElementById('p_formaDica');
   if (dica) {
     // IA avulso só tem mensal: a dica não se aplica
-    dica.classList.toggle('hidden', tipoProposta === 'avulso' && d.avPlano !== 'nf');
+    // e sem trimestral nem anual na proposta, não há o que explicar
+    dica.classList.toggle('hidden', (tipoProposta === 'avulso' && d.avPlano !== 'nf') || (!d.mods.trimestral && !d.mods.anual));
     const modo = modoPagamento(document.getElementById('p_forma').value);
     dica.textContent = modo === 'cartao' ? 'Trimestral e anual aparecem parcelados: 3x e 12x no cartão.'
       : modo === 'boleto' ? 'Trimestral e anual aparecem com o valor total do período: 3 e 12 meses no boleto/PIX.'
@@ -3360,25 +3425,40 @@ function pRender() {
         '<br/>Sem fidelidade' +
         (d.desconto > 0 ? '<br/>Desconto de ' + pBRL(d.desconto) + ' aplicado' : '');
     } else {
-      document.getElementById('p_totalView').textContent = pBRL(d.totalMensal);
-      document.getElementById('p_totalSub').innerHTML =
-        'Trimestral: ' + resumoModalidade(d.tri) + '<br/>Anual: ' + resumoModalidade(d.anual) +
-        (d.desconto > 0 ? '<br/>Desconto de ' + pBRL(d.desconto) + ' aplicado em todas as modalidades' : '');
+      const linhas = totalModalidades(d, { mensal: d.totalMensal, tri: d.tri, anual: d.anual });
+      if (d.desconto > 0) linhas.push('Desconto de ' + pBRL(d.desconto) + ' aplicado');
+      document.getElementById('p_totalSub').innerHTML = linhas.join('<br/>');
     }
     pAjustarEscala();
     return;
   }
 
-  document.getElementById('p_totalLabel').textContent = 'Mensal';
-  document.getElementById('p_totalView').textContent = pBRL(d.total);
-  document.getElementById('p_totalSub').innerHTML =
-    'Adesão ' + pBRL(d.adesao) + ' (só no mensal)' +
-    '<br/>Trimestral: ' + resumoModalidade(d.tri) +
-    '<br/>Anual: ' + resumoModalidade(d.anual) +
-    (d.somaAdd ? '<br/>Inclui ' + pBRL(d.somaAdd) + ' de adicionais' : '') +
-    (d.somaParte ? '<br/>+ ' + pBRL(d.somaParte) + '/mês à parte (' + d.aParte.map(function (a) { return a.nome.replace(' com WhatsApp', ''); }).join(' + ') + ')' +
-      ' · mensalidade total ' + pBRL(d.total + d.somaParte) : '');
+  const linhas = totalModalidades(d, { mensal: d.total, tri: d.tri, anual: d.anual });
+  if (d.mods.mensal) linhas.unshift('Adesão ' + pBRL(d.adesao) + (d.mods.trimestral || d.mods.anual ? ' (só no mensal)' : ''));
+  if (d.somaAdd) linhas.push('Inclui ' + pBRL(d.somaAdd) + ' de adicionais');
+  if (d.somaParte) linhas.push('+ ' + pBRL(d.somaParte) + '/mês à parte (' + d.aParte.map(function (a) { return a.nome.replace(' com WhatsApp', ''); }).join(' + ') + ')' +
+      (d.mods.mensal ? ' · mensalidade total ' + pBRL(d.total + d.somaParte) : ''));
+  document.getElementById('p_totalSub').innerHTML = linhas.join('<br/>');
   pAjustarEscala();
+}
+
+// Caixa de total: a primeira modalidade marcada vira o valor grande; as outras entram embaixo.
+// v = { mensal: número, tri: modalidade(), anual: modalidade() }. Devolve as linhas de baixo.
+function totalModalidades(d, v) {
+  const on = d.mods;
+  const primeira = on.mensal ? 'mensal' : on.trimestral ? 'trimestral' : 'anual';
+  const linhas = [];
+  document.getElementById('p_totalLabel').textContent = MOD_NOME[primeira];
+  if (primeira === 'mensal') {
+    document.getElementById('p_totalView').textContent = pBRL(v.mensal);
+  } else {
+    const m = primeira === 'trimestral' ? v.tri : v.anual;
+    document.getElementById('p_totalView').textContent = pBRL(m.valor);
+    linhas.push(m.detalhe + (m.alt ? ' · ' + m.alt : ''));
+  }
+  if (on.trimestral && primeira !== 'trimestral') linhas.push('Trimestral: ' + resumoModalidade(v.tri));
+  if (on.anual && primeira !== 'anual') linhas.push('Anual: ' + resumoModalidade(v.anual));
+  return linhas;
 }
 
 /* ── Validação ───────────────────────────────────────────────────── */
