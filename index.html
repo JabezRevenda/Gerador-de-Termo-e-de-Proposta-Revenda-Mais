@@ -373,7 +373,7 @@ footer {
    ══════════════════════════════════════════════════════════ */
 .tabs {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: repeat(4, 1fr);
   gap: 6px;
   background: #e6e8ec;
   border: 1px solid var(--border);
@@ -828,6 +828,24 @@ footer {
 .import-btn.sec { color: var(--red); background: var(--red-light); border: 1.5px solid rgba(232,0,61,0.35); }
 .import-btn.sec:hover { background: rgba(232,0,61,0.14); }
 
+/* ── CRM: transcrição da reunião → IA ── */
+.ia-tag {
+  font-size: 9px; font-weight: 800; letter-spacing: 0.1em; color: #fff; background: var(--red);
+  border-radius: 4px; padding: 2px 7px; margin-left: 4px; vertical-align: middle;
+}
+.ia-texto { min-height: 180px; font-size: 12.5px; line-height: 1.5; }
+.ia-cont { font-weight: 500; color: var(--text-dim); text-transform: none; letter-spacing: 0; }
+.ia-acoes { grid-column: span 2; display: flex; flex-wrap: wrap; gap: 8px; }
+.ia-manual { grid-column: span 2; display: flex; flex-direction: column; gap: 10px; }
+.ia-status { grid-column: span 2; }
+.ia-status:empty { display: none; }
+.ia-lista { margin: 6px 0 0; padding-left: 18px; }
+.ia-lista li { margin: 2px 0; }
+.crm-campo label .crm-emoji { font-size: 14px; margin-right: 4px; }
+.crm-campo label small { font-weight: 500; color: var(--text-dim); text-transform: none; letter-spacing: 0; margin-left: 6px; }
+.crm-campo textarea { min-height: 64px; }
+.crm-campo.falta textarea { border-color: rgba(232,0,61,0.45); background: var(--red-light); }
+
 /* ── Enviar ao Financeiro ── */
 .fin-arq {
   grid-column: span 2; display: flex; align-items: center; gap: 14px;
@@ -985,6 +1003,7 @@ footer {
   .addon { flex-wrap: wrap; }
   .addon-val, .addon-tipo { width: 100%; }
   .tab { font-size: 10.5px; letter-spacing: 0.05em; padding: 12px 6px; gap: 6px; }
+  .tabs { grid-template-columns: 1fr 1fr; }   /* 4 abas: 2 x 2 no celular */
   .steps { gap: 6px; }
   .step { flex-direction: column; align-items: center; text-align: center; gap: 6px; padding: 10px 6px; }
   .step-txt { align-items: center; }
@@ -1040,6 +1059,10 @@ footer {
     <button class="tab" id="tabGrupoTermoIa" onclick="trocarGrupo('termoIa')">
       <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
       Termo de Adesão IA
+    </button>
+    <button class="tab" id="tabGrupoCrm" onclick="trocarGrupo('crm')">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+      CRM
     </button>
   </nav>
 
@@ -1985,6 +2008,80 @@ footer {
     </div>
   </section>
 
+  <!-- ══════════ CRM: reunião → ficha do lead + proposta ══════════ -->
+  <section id="viewCrm" class="hidden">
+    <div class="page-header">
+      <div class="page-eyebrow">Revenda Mais · CRM</div>
+      <h1 class="page-title">Ficha do<br/><span>Lead</span></h1>
+    </div>
+
+    <div class="import-box" id="iaBox">
+      <div class="import-top">
+        <div class="import-txt">
+          <div class="import-t">Suba a transcrição da reunião <span class="ia-tag">IA</span></div>
+          <div class="import-d">Arquivo .txt, .vtt, .srt ou .docx (Meet, Zoom, Teams) — ou cole o texto abaixo. A IA monta a ficha do lead no formato do CRM e já deixa a Proposta Comercial preenchida com o que foi combinado.</div>
+        </div>
+        <div class="import-acoes">
+          <button type="button" class="import-btn" onclick="document.getElementById('iaArquivo').click()">Subir transcrição</button>
+        </div>
+        <input type="file" id="iaArquivo" accept=".txt,.vtt,.srt,.md,.docx,text/plain" class="hidden"/>
+      </div>
+    </div>
+
+    <!-- Card 1 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-num">01</div>
+        <span class="card-title">Transcrição da Reunião</span>
+      </div>
+      <div class="card-body">
+        <div class="field span2">
+          <label>Transcrição <span class="ia-cont" id="iaCont"></span></label>
+          <textarea id="iaTexto" class="ia-texto" placeholder="Cole aqui a transcrição da reunião (quem falou o quê) ou suba o arquivo acima."></textarea>
+        </div>
+        <div class="ia-acoes">
+          <button type="button" class="import-btn" id="iaBtn" onclick="iaAnalisar()">Gerar ficha e proposta</button>
+          <button type="button" class="import-btn sec" onclick="iaCopiarPedido()" title="Cole o pedido no Claude (claude.ai) e traga a resposta de volta">Copiar pedido para o Claude</button>
+        </div>
+        <div class="hidden ia-manual" id="iaManualBox">
+          <div class="field">
+            <label>Resposta do Claude</label>
+            <textarea id="iaRespManual" class="ia-texto" style="min-height:90px" placeholder="Cole aqui a resposta inteira que o Claude devolveu (o bloco que começa com { )."></textarea>
+          </div>
+          <div class="ia-acoes">
+            <button type="button" class="import-btn" onclick="iaAplicarManual()">Aplicar resposta</button>
+          </div>
+        </div>
+        <div id="iaStatus" class="ia-status"></div>
+      </div>
+    </div>
+
+    <!-- Card 2: aparece depois da análise -->
+    <div class="card hidden" id="cardCrm">
+      <div class="card-header">
+        <div class="card-num">02</div>
+        <span class="card-title">Ficha do Lead</span>
+      </div>
+      <div class="card-body">
+        <div class="hint">Confira, ajuste o que precisar e copie para o CRM. O que não apareceu na conversa fica marcado como <b>não identificado</b>.</div>
+        <div id="crmLead" style="display:contents"></div>
+        <div id="crmCampos" style="display:contents"></div>
+        <div class="btn-row" style="grid-column:span 2;margin:4px 0 0">
+          <button type="button" class="btn btn-pdf" onclick="crmCopiar()">Copiar ficha para o CRM</button>
+          <button type="button" class="btn btn-docx" onclick="crmBaixar()">Baixar .txt</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="next-step hidden" id="iaProposta">
+      <div class="next-step-txt">
+        <div class="next-step-l">Proposta Comercial montada</div>
+        <div class="next-step-t" id="iaPropostaResumo"></div>
+      </div>
+      <button type="button" class="next-btn" onclick="trocarAba('proposta')">Abrir a proposta →</button>
+    </div>
+  </section>
+
 </main>
 
 <footer>
@@ -2520,15 +2617,17 @@ const ABAS = {
   financeiro:    { view: 'viewFinanceiro',    grupo: 'renovacao', passo: 2 },
   proposta:      { view: 'viewProposta',      grupo: 'propostas', tab: 'tabProposta' },
   propostaRenov: { view: 'viewPropostaRenov', grupo: 'propostas', tab: 'tabPropostaRenov' },
-  termoIa:       { view: 'viewTermoIa',       grupo: 'termoIa' }
+  termoIa:       { view: 'viewTermoIa',       grupo: 'termoIa' },
+  crm:           { view: 'viewCrm',           grupo: 'crm' }
 };
 const GRUPOS = {
   renovacao: { tab: 'tabGrupoRenovacao', nav: 'renovNav',     titulo: 'Renovação' },
   propostas: { tab: 'tabGrupoPropostas', nav: 'subPropostas', titulo: 'Gerador de Propostas' },
-  termoIa:   { tab: 'tabGrupoTermoIa',   titulo: 'Gerador de Termos' }
+  termoIa:   { tab: 'tabGrupoTermoIa',   titulo: 'Gerador de Termos' },
+  crm:       { tab: 'tabGrupoCrm',       titulo: 'CRM' }
 };
 // Ao voltar para uma aba, reabre a tela em que a pessoa estava
-const ultimaAba = { renovacao: 'termo', propostas: 'proposta', termoIa: 'termoIa' };
+const ultimaAba = { renovacao: 'termo', propostas: 'proposta', termoIa: 'termoIa', crm: 'crm' };
 
 function trocarGrupo(grupo) {
   trocarAba(ultimaAba[grupo]);
@@ -3596,6 +3695,412 @@ async function exportarPapel(html, base, tipo, btnId, dados) {
   pAplicarPlano();
   onAvCnpjQtdChange();   // preenche o valor de tabela do CNPJ adicional e recalcula tudo
   window.addEventListener('resize', pAjustarEscala);
+})();
+
+/* ══════════════════════════════════════════════════════════════════
+   CRM — transcrição da reunião → ficha do lead + proposta comercial
+   A transcrição vai para a função /api/analisar-reuniao (Vercel), que pergunta ao Claude
+   e devolve um JSON no formato de iaSchema(): a ficha do lead para o CRM e os campos da
+   proposta, que são preenchidos na aba Proposta Comercial. A chave da Anthropic fica só
+   na Vercel (ANTHROPIC_API_KEY). Sem a IA ligada, dá para copiar o mesmo pedido, colar no
+   Claude (claude.ai) e trazer a resposta de volta.
+   ══════════════════════════════════════════════════════════════════ */
+const IA_ENDPOINT = '/api/analisar-reuniao';
+const IA_NAO_IDENTIFICADO = 'Não identificado na reunião';
+
+// Ficha do lead no formato do CRM — a ordem aqui é a ordem em que aparece e é copiada
+const CRM_CAMPOS = [
+  { id: 'dor_principal',       emoji: '🎯', titulo: 'Dor Principal',        pergunta: 'Qual o principal problema do cliente?' },
+  { id: 'processo_atual',      emoji: '🔄', titulo: 'Processo Atual',       pergunta: 'Como ele resolve isso hoje?' },
+  { id: 'impacto',             emoji: '📈', titulo: 'Impacto',              pergunta: 'Qual o impacto dessa dor no negócio?' },
+  { id: 'solucao_apresentada', emoji: '💡', titulo: 'Solução Apresentada',  pergunta: 'O que foi apresentado para ajudar?' },
+  { id: 'contexto_empresa',    emoji: '🏢', titulo: 'Contexto da Empresa',  pergunta: 'Tempo de mercado e momento atual da operação.' },
+  { id: 'decisor',             emoji: '👤', titulo: 'Decisor',              pergunta: 'Quem aprova a contratação?' },
+  { id: 'influenciador',       emoji: '🤝', titulo: 'Influenciador',        pergunta: 'Quem influencia a decisão?' },
+  { id: 'valor_agregado',      emoji: '⭐', titulo: 'Valor Agregado',       pergunta: 'Qual orientação, dica ou melhoria foi entregue?' }
+];
+const CRM_LEAD = [
+  { id: 'empresa',  titulo: 'Empresa' },
+  { id: 'contato',  titulo: 'Contato' },
+  { id: 'cargo',    titulo: 'Cargo' },
+  { id: 'telefone', titulo: 'Telefone' },
+  { id: 'email',    titulo: 'E-mail' },
+  { id: 'cidade',   titulo: 'Cidade / UF' }
+];
+let iaUltimo = null;   // última resposta aplicada (para conferência)
+
+// O que a IA precisa saber para montar a proposta — sai das mesmas tabelas da tela,
+// então mudou preço ou plano lá em cima, o pedido acompanha
+function iaCatalogo() {
+  const planos = Object.keys(PLANOS).map(function (k) {
+    const c = PLANOS[k];
+    return '- "' + k + '" (' + (c.nome || 'Plano ' + k) + '): até ' + c.veiculos + ' veículos' +
+      (c.usuarios ? ', ' + c.usuarios + ' usuários' : '') + ', R$ ' + c.valor + '/mês' +
+      (k === 'integrador' ? ' — só integra o estoque aos portais de anúncio (cadastro + fotos), sem a gestão da loja' : '');
+  }).join('\n');
+  const adicionais = ADICIONAIS.map(function (a) {
+    return '- "' + a.id + '": ' + a.nome + ' — ' + a.desc +
+      (a.padrao ? ' (tabela R$ ' + a.padrao.toFixed(2).replace('.', ',') + '/mês)' : ' (sem valor de tabela: use o valor falado na reunião, senão 0)') +
+      (a.fora ? ' — cobrado à parte, em boleto' : '');
+  }).join('\n');
+  return [
+    'CATÁLOGO DA REVENDA MAIS (software para lojas de veículos)',
+    '',
+    'Tipo "software" — Software Gerencial. Planos (campo plano):',
+    planos,
+    'Regras de preço: trimestral tem o mesmo valor mensal do plano; anual sai R$ ' + DESCONTO_ANUAL + ' mais barato por mês; adesão de R$ ' + ADESAO_FIXA + ' só no mensal. O desconto é um valor único em R$ por mês, que abate igual em todas as modalidades.',
+    'Produtos adicionais do Software Gerencial (campo adicionais, pelo id):',
+    adicionais,
+    'CRM: ' + AV_TABELA.crmInclusos + ' usuários inclusos e R$ ' + AV_TABELA.crmExtra + ' por usuário a mais (informe crm_usuarios).',
+    '',
+    'Tipo "avulso" — quando o cliente NÃO leva o Software Gerencial, só um destes como produto principal (campo avulso_plano):',
+    '- "crm": CRM com WhatsApp, R$ ' + AV_TABELA.crmBase + '/mês com ' + AV_TABELA.crmInclusos + ' usuários (+R$ ' + AV_TABELA.crmExtra + ' por extra) e setup de R$ ' + AV_TABELA.crmSetup + '. Pós-pago, só boleto, sem modalidades. Adicionais possíveis: "nfe" (R$ ' + AV_TABELA.nfMensal + ') e "ia".',
+    '- "nf": Nota Fiscal, R$ ' + AV_TABELA.nfMensal + ' mensal / R$ ' + AV_TABELA.nfTrimestral + ' trimestral / R$ ' + AV_TABELA.nfAnual + ' anual (por mês). Adicionais possíveis: "renave" (R$ ' + AV_TABELA.renave + '), "cnpj" (R$ ' + AV_TABELA.cnpjUnit + ' por CNPJ, informe cnpj_qtd) e "crm" (informe crm_usuarios).',
+    '- "ia": agente de IA no WhatsApp, R$ ' + AV_TABELA.iaMensal + '/mês até ' + AV_TABELA.iaLeads + ' leads, R$ ' + AV_TABELA.iaExcedente + ' por lead excedente. Sem fidelidade, sem adicionais.',
+    'Os adicionais do avulso vão no campo avulso_adicionais.',
+    '',
+    'Forma de pagamento: "cartao" (cartão de crédito), "boleto" (boleto/PIX) ou "ambos" (oferecer as duas).',
+    'Modalidades: mensal, trimestral e anual.'
+  ].join('\n');
+}
+
+function iaInstrucoes() {
+  return [
+    'Você é assistente do time comercial da Revenda Mais. Vai receber a transcrição de uma reunião de vendas com um lojista e deve devolver, no JSON pedido:',
+    '1) "proposta": os dados para montar a proposta comercial com o que foi alinhado na reunião;',
+    '2) "lead" e "crm": a documentação do lead para o CRM;',
+    '3) "proximos_passos", "pontos_em_aberto" e "observacoes".',
+    '',
+    'Regras:',
+    '- Use só o que aparece na transcrição. Não invente nomes, números, valores, cargos nem combinados. Se algo não foi dito, deixe o texto vazio ("") ou o número 0.',
+    '- Proposta: escolha o tipo, o plano e os adicionais que foram apresentados ou combinados. Se o plano não foi dito mas o número de veículos foi, escolha o menor plano que comporte o estoque e diga isso em "observacoes".',
+    '- veiculos e usuarios: só se o número foi dito; senão "" (aí vale o padrão do plano).',
+    '- modalidades: marque só as que fazem sentido mandar. Se o cliente descartou alguma (ex.: "mensal não me interessa") ou o vendedor combinou mandar só uma, desmarque as outras. Se nada foi dito, marque as três.',
+    '- desconto: valor em R$ por mês, só se foi combinado um desconto. Se o desconto foi dito em %, converta sobre o valor mensal do plano e explique em "observacoes".',
+    '- condicoes_especiais: combinados que não cabem nos outros campos (cortesia, prazo de implantação, condição de pagamento da adesão etc.), uma por linha. Vazio se não houve.',
+    '- Ficha do CRM: texto corrido, objetivo, em português, 1 a 4 frases por campo, do ponto de vista do vendedor. Cite números e falas importantes do cliente quando houver.',
+    '  dor_principal: qual o principal problema do cliente. processo_atual: como ele resolve isso hoje (sistema, planilha, papel...). impacto: o impacto dessa dor no negócio. solucao_apresentada: o que foi apresentado para ajudar. contexto_empresa: tempo de mercado e momento atual da operação. decisor: quem aprova a contratação (nome e papel). influenciador: quem influencia a decisão. valor_agregado: qual orientação, dica ou melhoria o vendedor entregou na reunião.',
+    '- Campo da ficha que não apareceu na conversa: deixe "" (o sistema marca como não identificado). Não preencha com suposição.',
+    '- pontos_em_aberto: o que faltou descobrir ou confirmar (ex.: quem é o decisor, prazo de decisão), em frases curtas — servem de roteiro para o próximo contato.',
+    '- proximos_passos: o que ficou combinado para depois da reunião (envio da proposta, nova reunião, data).',
+    '- observacoes: avisos para o vendedor conferir na proposta (escolhas que você teve que fazer). Vazio se não houver.',
+    '',
+    iaCatalogo()
+  ].join('\n');
+}
+
+// Formato da resposta (structured outputs: o Claude devolve exatamente este JSON)
+function iaSchema() {
+  const str = { type: 'string' };
+  const obj = function (props) {
+    return { type: 'object', properties: props, required: Object.keys(props), additionalProperties: false };
+  };
+  const crm = {};
+  CRM_CAMPOS.forEach(function (c) { crm[c.id] = str; });
+  const lead = {};
+  CRM_LEAD.forEach(function (c) { lead[c.id] = str; });
+  return obj({
+    proposta: obj({
+      cliente: str,
+      telefone: str,
+      tipo: { type: 'string', enum: ['software', 'avulso'] },
+      plano: { type: 'string', enum: Object.keys(PLANOS) },
+      veiculos: str,
+      usuarios: str,
+      adicionais: { type: 'array', items: obj({ id: { type: 'string', enum: ADICIONAIS.map(function (a) { return a.id; }) }, valor_mensal: { type: 'number' } }) },
+      crm_usuarios: { type: 'integer' },
+      avulso_plano: { type: 'string', enum: ['crm', 'nf', 'ia'] },
+      avulso_adicionais: { type: 'array', items: { type: 'string', enum: ['nfe', 'ia', 'renave', 'cnpj', 'crm'] } },
+      cnpj_qtd: { type: 'integer' },
+      desconto: { type: 'number' },
+      forma_pagamento: { type: 'string', enum: ['cartao', 'boleto', 'ambos'] },
+      modalidades: obj({ mensal: { type: 'boolean' }, trimestral: { type: 'boolean' }, anual: { type: 'boolean' } }),
+      condicoes_especiais: str
+    }),
+    lead: obj(lead),
+    crm: obj(crm),
+    proximos_passos: str,
+    pontos_em_aberto: { type: 'array', items: str },
+    observacoes: str
+  });
+}
+
+/* ── Entrada: arquivo ou texto colado ──────────────────────────────── */
+async function iaLerArquivo(arquivo) {
+  if (!arquivo) return;
+  try {
+    let texto;
+    if (/\.docx$/i.test(arquivo.name)) {
+      const zip = await JSZip.loadAsync(await arquivo.arrayBuffer());
+      const doc = zip.file('word/document.xml');
+      if (!doc) throw new Error('Esse Word não tem texto legível.');
+      const xml = await doc.async('string');
+      // um parágrafo do Word (<w:p>) por linha; o texto fica nos <w:t>
+      texto = xml.split(/<\/w:p>/).map(function (p) {
+        return (p.match(/<w:t[^>]*>[^<]*<\/w:t>/g) || []).map(function (t) { return t.replace(/<[^>]+>/g, ''); }).join('');
+      }).join('\n')
+        .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, '&');
+    } else if (/\.(txt|vtt|srt|md)$/i.test(arquivo.name) || /^text\//.test(arquivo.type)) {
+      texto = await arquivo.text();
+    } else {
+      throw new Error('Envie a transcrição em texto: .txt, .vtt, .srt ou .docx.');
+    }
+    texto = iaLimparLegenda(texto).trim();
+    if (!texto) throw new Error('O arquivo está vazio.');
+    document.getElementById('iaTexto').value = texto;
+    iaContar();
+    iaStatus('<b>' + esc(arquivo.name) + '</b> carregado. Confira o texto e clique em <b>Gerar ficha e proposta</b>.', true);
+  } catch (e) {
+    iaStatus(esc(e.message || 'Não deu para ler o arquivo.'));
+  }
+  document.getElementById('iaArquivo').value = '';
+}
+
+// Legenda .vtt/.srt (Meet, Zoom, Teams): tira numeração e horários, deixa só quem falou e o quê
+function iaLimparLegenda(txt) {
+  if (!/-->/.test(txt)) return txt.replace(/\r/g, '');
+  return txt.replace(/\r/g, '').split('\n').filter(function (l) {
+    const t = l.trim();
+    return t && t !== 'WEBVTT' && !/^\d+$/.test(t) && !/-->/.test(t) && !/^(NOTE|STYLE|Kind:|Language:)/.test(t);
+  }).map(function (l) {
+    return l.replace(/<v\s+([^>]+)>/g, '$1: ').replace(/<[^>]+>/g, '');
+  }).join('\n');
+}
+
+function iaContar() {
+  const n = document.getElementById('iaTexto').value.trim().length;
+  document.getElementById('iaCont').textContent = n ? '· ' + n.toLocaleString('pt-BR') + ' caracteres' : '';
+}
+
+function iaStatus(html, ok) {
+  document.getElementById('iaStatus').innerHTML = html ? '<div class="import-msg' + (ok ? ' ok' : '') + '">' + html + '</div>' : '';
+}
+
+/* ── Análise ───────────────────────────────────────────────────────── */
+function iaMensagem(transcricao) {
+  return 'Transcrição da reunião:\n\n<transcricao>\n' + transcricao + '\n</transcricao>';
+}
+
+async function iaAnalisar() {
+  const transcricao = document.getElementById('iaTexto').value.trim();
+  if (transcricao.length < 80) {
+    iaStatus('Cole ou suba a transcrição da reunião antes de gerar.');
+    document.getElementById('iaTexto').focus();
+    return;
+  }
+  const btn = document.getElementById('iaBtn');
+  const rotulo = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Lendo a reunião…';
+  iaStatus('A IA está lendo a reunião e montando a ficha e a proposta. Leva de alguns segundos a 1 minuto.', true);
+  try {
+    let resp;
+    try {
+      resp = await fetch(IA_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ instrucoes: iaInstrucoes(), schema: iaSchema(), transcricao: transcricao })
+      });
+    } catch (e) {
+      throw new Error(location.protocol === 'file:'
+        ? 'A IA só funciona no site publicado (Vercel), não no arquivo aberto no computador. Use Copiar pedido para o Claude.'
+        : 'Sem conexão com a IA. Confira a internet e tente de novo.');
+    }
+    const dados = await resp.json().catch(function () { return {}; });
+    if (resp.status === 503 && dados.codigo === 'sem_chave') {
+      throw new Error('A IA ainda não está ligada: falta configurar a chave da Anthropic na Vercel. Enquanto isso, use o botão Copiar pedido para o Claude.');
+    }
+    if (resp.status === 404) throw new Error('A função da IA ainda não foi publicada neste endereço. Use Copiar pedido para o Claude.');
+    if (!resp.ok || !dados.resultado) throw new Error(dados.erro || 'Não deu para analisar a reunião (erro ' + resp.status + '). Tente de novo.');
+    iaAplicar(dados.resultado);
+  } catch (e) {
+    iaStatus(esc(e.message || 'Não deu para analisar a reunião.'));
+  } finally {
+    btn.disabled = false;
+    btn.textContent = rotulo;
+  }
+}
+
+// Sem a IA ligada: o mesmo pedido vai para a área de transferência, para colar no Claude
+async function iaCopiarPedido() {
+  const transcricao = document.getElementById('iaTexto').value.trim();
+  if (transcricao.length < 80) {
+    iaStatus('Cole ou suba a transcrição da reunião antes de copiar o pedido.');
+    return;
+  }
+  const pedido = iaInstrucoes() + '\n\nResponda SOMENTE com um JSON válido (sem texto antes ou depois) que siga exatamente este JSON Schema:\n' +
+    JSON.stringify(iaSchema()) + '\n\n' + iaMensagem(transcricao);
+  try {
+    await navigator.clipboard.writeText(pedido);
+  } catch (e) {
+    showToast('Não deu para copiar automaticamente', 'error');
+    return;
+  }
+  document.getElementById('iaManualBox').classList.remove('hidden');
+  iaStatus('<b>Pedido copiado.</b> Abra o Claude (claude.ai), cole e envie. Depois copie a resposta inteira e cole no campo abaixo.', true);
+  document.getElementById('iaRespManual').focus();
+}
+
+function iaAplicarManual() {
+  const txt = document.getElementById('iaRespManual').value;
+  const ini = txt.indexOf('{'), fim = txt.lastIndexOf('}');
+  try {
+    if (ini < 0 || fim <= ini) throw new Error();
+    iaAplicar(JSON.parse(txt.slice(ini, fim + 1)));
+  } catch (e) {
+    iaStatus('Não reconheci a resposta. Copie a resposta inteira do Claude — o bloco que começa com { e termina com }.');
+  }
+}
+
+/* ── Aplicar a resposta: formulário da proposta + ficha do CRM ──────── */
+function iaAplicar(r) {
+  r = r || {};
+  iaUltimo = r;
+  const p = r.proposta || {};
+  const resumo = iaPreencherProposta(p);
+  crmMontar(r);
+
+  const faltam = CRM_CAMPOS.filter(function (c) { return !iaTxt((r.crm || {})[c.id]); }).map(function (c) { return c.titulo; });
+  const abertos = (r.pontos_em_aberto || []).filter(Boolean);
+  document.getElementById('iaPropostaResumo').textContent = resumo + '. Confira os valores e gere o PDF.';
+  document.getElementById('iaProposta').classList.remove('hidden');
+  iaStatus(
+    '<b>Pronto!</b> Ficha do lead montada abaixo e Proposta Comercial preenchida (' + esc(resumo) + ').' +
+    (iaTxt(r.observacoes) ? '<br/><b>Atenção:</b> ' + esc(r.observacoes) : '') +
+    (faltam.length ? '<br/><b>Não identificado na reunião:</b> ' + esc(faltam.join(', ')) + '.' : '') +
+    (abertos.length ? '<br/><b>Para o próximo contato:</b><ul class="ia-lista">' + abertos.map(function (a) { return '<li>' + esc(a) + '</li>'; }).join('') + '</ul>' : ''),
+    true);
+  showToast('Ficha do lead e proposta montadas', 'success');
+  document.getElementById('cardCrm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function iaTxt(v) {
+  return String(v == null ? '' : v).trim();
+}
+
+function iaPreencherProposta(p) {
+  const el = function (id) { return document.getElementById(id); };
+  if (iaTxt(p.cliente)) el('p_cliente').value = iaTxt(p.cliente);
+  if (iaTxt(p.telefone)) el('p_fone').value = formatFone(iaTxt(p.telefone));
+
+  const tipo = p.tipo === 'avulso' ? 'avulso' : 'software';
+  let resumo;
+  if (tipo === 'software') {
+    setTipoProposta('software');
+    if (PLANOS[p.plano]) el('p_plano').value = p.plano;
+    pAplicarPlano();
+    if (iaTxt(p.veiculos).replace(/\D/g, '')) el('p_veiculos').value = iaTxt(p.veiculos).replace(/\D/g, '');
+    if (iaTxt(p.usuarios).replace(/\D/g, '')) el('p_usuarios').value = iaTxt(p.usuarios).replace(/\D/g, '');
+
+    // Adicionais: marca exatamente os que vieram (com o valor falado ou o de tabela)
+    const vieram = {};
+    (p.adicionais || []).forEach(function (a) { if (a && a.id) vieram[a.id] = Number(a.valor_mensal) || 0; });
+    ADICIONAIS.forEach(function (a) {
+      const on = Object.prototype.hasOwnProperty.call(vieram, a.id);
+      el('ck_' + a.id).checked = on;
+      el('row_' + a.id).classList.toggle('on', on);
+      if (!on) return;
+      if (a.usuarios && p.crm_usuarios > 0) el('us_' + a.id).value = p.crm_usuarios;
+      const tabela = a.usuarios ? avCrmCalc(el('us_' + a.id).value).valor : (a.padrao || 0);
+      if (a.usuarios) el('ds_' + a.id).textContent = pCrmDesc(avCrmCalc(el('us_' + a.id).value));
+      pSetMoney('vl_' + a.id, vieram[a.id] > 0 ? vieram[a.id] : tabela);
+      const anual = el('va_' + a.id);
+      if (anual) { delete anual.dataset.touched; pSetMoney('va_' + a.id, Math.max(0, pParse(el('vl_' + a.id).value) - DESCONTO_ANUAL)); }
+    });
+    pSetMoney('p_desconto', Number(p.desconto) || 0);
+    const nomesAdd = ADICIONAIS.filter(function (a) { return el('ck_' + a.id).checked; }).map(function (a) { return a.nome.replace(' com WhatsApp', ''); });
+    resumo = (PLANOS[el('p_plano').value].nome || 'Plano ' + el('p_plano').value) + (nomesAdd.length ? ' + ' + nomesAdd.join(' + ') : '');
+  } else {
+    setTipoProposta('avulso');
+    const plano = ['crm', 'nf', 'ia'].indexOf(p.avulso_plano) !== -1 ? p.avulso_plano : 'nf';
+    el('av_plano').value = plano;
+    onAvPlanoChange();
+    const add = p.avulso_adicionais || [];
+    const tem = function (id) { return add.indexOf(id) !== -1; };
+    if (plano === 'crm') {
+      if (p.crm_usuarios > 0) el('av_crm_usuarios').value = p.crm_usuarios;
+      el('av_ck_nfe').checked = tem('nfe');
+      el('av_ck_ia').checked = tem('ia');
+      pSetMoney('av_crm_desconto', Number(p.desconto) || 0);
+    } else if (plano === 'nf') {
+      el('av_ck_renave').checked = tem('renave');
+      el('av_ck_cnpj').checked = tem('cnpj');
+      el('av_ck_crm').checked = tem('crm');
+      if (p.cnpj_qtd > 0) el('av_cnpj_qtd').value = p.cnpj_qtd;
+      if (tem('crm') && p.crm_usuarios > 0) el('av_crm_addon_usuarios').value = p.crm_usuarios;
+      onAvCnpjQtdChange();
+      pSetMoney('av_nf_desconto', Number(p.desconto) || 0);
+    } else {
+      pSetMoney('av_ia_desconto', Number(p.desconto) || 0);
+    }
+    onAvAddonChange();
+    resumo = { crm: 'CRM', nf: 'Nota Fiscal', ia: 'IA' }[plano] + ' avulso' + (add.length ? ' + ' + add.map(function (a) { return a.toUpperCase(); }).join(' + ') : '');
+  }
+
+  el('p_forma').value = { cartao: 'Cartão de crédito', boleto: 'Boleto / PIX', ambos: 'Cartão de crédito ou Boleto / PIX' }[p.forma_pagamento] || el('p_forma').value;
+  const m = p.modalidades || {};
+  setModalidades({ mensal: m.mensal !== false, trimestral: m.trimestral !== false, anual: m.anual !== false });
+  el('p_condicoes').value = iaTxt(p.condicoes_especiais);
+  pRender();
+
+  const on = pModalidades();
+  const temModalidades = tipo === 'software' || el('av_plano').value === 'nf';
+  return resumo + (temModalidades ? ' · ' + MODALIDADES.filter(function (k) { return on[k]; }).map(function (k) { return MOD_NOME[k]; }).join(', ') : '');
+}
+
+/* ── Ficha do CRM ──────────────────────────────────────────────────── */
+function crmMontar(r) {
+  const lead = r.lead || {}, crm = r.crm || {};
+  document.getElementById('crmLead').innerHTML = CRM_LEAD.map(function (c) {
+    return '<div class="field crm-campo"><label>' + esc(c.titulo) + '</label>' +
+      '<input id="crm_' + c.id + '" type="text" value="' + esc(iaTxt(lead[c.id])).replace(/"/g, '&quot;') + '" placeholder="—"/></div>';
+  }).join('');
+  document.getElementById('crmCampos').innerHTML = CRM_CAMPOS.map(function (c) {
+    const v = iaTxt(crm[c.id]);
+    return '<div class="field span2 crm-campo' + (v ? '' : ' falta') + '"><label><span class="crm-emoji">' + c.emoji + '</span>' + esc(c.titulo) +
+      '<small>' + esc(c.pergunta) + '</small></label>' +
+      '<textarea id="crm_' + c.id + '" placeholder="' + IA_NAO_IDENTIFICADO + '" oninput="this.parentNode.classList.toggle(\'falta\', !this.value.trim())">' + esc(v) + '</textarea></div>';
+  }).join('') +
+  '<div class="field span2 crm-campo"><label><span class="crm-emoji">📌</span>Próximos Passos</label>' +
+    '<textarea id="crm_proximos" placeholder="—">' + esc(iaTxt(r.proximos_passos)) + '</textarea></div>';
+  document.getElementById('cardCrm').classList.remove('hidden');
+}
+
+function crmTexto() {
+  const val = function (id) { const e = document.getElementById('crm_' + id); return e ? e.value.trim() : ''; };
+  const blocos = CRM_CAMPOS.map(function (c) {
+    return c.emoji + ' ' + c.titulo + '\n' + (val(c.id) || IA_NAO_IDENTIFICADO);
+  });
+  if (val('proximos')) blocos.push('📌 Próximos Passos\n' + val('proximos'));
+  const contato = CRM_LEAD.filter(function (c) { return val(c.id); }).map(function (c) { return c.titulo + ': ' + val(c.id); });
+  if (contato.length) blocos.push('📇 Dados do Lead\n' + contato.join('\n'));
+  return blocos.join('\n\n');
+}
+
+async function crmCopiar() {
+  try {
+    await navigator.clipboard.writeText(crmTexto());
+    showToast('Ficha copiada — é só colar no CRM', 'success');
+  } catch (e) {
+    showToast('Não deu para copiar automaticamente', 'error');
+  }
+}
+
+function crmBaixar() {
+  const empresa = (document.getElementById('crm_empresa') || {}).value || document.getElementById('p_cliente').value || 'Lead';
+  const blob = new Blob([crmTexto()], { type: 'text/plain;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'Ficha_CRM_' + nomeArquivo(empresa) + '.txt';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+}
+
+(function () {
+  document.getElementById('iaArquivo').addEventListener('change', function (e) { iaLerArquivo(e.target.files[0]); });
+  document.getElementById('iaTexto').addEventListener('input', iaContar);
+  aceitarArquivoSolto(document.getElementById('iaBox'), iaLerArquivo);
 })();
 
 /* ══════════════════════════════════════════════════════════════════
