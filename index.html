@@ -5647,9 +5647,10 @@ let ctl = null;          // { nome, pin, dados: { meses: { 'AAAA-MM': { lojas, c
 let ctlTimer = null, ctlSalvando = false, ctlDeNovo = false;
 
 async function ctlApi(corpo) {
+  const body = JSON.stringify(Object.assign({ nome: ctl.nome, pin: ctl.pin }, corpo));
   const r = await fetch('/api/controle', {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(Object.assign({ nome: ctl.nome, pin: ctl.pin }, corpo))
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: body,
+    keepalive: body.length < 60000   // termina de salvar mesmo se a aba fechar (o navegador limita a 64 KB)
   });
   let j = {};
   try { j = await r.json(); } catch (e) { /* resposta sem JSON */ }
@@ -5823,7 +5824,9 @@ function ctlStatus(txt, erro) {
 function ctlAgendar() {
   ctlStatus('Salvando…');
   clearTimeout(ctlTimer);
-  ctlTimer = setTimeout(ctlSalvar, 800);
+  // Espera 4 s sem mexer: preencher uma loja inteira vira um salvamento só.
+  // O plano grátis do Blob dá 2 mil gravações por mês para o time todo.
+  ctlTimer = setTimeout(ctlSalvar, 4000);
 }
 
 async function ctlSalvar() {
@@ -5874,6 +5877,10 @@ document.getElementById('ctlCalc').addEventListener('input', function (e) {
   calc[c][e.target.dataset.k] = e.target.value;
   ctlCalcular();
   ctlAgendar();
+});
+// Saiu da aba ou trocou de app no celular: salva na hora o que estava esperando
+document.addEventListener('visibilitychange', function () {
+  if (document.visibilityState === 'hidden' && ctlTimer) { clearTimeout(ctlTimer); ctlSalvar(); }
 });
 window.addEventListener('beforeunload', function (e) {
   if (ctlTimer || ctlSalvando) e.preventDefault();
