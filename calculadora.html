@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Calculadora de Planos · Revenda Mais</title>
+<link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAClUlEQVR4nO2Vz0sUYRjHv8/7zrjmktEP1NV2tqyTBGErdRyi2HZHQ1AmxHv/QFCHLtq5zkHQpQyC3WO4modkC4JAb3XokOJu6mo/DEF3h5l5nw67GxgrunqIYD7Hme/zfJ/3eZ9nBggICAj4x1AjYgYoA1vspbORUQTwwcuqaz62p/FB9PvqAGNMEB6ouUi85YzsuOBJXzCJuifUWdIWq8+x/ORGGra8hYx/qAJmYWpXkfMWY8neY5AvFNCjgUB1QhmABwXJyG+zf7urMD3DMDVCzmuoAIYtAWAeC6IP8+6yceNSM7RsSMh2hxVcVj8BVvViJYlTIQi4UCXH56HOr9npOcT1OLqr+p3zsaMABujv4Vkx+uNNQFYStRGAkvLvs8tPAYBJ+6MVyhEtMuxvi/KgLuQTQaQpcElBDbctTU3t5kP1Hn6LWoNElHBZtQJ0rVmIiABhm/17kXz24W7trFGMpUZ1Fs8FkSwrtQniSR1ik4F3S/liug/zbs2PauYAsNB9vfWo1zTRIrSbR0hCkIDHPhxW2FLe3fZ89hHD1MaRU+O7rpkpCTlvOZYabYaYaBW60EiCWaHEPkrsvyfXHTm5MlNgQFQLqEz5ipF62SZDI5vKg8PqC4FfN0GUHeYPkUI2vZ+pruSzJSHjL0eTiTBpiTL7OoPMkBAXwySx4btv3hbCiU/IMNLVgVuPJXvXDMv9FRvw1qLWqyWj//jOpIf7DvD5ZGjdsB7z2SEuGlb+Y4/dVBWaGgAUo6k7fM7mNcNyFmNWR+VdXJ+FqdW2olHSsGUlvuIBAN+NgeHV0/2XK/lBVL0HtdplXTmh6akfylnsLEw/q7cRh6GhfNzgP6IBiGHLutfJGBNsHrzdAQEBAf8tvwE3BR3LW/W6yQAAAABJRU5ErkJggg=="/>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --red: #E8003D; --red-dark: #B5002F; --red-light: rgba(232,0,61,0.07);
+  --ink: #0b0b0f; --bg: #f2f3f6; --card: #fff; --border: #eceef2; --field: #f5f6f8;
+  --text: #1f2937; --heading: #111827; --muted: #6b7280; --dim: #9ca3af;
+  --shadow: 0 1px 2px rgba(17,24,39,0.04), 0 8px 28px rgba(17,24,39,0.06);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+button { font-family: inherit; }
+
+.topo {
+  position: sticky; top: 0; z-index: 10; height: 64px; padding: 0 28px;
+  background: rgba(255,255,255,0.94); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 16px;
+}
+.topo img { height: 26px; display: block; }
+.topo-t { font-size: 14px; font-weight: 500; color: var(--muted); padding-left: 16px; border-left: 1px solid var(--border); }
+.topo-reset { margin-left: auto; font-size: 13px; font-weight: 600; color: var(--muted); background: none; border: 0; cursor: pointer; padding: 8px 10px; border-radius: 10px; }
+.topo-reset:hover { color: var(--heading); background: var(--field); }
+
+.pagina { max-width: 1240px; margin: 0 auto; padding: 28px 28px 60px; display: grid; grid-template-columns: minmax(0, 1fr) 400px; gap: 24px; align-items: start; }
+.passos { display: flex; flex-direction: column; gap: 18px; }
+
+.bloco { background: var(--card); border-radius: 24px; padding: 22px 24px 24px; box-shadow: var(--shadow); }
+.bloco-h { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.bloco-n { width: 28px; height: 28px; border-radius: 9px; background: var(--red); color: #fff; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.bloco-t { font-size: 17px; font-weight: 700; color: var(--heading); letter-spacing: -0.01em; }
+.grupo-t { font-size: 12px; font-weight: 500; color: var(--muted); margin: 4px 0 8px; }
+.grupo-t:not(:first-of-type) { margin-top: 16px; }
+
+.planos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.plano {
+  text-align: left; background: var(--card); border: 1.5px solid var(--border); border-radius: 16px; padding: 14px 16px;
+  cursor: pointer; transition: border-color .15s, background .15s; display: flex; flex-direction: column; gap: 6px;
+}
+.plano:hover { border-color: #d5d8de; }
+.plano.on { border-color: var(--red); background: var(--red-light); }
+.plano-l { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.plano-n { font-size: 15px; font-weight: 700; color: var(--heading); }
+.plano.on .plano-n { color: var(--red); }
+.plano-v { font-size: 14px; font-weight: 700; color: var(--heading); white-space: nowrap; }
+.plano-v small { font-size: 11px; font-weight: 500; color: var(--muted); }
+.plano-d { font-size: 12px; color: var(--muted); line-height: 1.4; }
+.plano-a { font-size: 12px; font-weight: 600; color: var(--red); }
+
+.inclui { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); }
+.inclui-t { font-size: 12px; font-weight: 500; color: var(--muted); margin-bottom: 8px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font-size: 12px; color: var(--text); background: var(--field); border-radius: 999px; padding: 5px 11px; }
+.chip::before { content: '✓ '; color: var(--red); font-weight: 700; }
+
+.opcs { display: flex; flex-direction: column; gap: 8px; }
+.opc { display: flex; align-items: center; gap: 14px; border: 1.5px solid var(--border); border-radius: 16px; padding: 12px 14px; cursor: pointer; transition: border-color .15s, background .15s; }
+.opc:hover { border-color: #d5d8de; }
+.opc.on { border-color: var(--red); background: var(--red-light); }
+.opc input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--red); flex-shrink: 0; cursor: pointer; }
+.opc-m { flex: 1; min-width: 0; }
+.opc-n { display: block; font-size: 14px; font-weight: 600; color: var(--heading); }
+.opc-d { display: block; font-size: 12px; color: var(--muted); margin-top: 1px; line-height: 1.4; }
+.opc-v { font-size: 14px; font-weight: 700; color: var(--heading); white-space: nowrap; text-align: right; }
+.opc-v small { display: block; font-size: 11px; font-weight: 500; color: var(--muted); }
+.qtd { display: inline-flex; align-items: center; gap: 2px; background: var(--field); border-radius: 10px; padding: 3px; margin-top: 8px; }
+.qtd button { width: 28px; height: 28px; border: 0; border-radius: 8px; background: #fff; color: var(--heading); font-size: 16px; font-weight: 600; cursor: pointer; }
+.qtd button:disabled { opacity: .4; cursor: default; }
+.qtd span { min-width: 92px; text-align: center; font-size: 13px; font-weight: 600; color: var(--heading); }
+
+/* Resumo: o cartão escuro com o degradê do hub */
+.resumo {
+  position: sticky; top: 88px; border-radius: 28px; padding: 24px; color: #fff; overflow: hidden; isolation: isolate;
+  background: radial-gradient(ellipse farthest-corner at 100% 0%, #ff2d5e 0%, #E8003D 16%, rgba(176,0,46,0.55) 34%, rgba(11,11,15,0) 58%), var(--ink);
+}
+.res-k { font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.65); }
+.res-n { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; margin-top: 2px; line-height: 1.2; }
+.res-s { font-size: 12.5px; color: rgba(255,255,255,0.7); margin-top: 4px; line-height: 1.45; }
+.tiles { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+.tile { border-radius: 18px; padding: 14px 16px; background: rgba(255,255,255,0.08); }
+.tile-l { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.tile-t { font-size: 13px; font-weight: 600; }
+.tile-v { font-size: 20px; font-weight: 700; letter-spacing: -0.01em; white-space: nowrap; }
+.tile-v small { font-size: 12px; font-weight: 500; opacity: .7; }
+.tile-d { font-size: 12px; color: rgba(255,255,255,0.65); margin-top: 3px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 2px 10px; }
+.tile.destaque .tile-l { flex-direction: column; align-items: flex-start; gap: 2px; }
+.tile.destaque .tile-t { display: flex; align-items: center; gap: 8px; }
+.tile.destaque { background: #fff; color: var(--heading); }
+.tile.destaque .tile-v { font-size: 26px; color: var(--red); }
+.tile.destaque .tile-d { color: var(--muted); }
+.selo { font-size: 10.5px; font-weight: 600; color: #fff; background: var(--red); border-radius: 999px; padding: 3px 10px; white-space: nowrap; }
+.aparte { margin-top: 10px; border-radius: 16px; padding: 12px 16px; border: 1px solid rgba(255,255,255,0.14); font-size: 12.5px; line-height: 1.55; color: rgba(255,255,255,0.8); }
+.aparte b { color: #fff; font-weight: 600; }
+.aparte-l { display: flex; justify-content: space-between; gap: 10px; }
+
+.desc { margin-top: 14px; display: flex; gap: 8px; align-items: center; }
+.desc label { font-size: 12.5px; color: rgba(255,255,255,0.7); flex-shrink: 0; }
+.desc input { flex: 1; min-width: 0; font: 600 14px 'Poppins', sans-serif; color: #fff; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.16); border-radius: 12px; padding: 10px 12px; outline: none; }
+.desc input:focus { border-color: #fff; }
+.desc-tipo { display: flex; background: rgba(255,255,255,0.08); border-radius: 12px; padding: 3px; }
+.desc-tipo button { border: 0; background: none; color: rgba(255,255,255,0.7); font-size: 12.5px; font-weight: 600; padding: 7px 11px; border-radius: 9px; cursor: pointer; }
+.desc-tipo button.on { background: #fff; color: var(--red); }
+
+.acoes { display: flex; flex-direction: column; gap: 8px; margin-top: 18px; }
+.cliente { width: 100%; font: 500 14px 'Poppins', sans-serif; color: #fff; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.16); border-radius: 12px; padding: 12px 14px; outline: none; }
+.cliente::placeholder { color: rgba(255,255,255,0.5); }
+.cliente:focus { border-color: #fff; }
+.acao:disabled { opacity: .6; cursor: wait; }
+.acao { border: 0; border-radius: 14px; padding: 14px; font-size: 14px; font-weight: 600; cursor: pointer; }
+.acao.pri { background: #fff; color: var(--heading); }
+.acao.pri:hover { background: #f3f4f6; }
+.acao.sec { background: rgba(255,255,255,0.1); color: #fff; }
+.acao.sec:hover { background: rgba(255,255,255,0.16); }
+.vazio { font-size: 13px; color: rgba(255,255,255,0.7); margin-top: 16px; }
+
+/* Celular: o valor do anual fica sempre à vista embaixo */
+.barra-cel { display: none; }
+@media (max-width: 960px) {
+  .barra-cel {
+    display: flex; align-items: center; gap: 12px; position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 15;
+    background: var(--ink); color: #fff; border-radius: 18px; padding: 12px 14px 12px 18px; box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+  }
+  .barra-cel-t { flex: 1; min-width: 0; font-size: 12px; color: rgba(255,255,255,0.7); line-height: 1.3; }
+  .barra-cel-t b { display: block; font-size: 17px; color: #fff; }
+  .barra-cel button { border: 0; border-radius: 12px; background: var(--red); color: #fff; font-size: 13px; font-weight: 600; padding: 10px 14px; cursor: pointer; }
+  .pagina { padding-bottom: 100px; }
+}
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(16px); background: var(--heading); color: #fff; font-size: 14px; font-weight: 600; padding: 12px 22px; border-radius: 14px; opacity: 0; transition: all .25s; pointer-events: none; z-index: 20; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.hidden { display: none !important; }
+
+@media (max-width: 960px) {
+  .pagina { grid-template-columns: 1fr; padding: 18px 16px 40px; }
+  .resumo { position: static; }
+}
+@media (max-width: 560px) {
+  .topo { padding: 0 16px; }
+  .topo-t { display: none; }
+  .planos { grid-template-columns: 1fr; }
+  .bloco { padding: 18px 16px 20px; border-radius: 20px; }
+  .resumo { padding: 20px 18px; border-radius: 22px; }
+}
+</style>
+</head>
+<body>
+
+<header class="topo">
+  <img src="logo-revenda-mais.png" alt="Revenda Mais"/>
+  <span class="topo-t">Calculadora de planos</span>
+  <button type="button" class="topo-reset" onclick="recomecar()">Recomeçar</button>
+</header>
+
+<div class="pagina">
+  <div class="passos">
+    <section class="bloco">
+      <div class="bloco-h"><span class="bloco-n">1</span><span class="bloco-t">Escolha o plano</span></div>
+      <div class="grupo-t">Software Gerencial</div>
+      <div class="planos" id="planosSoftware"></div>
+      <div class="grupo-t">Outros produtos</div>
+      <div class="planos" id="planosAvulsos"></div>
+      <div class="inclui hidden" id="inclui">
+        <div class="inclui-t">O que vem no plano</div>
+        <div class="chips" id="incluiLista"></div>
+      </div>
+    </section>
+
+    <section class="bloco hidden" id="blocoAdd">
+      <div class="bloco-h"><span class="bloco-n">2</span><span class="bloco-t" id="blocoAddT">Adicionais</span></div>
+      <div class="opcs" id="adds"></div>
+    </section>
+
+    <section class="bloco hidden" id="blocoExtra">
+      <div class="bloco-h"><span class="bloco-n">3</span><span class="bloco-t" id="blocoExtraT">CRM e IA</span></div>
+      <div class="opcs" id="extras"></div>
+    </section>
+  </div>
+
+  <aside class="resumo" id="resumo"></aside>
+</div>
+
+<div class="barra-cel" id="barraCel">
+  <span class="barra-cel-t" id="barraCelT"></span>
+  <button type="button" onclick="document.getElementById('resumo').scrollIntoView({ behavior: 'smooth' })">Ver valores</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="precos.js"></script>
+<script>
+/* Calculadora para mostrar ao cliente. Os preços vêm de precos.js (os mesmos do hub)
+   e as regras são as das propostas do hub: anual = mensal − R$ 50 no plano, adesão só no
+   mensal do Software Gerencial, CRM e IA à parte no boleto. */
+
+// Produtos avulsos, na ordem dos cards
+const AVULSOS = {
+  nf:  { nome: 'Nota Fiscal', desc: 'Emissor de NF-e sem o Software Gerencial', mensal: AV_TABELA.nfMensal, anual: AV_TABELA.nfAnual },
+  crm: { nome: 'CRM com WhatsApp', desc: AV_TABELA.crmInclusos + ' usuários inclusos · setup de ' + brl(AV_TABELA.crmSetup), mensal: AV_TABELA.crmBase },
+  ia:  { nome: 'Agente de IA', desc: 'Pré-vendas no WhatsApp · até ' + AV_TABELA.iaLeads + ' leads por franquia', mensal: AV_TABELA.iaMensal }
+};
+// Adicionais que aparecem em cada tipo de plano (ids de ADICIONAIS, em precos.js)
+const ADD_SOFTWARE = ['nf', 'renave', 'cnpj', 'assin', 'vistoria', 'integra', 'concil'];
+const ADD_NF = ['renave', 'cnpj', 'crm'];
+const ADD_CRM = ['nf', 'ia'];
+
+function brl(v) {
+  return 'R$ ' + (v || 0).toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+function num(txt) {
+  const n = parseFloat(String(txt || '').replace(/\./g, '').replace(',', '.'));
+  return isFinite(n) && n > 0 ? n : 0;
+}
+function adicional(id) { return ADICIONAIS.find(function (a) { return a.id === id; }); }
+function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+
+const INICIAL = function () {
+  return { base: '1.0', add: {}, cnpjQtd: 1, crmOn: false, crmUsuarios: AV_TABELA.crmInclusos, iaOn: false, franquias: 1, desc: 0, descTxt: '', descTipo: 'R$', cliente: '' };
+};
+let st = INICIAL();
+
+function tipoDa(base) { return PLANOS[base] ? 'software' : base; }
+
+// ── Contas (puras: recebem o estado e devolvem os valores) ──
+function calcular(s) {
+  const tipo = tipoDa(s.base);
+  const r = { tipo: tipo, itens: [], aParte: [], setup: 0 };
+  // Como no hub: o desconto é um valor em R$ igual em todas as modalidades; em % vira R$ sobre o mensal
+  let descR = s.desc;
+  const descDe = function (sobre) { return Math.min(sobre, descR); };
+  const emReais = function (mensalRef) { if (s.descTipo === '%') descR = mensalRef * Math.min(s.desc, 100) / 100; };
+  const crm = avCrmCalc(s.crmUsuarios);
+
+  if (tipo === 'software' || tipo === 'nf') {
+    let baseM, baseA;
+    if (tipo === 'software') { baseM = num(PLANOS[s.base].valor); baseA = Math.max(0, baseM - DESCONTO_ANUAL); }
+    else { baseM = AV_TABELA.nfMensal; baseA = AV_TABELA.nfAnual; }
+    let addM = 0, addA = 0;
+    (tipo === 'software' ? ADD_SOFTWARE : ADD_NF).forEach(function (id) {
+      if (!s.add[id]) return;
+      const a = adicional(id);
+      let m = a.padrao || 0, an = m;
+      if (id === 'nf') an = Math.max(0, m - DESCONTO_ANUAL);
+      if (id === 'cnpj') { m = an = AV_TABELA.cnpjUnit * s.cnpjQtd; }
+      if (id === 'crm') { m = an = crm.valor; r.setup = AV_TABELA.crmSetup; }   // no avulso de NF o CRM entra no total
+      addM += m; addA += an;
+      r.itens.push(a.nome + (id === 'cnpj' ? ' (' + s.cnpjQtd + ')' : id === 'crm' ? ' (' + crm.usuarios + ' usuários)' : ''));
+    });
+    // Software: o desconto abate só o plano. Nota Fiscal: abate o total (como no hub)
+    emReais(tipo === 'software' ? baseM : baseM + addM);
+    const descM = descDe(tipo === 'software' ? baseM : baseM + addM);
+    const descA = descDe(tipo === 'software' ? baseA : baseA + addA);
+    r.mensal = baseM + addM - descM;
+    r.tri = r.mensal;
+    r.anual = baseA + addA - descA;
+    r.adesao = tipo === 'software' ? ADESAO_FIXA : 0;
+    r.economia = (r.mensal - r.anual) * 12 + r.adesao;
+    r.descMensal = descM;
+    if (tipo === 'software') {
+      if (s.crmOn) { r.aParte.push({ nome: 'CRM com WhatsApp (' + crm.usuarios + ' usuários)', valor: crm.valor }); r.setup = AV_TABELA.crmSetup; }
+      if (s.iaOn) r.aParte.push({ nome: 'Agente de IA (' + s.franquias + (s.franquias === 1 ? ' franquia' : ' franquias') + ')', valor: AV_TABELA.iaMensal * s.franquias });
+    }
+    return r;
+  }
+  if (tipo === 'crm') {
+    let bruto = crm.valor;
+    if (s.add.nf) { bruto += AV_TABELA.nfMensal; r.itens.push('Nota Fiscal'); }
+    if (s.add.ia) { bruto += AV_TABELA.iaMensal; r.itens.push('Agente de IA'); }
+    emReais(bruto);
+    r.descMensal = descDe(bruto);
+    r.mensal = bruto - r.descMensal;
+    r.setup = AV_TABELA.crmSetup;
+    r.usuarios = crm.usuarios;
+    return r;
+  }
+  // IA
+  const bruto = AV_TABELA.iaMensal * s.franquias;
+  emReais(bruto);
+  r.descMensal = descDe(bruto);
+  r.mensal = bruto - r.descMensal;
+  r.leads = AV_TABELA.iaLeads * s.franquias;
+  return r;
+}
+
+// ── Tela ──
+function cardPlano(id, nome, desc, mensal, anual) {
+  return '<button type="button" class="plano' + (st.base === id ? ' on' : '') + '" onclick="escolher(\'' + id + '\')">' +
+    '<span class="plano-l"><span class="plano-n">' + esc(nome) + '</span><span class="plano-v">' + brl(mensal) + '<small>/mês</small></span></span>' +
+    '<span class="plano-d">' + esc(desc) + '</span>' +
+    (anual ? '<span class="plano-a">No anual: ' + brl(anual) + '/mês</span>' : '') +
+  '</button>';
+}
+
+function linhaOpc(id, nome, desc, valor, on, extra) {
+  return '<label class="opc' + (on ? ' on' : '') + '"><input type="checkbox"' + (on ? ' checked' : '') + ' onchange="marcar(\'' + id + '\', this.checked)"/>' +
+    '<span class="opc-m"><span class="opc-n">' + esc(nome) + '</span><span class="opc-d">' + esc(desc) + '</span>' + (extra || '') + '</span>' +
+    '<span class="opc-v">' + valor + '</span></label>';
+}
+function stepper(campo, valor, min, rotulo) {
+  return '<span class="qtd" onclick="event.preventDefault()">' +
+    '<button type="button" onclick="passo(\'' + campo + '\', -1, ' + min + ')"' + (valor <= min ? ' disabled' : '') + ' aria-label="Menos">−</button>' +
+    '<span>' + rotulo + '</span>' +
+    '<button type="button" onclick="passo(\'' + campo + '\', 1, ' + min + ')" aria-label="Mais">+</button></span>';
+}
+
+function render() {
+  document.getElementById('planosSoftware').innerHTML = Object.keys(PLANOS).map(function (k) {
+    const p = PLANOS[k], v = num(p.valor);
+    const desc = k === 'integrador' ? 'Anúncios nos portais, até ' + p.veiculos + ' veículos'
+      : 'Até ' + p.veiculos + ' veículos · ' + p.usuarios + ' usuários';
+    return cardPlano(k, p.nome || 'Plano ' + k, desc, v, Math.max(0, v - DESCONTO_ANUAL));
+  }).join('');
+  document.getElementById('planosAvulsos').innerHTML = Object.keys(AVULSOS).map(function (k) {
+    const a = AVULSOS[k];
+    return cardPlano(k, a.nome, a.desc, a.mensal, a.anual);
+  }).join('');
+
+  const tipo = tipoDa(st.base);
+  const plano = PLANOS[st.base];
+  document.getElementById('inclui').classList.toggle('hidden', !plano);
+  if (plano) {
+    document.getElementById('incluiLista').innerHTML = RECURSOS_PADRAO.filter(function (r) { return plano.desmarcados.indexOf(r) === -1; })
+      .map(function (r) { return '<span class="chip">' + esc(r) + '</span>'; }).join('');
+  }
+
+  // Passo 2: adicionais do tipo escolhido
+  const crm = avCrmCalc(st.crmUsuarios);
+  const lista = tipo === 'software' ? ADD_SOFTWARE : tipo === 'nf' ? ADD_NF : tipo === 'crm' ? ADD_CRM : [];
+  document.getElementById('blocoAdd').classList.toggle('hidden', !lista.length);
+  document.getElementById('adds').innerHTML = lista.map(function (id) {
+    const a = adicional(id), on = !!st.add[id];
+    if (id === 'cnpj') return linhaOpc(id, a.nome, 'Emita e receba notas em CNPJs diferentes', brl(AV_TABELA.cnpjUnit * st.cnpjQtd) + '<small>/mês</small>', on,
+      on ? '<br/>' + stepper('cnpjQtd', st.cnpjQtd, 1, st.cnpjQtd + (st.cnpjQtd === 1 ? ' CNPJ' : ' CNPJs')) : '');
+    if (id === 'crm') return linhaOpc(id, a.nome, AV_TABELA.crmInclusos + ' usuários inclusos · R$ 100,00 por usuário a mais · setup de ' + brl(AV_TABELA.crmSetup), brl(crm.valor) + '<small>/mês</small>', on,
+      on ? '<br/>' + stepper('crmUsuarios', st.crmUsuarios, 1, crm.usuarios + ' usuários') : '');
+    if (id === 'nf') return linhaOpc(id, a.nome, a.desc, brl(a.padrao) + '<small>' + (tipo === 'software' ? 'anual: ' + brl(a.padrao - DESCONTO_ANUAL) : '/mês') + '</small>', on);
+    if (id === 'ia') return linhaOpc(id, 'Agente de IA', 'Até ' + AV_TABELA.iaLeads + ' leads por mês', brl(AV_TABELA.iaMensal) + '<small>/mês</small>', on);
+    return linhaOpc(id, a.nome, a.desc, brl(a.padrao) + '<small>/mês</small>', on);
+  }).join('');
+
+  // Passo 3: CRM e IA (à parte) no Software; usuários no CRM; franquias na IA
+  const extras = document.getElementById('extras');
+  const bloco3 = document.getElementById('blocoExtra');
+  bloco3.classList.toggle('hidden', tipo === 'nf');
+  bloco3.querySelector('.bloco-n').textContent = lista.length ? '3' : '2';
+  if (tipo === 'software') {
+    document.getElementById('blocoExtraT').textContent = 'CRM e IA (boleto à parte)';
+    extras.innerHTML =
+      linhaOpc('crmOn', 'CRM com WhatsApp', AV_TABELA.crmInclusos + ' usuários inclusos · R$ 100,00 por usuário a mais · setup de ' + brl(AV_TABELA.crmSetup), brl(crm.valor) + '<small>/mês</small>', st.crmOn,
+        st.crmOn ? '<br/>' + stepper('crmUsuarios', st.crmUsuarios, 1, crm.usuarios + ' usuários') : '') +
+      linhaOpc('iaOn', 'Agente de IA', 'Cada franquia atende até ' + AV_TABELA.iaLeads + ' leads por mês · excedente ' + brl(AV_TABELA.iaExcedente) + ' por lead', brl(AV_TABELA.iaMensal * st.franquias) + '<small>/mês</small>', st.iaOn,
+        st.iaOn ? '<br/>' + stepper('franquias', st.franquias, 1, st.franquias + (st.franquias === 1 ? ' franquia' : ' franquias')) : '');
+  } else if (tipo === 'crm') {
+    document.getElementById('blocoExtraT').textContent = 'Usuários';
+    extras.innerHTML = '<div class="opc on"><span class="opc-m"><span class="opc-n">Usuários do CRM</span><span class="opc-d">' + AV_TABELA.crmInclusos +
+      ' inclusos · R$ 100,00 por usuário a mais</span>' + '<br/>' + stepper('crmUsuarios', st.crmUsuarios, 1, crm.usuarios + ' usuários') +
+      '</span><span class="opc-v">' + brl(crm.valor) + '<small>/mês</small></span></div>';
+  } else if (tipo === 'ia') {
+    document.getElementById('blocoExtraT').textContent = 'Franquias';
+    extras.innerHTML = '<div class="opc on"><span class="opc-m"><span class="opc-n">Franquias</span><span class="opc-d">Cada uma atende até ' + AV_TABELA.iaLeads +
+      ' leads por mês</span><br/>' + stepper('franquias', st.franquias, 1, st.franquias + (st.franquias === 1 ? ' franquia' : ' franquias')) +
+      '</span><span class="opc-v">' + brl(AV_TABELA.iaMensal * st.franquias) + '<small>/mês</small></span></div>';
+  }
+  renderResumo();
+}
+
+function nomeBase() {
+  return PLANOS[st.base] ? (PLANOS[st.base].nome || 'Plano ' + st.base) : AVULSOS[st.base].nome;
+}
+
+function renderResumo() {
+  const r = calcular(st);
+  const plano = PLANOS[st.base];
+  const sub = plano ? (st.base === 'integrador' ? 'Integrador de anúncios' : 'Software Gerencial · até ' + plano.veiculos + ' veículos, ' + plano.usuarios + ' usuários') : AVULSOS[st.base].desc;
+  let h = '<div class="res-k">Investimento</div><div class="res-n">' + esc(nomeBase()) + '</div>' +
+    '<div class="res-s">' + esc(sub) + (r.itens.length ? '<br/>+ ' + esc(r.itens.join(', ')) : '') + '</div><div class="tiles">';
+
+  if (r.tipo === 'software' || r.tipo === 'nf') {
+    h += tile('Mensal', brl(r.mensal) + '<small>/mês</small>', ['Boleto/PIX ou cartão', r.adesao ? 'Adesão de ' + brl(r.adesao) : 'Sem adesão'], false) +
+      tile('Trimestral', brl(r.tri) + '<small>/mês</small>', ['3x no cartão ou ' + brl(r.tri * 3) + ' no boleto', 'Sem adesão'], false) +
+      tile('Anual', '12x ' + brl(r.anual), ['ou ' + brl(r.anual * 12) + ' no boleto', r.economia > 0 ? 'Economia de ' + brl(r.economia) + ' no ano' : 'Sem adesão'], true);
+  } else if (r.tipo === 'crm') {
+    h += tile('Mensal no boleto', brl(r.mensal) + '<small>/mês</small>', ['Pós-pago, na virada do mês', r.usuarios + ' usuários'], true);
+  } else {
+    h += tile('Mensal no boleto', brl(r.mensal) + '<small>/mês</small>', ['Até ' + r.leads.toLocaleString('pt-BR') + ' leads por mês', 'Sem fidelidade'], true);
+  }
+  h += '</div>';
+
+  if (r.aParte.length || r.setup || r.tipo === 'ia') {
+    h += '<div class="aparte">' +
+      (r.aParte.length ? '<div>Cobrado à parte, no boleto mensal:</div>' + r.aParte.map(function (a) {
+        return '<div class="aparte-l"><span>' + esc(a.nome) + '</span><b>' + brl(a.valor) + '/mês</b></div>';
+      }).join('') : '') +
+      (r.setup ? '<div class="aparte-l"><span>Setup do CRM (uma vez)</span><b>' + brl(r.setup) + '</b></div>' : '') +
+      (r.tipo === 'ia' || st.iaOn ? '<div class="aparte-l"><span>Lead acima da franquia</span><b>' + brl(AV_TABELA.iaExcedente) + ' cada</b></div>' : '') +
+    '</div>';
+  }
+
+  h += '<div class="desc"><label for="desc">Desconto</label>' +
+    '<input id="desc" inputmode="decimal" placeholder="0" value="' + esc(st.descTxt) + '" oninput="descontar(this.value)"/>' +
+    '<div class="desc-tipo"><button type="button" class="' + (st.descTipo === 'R$' ? 'on' : '') + '" onclick="tipoDesc(\'R$\')">R$</button>' +
+    '<button type="button" class="' + (st.descTipo === '%' ? 'on' : '') + '" onclick="tipoDesc(\'%\')">%</button></div></div>' +
+    '<div class="acoes"><input class="cliente" id="cliente" placeholder="Nome do cliente / loja" autocomplete="off" value="' + esc(st.cliente) + '" oninput="st.cliente = this.value"/>' +
+    '<button type="button" class="acao pri" id="btnPdf" onclick="gerarPdf()">Gerar proposta (PDF)</button>' +
+    '<button type="button" class="acao sec" onclick="copiarWhats()">Copiar para o WhatsApp</button></div>';
+
+  document.getElementById('barraCelT').innerHTML = esc(nomeBase()) + '<b>' +
+    (r.tipo === 'software' || r.tipo === 'nf' ? 'Anual 12x ' + brl(r.anual) : brl(r.mensal) + '/mês') + '</b>';
+  const box = document.getElementById('resumo');
+  const foco = document.activeElement && (document.activeElement.id === 'desc' || document.activeElement.id === 'cliente') ? document.activeElement.id : null;
+  box.innerHTML = h;
+  if (foco) { const d = document.getElementById(foco); d.focus(); d.setSelectionRange(d.value.length, d.value.length); }
+}
+function tile(titulo, valor, linhas, destaque) {
+  return '<div class="tile' + (destaque ? ' destaque' : '') + '"><div class="tile-l"><span class="tile-t">' + titulo +
+    (destaque && tipoDa(st.base) !== 'crm' && tipoDa(st.base) !== 'ia' ? ' <span class="selo">Melhor oferta</span>' : '') + '</span>' +
+    '<span class="tile-v">' + valor + '</span></div><div class="tile-d"><span>' + linhas[0] + '</span><span>' + linhas[1] + '</span></div></div>';
+}
+
+// ── Ações ──
+function escolher(base) {
+  if (tipoDa(base) !== tipoDa(st.base)) { st.add = {}; st.desc = 0; st.descTxt = ''; }
+  st.base = base;
+  render();
+}
+function marcar(id, on) {
+  if (id === 'crmOn' || id === 'iaOn') st[id] = on; else st.add[id] = on;
+  render();
+}
+function passo(campo, delta, min) {
+  st[campo] = Math.max(min, Math.min(campo === 'crmUsuarios' ? 100 : 50, st[campo] + delta));
+  render();
+}
+function descontar(v) { st.descTxt = v; st.desc = num(v); renderResumo(); }
+function tipoDesc(t) { st.descTipo = t; renderResumo(); }
+function recomecar() { st = INICIAL(); render(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+
+function textoWhats() {
+  const r = calcular(st);
+  const l = ['*Proposta Revenda Mais*', nomeBase() + (r.itens.length ? ' + ' + r.itens.join(', ') : ''), ''];
+  if (r.tipo === 'software' || r.tipo === 'nf') {
+    l.push('Mensal: ' + brl(r.mensal) + '/mês' + (r.adesao ? ' + adesão de ' + brl(r.adesao) : ''));
+    l.push('Trimestral: 3x de ' + brl(r.tri) + ' no cartão (ou ' + brl(r.tri * 3) + ' no boleto)');
+    l.push('*Anual: 12x de ' + brl(r.anual) + '* (ou ' + brl(r.anual * 12) + ' no boleto)' + (r.economia > 0 ? ', economia de ' + brl(r.economia) + ' no ano' : ''));
+  } else if (r.tipo === 'crm') {
+    l.push('Mensal no boleto (pós-pago): ' + brl(r.mensal) + '/mês, ' + r.usuarios + ' usuários');
+  } else {
+    l.push('Mensal no boleto: ' + brl(r.mensal) + '/mês, até ' + r.leads.toLocaleString('pt-BR') + ' leads. Lead excedente: ' + brl(AV_TABELA.iaExcedente) + '. Sem fidelidade.');
+  }
+  if (r.aParte.length) l.push('', 'À parte, no boleto mensal: ' + r.aParte.map(function (a) { return a.nome + ' ' + brl(a.valor); }).join('; '));
+  if (r.setup) l.push('Setup do CRM: ' + brl(r.setup) + ' (uma vez)');
+  return l.join('\n');
+}
+function copiarWhats() {
+  const t = textoWhats();
+  (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(function () { aviso('Copiado. É só colar no WhatsApp.'); },
+    function () { window.prompt('Copie o texto:', t); });
+}
+
+// Leva a escolha para a Proposta Comercial do hub (outra aba, só o vendedor vê)
+function dadosParaHub() {
+  const r = calcular(st), tipo = tipoDa(st.base);
+  const crm = avCrmCalc(st.crmUsuarios);
+  const p = { tipo: tipo === 'software' ? 'software' : 'avulso', forma_pagamento: 'ambos',
+    modalidades: { mensal: true, trimestral: true, anual: true }, desconto: Math.round(r.descMensal * 100) / 100 };
+  if (tipo === 'software') {
+    p.plano = st.base;
+    p.adicionais = ADD_SOFTWARE.filter(function (id) { return st.add[id]; }).map(function (id) {
+      return { id: id, valor_mensal: id === 'cnpj' ? AV_TABELA.cnpjUnit * st.cnpjQtd : adicional(id).padrao };
+    });
+    if (st.crmOn) p.adicionais.push({ id: 'crm', valor_mensal: crm.valor });
+    if (st.iaOn) p.adicionais.push({ id: 'ia', valor_mensal: AV_TABELA.iaMensal * st.franquias });
+    p.crm_usuarios = crm.usuarios;
+  } else {
+    p.avulso_plano = tipo;
+    p.avulso_adicionais = (tipo === 'nf' ? ADD_NF : tipo === 'crm' ? ADD_CRM : []).filter(function (id) { return st.add[id]; })
+      .map(function (id) { return tipo === 'crm' && id === 'nf' ? 'nfe' : id; });
+    p.cnpj_qtd = st.cnpjQtd;
+    p.crm_usuarios = crm.usuarios;
+    p.ia_franquias = st.franquias;
+  }
+  return p;
+}
+
+// Gerar a proposta: o hub roda escondido nesta página (mesmo site) e gera o mesmo PDF da aba Propostas,
+// com o consultor do perfil salvo neste navegador. O cliente só vê o PDF baixando.
+let hubPronto = null;
+function hubOculto() {
+  if (!hubPronto) hubPronto = new Promise(function (ok, erro) {
+    const f = document.createElement('iframe');
+    f.setAttribute('aria-hidden', 'true');
+    f.tabIndex = -1;
+    f.style.cssText = 'position:fixed;left:-10000px;top:0;width:1280px;height:900px;border:0';
+    f.onload = function () { f.contentWindow.document.fonts.ready.then(function () { ok(f.contentWindow); }); };
+    f.onerror = function () { hubPronto = null; erro(new Error('Não consegui abrir o gerador.')); };
+    f.src = './';
+    document.body.appendChild(f);
+  });
+  return hubPronto;
+}
+async function gerarPdf() {
+  const nome = (st.cliente || '').trim();
+  if (!nome) { document.getElementById('cliente').focus(); return aviso('Coloque o nome do cliente para a proposta.'); }
+  const btn = document.getElementById('btnPdf');
+  btn.disabled = true; btn.textContent = 'Gerando PDF…';
+  try {
+    const w = await hubOculto();
+    w.iaPreencherProposta(dadosParaHub());
+    w.document.getElementById('p_cliente').value = nome;
+    await w.gerarProposta('pdf');
+    aviso('Proposta gerada. O PDF foi baixado.');
+  } catch (e) {
+    console.error(e);
+    aviso('Não deu para gerar o PDF. Tente de novo.');
+  } finally {
+    const b = document.getElementById('btnPdf');
+    if (b) { b.disabled = false; b.textContent = 'Gerar proposta (PDF)'; }
+  }
+}
+
+function aviso(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(aviso.t); aviso.t = setTimeout(function () { t.classList.remove('show'); }, 2600);
+}
+
+render();
+</script>
+</body>
+</html>
