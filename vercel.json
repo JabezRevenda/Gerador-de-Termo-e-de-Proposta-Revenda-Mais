@@ -1,5 +1,8 @@
 {
   "functions": {
-    "api/analisar-reuniao.js": { "maxDuration": 300 }
-  }
+    "api/analisar-reuniao.js": {
+      "maxDuration": 300
+    }
+  },
+  "cleanUrls": true
 }

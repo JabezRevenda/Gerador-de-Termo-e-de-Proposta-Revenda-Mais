@@ -61,6 +61,13 @@ body {
   cursor: pointer; transition: background 0.15s; white-space: nowrap;
 }
 .side-cta:hover { background: var(--red-dark); }
+/* Calculadora para o cliente: abre em outra aba, sem o menu do hub */
+.calc-link {
+  font-size: 14px; font-weight: 600; color: var(--text-heading); text-decoration: none; white-space: nowrap;
+  border: 1px solid var(--border); border-radius: 12px; padding: 10px 16px; transition: border-color .15s, color .15s;
+}
+.calc-link:hover { color: var(--red); border-color: rgba(232,0,61,0.35); }
+.calc-link.cel { display: none; }
 .conteudo { min-height: calc(100vh - 68px); display: flex; flex-direction: column; }
 
 /* ── MAIN ── */
@@ -360,7 +367,12 @@ input::placeholder, textarea::placeholder { color: var(--text-dim); font-weight:
 .tab:hover { background: #f5f6f8; color: var(--text-heading); }
 .tab.active { background: var(--red-light); color: var(--red); font-weight: 600; }
 .tab svg { width: 18px; height: 18px; flex-shrink: 0; }
-@media (max-width: 1240px) { .tab svg { display: none; } }   /* sem espaço: só o nome */
+@media (max-width: 1240px) {   /* sem espaço: só o nome e menos folga */
+  .tab svg { display: none; }
+  .tab { padding: 9px 10px; }
+  .side { gap: 12px; padding: 0 20px; }
+  .calc-link, .side-cta { padding: 10px 12px; font-size: 13.5px; }
+}
 
 /* ── Grid de checkboxes (recursos / adicionais) ── */
 .chk-grid {
@@ -1020,7 +1032,10 @@ input::placeholder, textarea::placeholder { color: var(--text-dim); font-weight:
 }
 @media (max-width: 999px) {
   .side { display: contents; }
+  .calc-link { display: none; }
+  .calc-link.cel { display: block; padding: 7px 12px; font-size: 13px; }
   header {
+    display: flex; align-items: center; justify-content: space-between;
     position: sticky; top: 0; z-index: 100; padding: 12px 16px;
     background: rgba(255,255,255,0.92); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border);
@@ -1053,6 +1068,7 @@ input::placeholder, textarea::placeholder { color: var(--text-dim); font-weight:
       <img class="logo-img" id="headerLogo" alt="Revenda Mais"/>
       <span class="logo-sub" id="headerSub">Renovação</span>
     </div>
+    <a class="calc-link cel" href="calculadora" target="_blank" rel="noopener">Calculadora</a>
   </header>
 
     <nav class="tabs com-etapas" id="tabsPrincipais" aria-label="Seções do hub">
@@ -1078,6 +1094,7 @@ input::placeholder, textarea::placeholder { color: var(--text-dim); font-weight:
       </button>
     </nav>
 
+  <a class="calc-link" href="calculadora" target="_blank" rel="noopener" title="Abre a calculadora para mostrar ao cliente">Calculadora</a>
   <button type="button" class="side-cta" onclick="novaRenovacao(false)">+ Nova renovação</button>
 </aside>
 
@@ -1505,7 +1522,7 @@ input::placeholder, textarea::placeholder { color: var(--text-dim); font-weight:
             <div class="readonly-row">
               <div>
                 <div class="rr-label">Mensalidade</div>
-                <div class="rr-desc">Atendimento de até 500 leads por mês</div>
+                <div class="rr-desc">Cada franquia atende até 500 leads por mês</div>
               </div>
               <div class="price-stack">
                 <small class="ps-de hidden" id="av_ia_calcDe"></small>
@@ -1518,6 +1535,10 @@ input::placeholder, textarea::placeholder { color: var(--text-dim); font-weight:
                 <div class="rr-desc">Por lead acima de 500 no mês, fora do desconto</div>
               </div>
               <div class="rr-val">R$ 5,00</div>
+            </div>
+            <div class="field">
+              <label for="av_ia_franquias">Franquias</label>
+              <input id="av_ia_franquias" type="number" min="1" max="100" step="1" value="1" inputmode="numeric"/>
             </div>
             <div class="field">
               <label>Desconto (R$)</label>
@@ -2188,6 +2209,7 @@ input::placeholder, textarea::placeholder { color: var(--text-dim); font-weight:
 
 <div class="toast" id="toast"></div>
 
+<script src="precos.js"></script>
 <script>
 // ── Data automática ────────────────────────────────────────────────
 const hoje = new Date();
@@ -2736,53 +2758,10 @@ function trocarAba(aba) {
 /* ══════════════════════════════════════════════════════════════════
    PROPOSTA COMERCIAL — dados base
    ══════════════════════════════════════════════════════════════════ */
-const RECURSOS_PADRAO = [
-  'Gestão completa do estoque',
-  'Módulo de avaliação do veículo',
-  'Gestão financeira da loja',
-  'Cadastro fácil pela placa',
-  'Módulo de controle de serviços',
-  'Sinal de Negócio',
-  'Integrador para portais de anúncio',
-  'Controle de Despachante',
-  'Relatórios',
-  'Guarda de arquivos',
-  'Módulo de refinanciamentos',
-  'Controle de Comissões',
-  'Geração de contratos'
-];
-
-// Configuração dos planos — altere aqui veículos, usuários, valor e o que não entra
-const ADESAO_FIXA = 1000;
-const DESCONTO_ANUAL = 50;   // quanto o valor anual fica abaixo do mensal
-const PLANOS = {
-  '0.5': { veiculos: 25,  usuarios: 5,  valor: '600,00',   desmarcados: ['Gestão financeira da loja'] },
-  '1.0': { veiculos: 50,  usuarios: 10, valor: '800,00',   desmarcados: [] },
-  '2.0': { veiculos: 100, usuarios: 15, valor: '1.000,00', desmarcados: [] },
-  '3.0': { veiculos: 150, usuarios: 20, valor: '1.300,00', desmarcados: [] },
-  // Integrador: só conecta aos portais de anúncio e sobe os carros (cadastro + fotos)
-  'integrador': { nome: 'Integrador', linha: 'Integrador de anúncios', veiculos: 300, usuarios: '', valor: '400,00',
-    desmarcados: RECURSOS_PADRAO.filter(function (r) {
-      return r !== 'Integrador para portais de anúncio' && r !== 'Cadastro fácil pela placa';
-    }) }
-};
 
 // ── Tipo de Proposta: Software Gerencial (acima) ou CRM/Nota Fiscal/IA avulso ──
 let tipoProposta = 'software'; // 'software' | 'avulso'
 
-// Tabela de preços fixa do fluxo avulso — não editável na tela, só via desconto
-const AV_TABELA = {
-  crmBase: 500, crmInclusos: 3, crmExtra: 100, crmSetup: 390,
-  nfMensal: 400, nfTrimestral: 400, nfAnual: 350,
-  renave: 30,
-  iaMensal: 996, iaLeads: 500, iaExcedente: 5,   // IA: pacote de leads, sem fidelidade
-  cnpjUnit: 100   // valor de tabela por CNPJ adicional (o campo continua editável na tela)
-};
-function avCrmCalc(usuarios) {
-  const u = Math.max(0, parseInt(usuarios, 10) || 0);
-  const extra = Math.max(0, u - AV_TABELA.crmInclusos);
-  return { usuarios: u, extra: extra, valor: AV_TABELA.crmBase + extra * AV_TABELA.crmExtra };
-}
 // CNPJ adicional: a tabela é qtd x R$ 100, mas o campo de valor fica aberto —
 // vale sempre o que estiver digitado. Trocar a quantidade reescreve pela tabela
 // (ver onAvCnpjQtdChange) e campo vazio cai de volta na tabela.
@@ -2846,20 +2825,6 @@ function onAvAddonChange() {
   pRender();   // o texto do CNPJ adicional é atualizado dentro do pRender
 }
 
-// Produtos adicionais — para incluir um novo módulo fixo, basta acrescentar aqui
-const ADICIONAIS = [
-  { id: 'crm',      nome: 'CRM com WhatsApp',     desc: '3 usuários inclusos', fora: true, usuarios: true, padrao: 500,
-    obs: 'O CRM é cobrado separadamente, via boleto, na virada de cada mês, pois a cobrança é pós-paga. Cada usuário adicional possui o custo de R$ 100,00 por mês.' },
-  // padrao: valor de tabela preenchido ao marcar (continua editável)
-  { id: 'ia',       nome: 'IA',                   desc: 'Agente de pré-vendas no WhatsApp — até 500 leads/mês', padrao: 996, fora: true,
-    obs: 'Cobrada à parte, via boleto mensal. R$ 996,00 por mês para atender até 500 leads; leads acima desse volume no mês são cobrados a R$ 5,00 cada. Sem fidelidade — a contratação é formalizada mediante assinatura do termo.' },
-  { id: 'nf',       nome: 'Nota Fiscal',          desc: 'Emissor de nota fiscal eletrônica', dual: true },
-  { id: 'cnpj',     nome: 'CNPJ Adicional',       desc: 'Emita e receba notas em CNPJs distintos — R$ 100,00 por CNPJ/mês' },
-  { id: 'assin',    nome: 'Assinatura Eletrônica',desc: 'Assine documentos digitalmente' },
-  { id: 'vistoria', nome: 'Vistoria',             desc: 'Padronize e agilize suas vistorias' },
-  { id: 'renave',   nome: 'Renave',               desc: 'Transferência eletrônica de veículos' },
-  { id: 'integra',  nome: 'Integrações',          desc: 'Conexão com sistemas e portais parceiros' }
-];
 
 let addonsCustom = [];
 let customSeq = 0;
@@ -3096,6 +3061,7 @@ function pToggleAddon(id) {
   const cfg = ADICIONAIS.find(function (a) { return a.id === id; });
   if (on && cfg && cfg.padrao && !document.getElementById('vl_' + id).value.trim()) {
     pSetMoney('vl_' + id, cfg.usuarios ? avCrmCalc(document.getElementById('us_' + id).value).valor : cfg.padrao);
+    if (cfg.dual) pSyncAddon(id);
   }
   if (on) document.getElementById('vl_' + id).focus();
   pRender();
@@ -3351,11 +3317,13 @@ function avColetar() {
   }
 
   if (plano === 'ia') {
-    const bruto = AV_TABELA.iaMensal;
+    const franquias = Math.min(100, Math.max(1, parseInt(document.getElementById('av_ia_franquias').value, 10) || 1));
+    const bruto = AV_TABELA.iaMensal * franquias;
     // Desconto abate só a mensalidade (nunca o valor por lead excedente), travando em R$ 0,00
     const desconto = Math.min(pParse(document.getElementById('av_ia_desconto').value), bruto);
     const total = Math.max(0, bruto - desconto);
     return Object.assign(base, {
+      franquias: franquias, leads: AV_TABELA.iaLeads * franquias,
       bruto: bruto, desconto: desconto, total: total,
       mensalidade: total
     });
@@ -3433,14 +3401,15 @@ function avMontarPapel(d) {
     secaoPlano =
       '<div class="pp-sec">Solução Contratada</div>' +
       '<div class="pp-plan"><div><div class="pp-plan-n">IA</div>' +
-      '<div class="pp-plan-s">Atendimento de até ' + AV_TABELA.iaLeads + ' leads por mês</div></div>' +
+      '<div class="pp-plan-s">Atendimento de até ' + d.leads.toLocaleString('pt-BR') + ' leads por mês' +
+        (d.franquias > 1 ? ' (' + d.franquias + ' franquias)' : '') + '</div></div>' +
       '<div class="pp-plan-tag">Sem fidelidade</div></div>';
 
     const linhas =
-      '<div class="pp-row"><span>Mensalidade IA (até ' + AV_TABELA.iaLeads + ' leads)</span><span>' + pBRL(AV_TABELA.iaMensal) + '</span></div>' +
+      '<div class="pp-row"><span>Mensalidade IA (' + (d.franquias > 1 ? d.franquias + ' franquias, ' : '') + 'até ' + d.leads.toLocaleString('pt-BR') + ' leads)</span><span>' + pBRL(d.bruto) + '</span></div>' +
       (d.desconto > 0 ? '<div class="pp-row desc"><span>Desconto comercial</span><span>− ' + pBRL(d.desconto) + '</span></div>' : '') +
       '<div class="pp-row"><span><b>Valor mensal</b></span><span><b>' + pBRL(d.total) + '</b></span></div>' +
-      '<div class="pp-row"><span>Lead excedente (acima de ' + AV_TABELA.iaLeads + '/mês)</span><span>' + pBRL(AV_TABELA.iaExcedente) + ' por lead</span></div>';
+      '<div class="pp-row"><span>Lead excedente (acima de ' + d.leads.toLocaleString('pt-BR') + '/mês)</span><span>' + pBRL(AV_TABELA.iaExcedente) + ' por lead</span></div>';
 
     secaoInvestimento =
       '<div class="pp-sec">Investimento</div><div class="pp-inv">' + linhas + '</div>' +
@@ -3587,7 +3556,7 @@ function pRender() {
     } else if (d.avPlano === 'ia') {
       document.getElementById('p_totalView').textContent = pBRL(d.total);
       document.getElementById('p_totalSub').innerHTML =
-        'Até ' + AV_TABELA.iaLeads + ' leads · excedente ' + pBRL(AV_TABELA.iaExcedente) + ' por lead' +
+        'Até ' + d.leads.toLocaleString('pt-BR') + ' leads · excedente ' + pBRL(AV_TABELA.iaExcedente) + ' por lead' +
         '<br/>Sem fidelidade' +
         (d.desconto > 0 ? '<br/>Desconto de ' + pBRL(d.desconto) + ' aplicado' : '');
     } else {
@@ -4099,6 +4068,7 @@ function iaPreencherProposta(p) {
       onAvCnpjQtdChange();
       pSetMoney('av_nf_desconto', Number(p.desconto) || 0);
     } else {
+      el('av_ia_franquias').value = Math.max(1, parseInt(p.ia_franquias, 10) || 1);
       pSetMoney('av_ia_desconto', Number(p.desconto) || 0);
     }
     onAvAddonChange();
