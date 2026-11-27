@@ -27,51 +27,64 @@ button { font-family: inherit; }
 .topo-reset { margin-left: auto; font-size: 13px; font-weight: 600; color: var(--muted); background: none; border: 0; cursor: pointer; padding: 8px 10px; border-radius: 10px; }
 .topo-reset:hover { color: var(--heading); background: var(--field); }
 
-.pagina { max-width: 1240px; margin: 0 auto; padding: 28px 28px 60px; display: grid; grid-template-columns: minmax(0, 1fr) 400px; gap: 24px; align-items: start; }
+.pagina { max-width: 1280px; margin: 0 auto; padding: 24px 28px 60px; display: grid; grid-template-columns: minmax(0, 1fr) 410px; gap: 24px; align-items: start; }
 .passos { display: flex; flex-direction: column; gap: 18px; }
 
-.bloco { background: var(--card); border-radius: 24px; padding: 22px 24px 24px; box-shadow: var(--shadow); }
-.bloco-h { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
-.bloco-n { width: 28px; height: 28px; border-radius: 9px; background: var(--red); color: #fff; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.bloco-t { font-size: 17px; font-weight: 700; color: var(--heading); letter-spacing: -0.01em; }
-.grupo-t { font-size: 12px; font-weight: 500; color: var(--muted); margin: 4px 0 8px; }
-.grupo-t:not(:first-of-type) { margin-top: 16px; }
+/* Produto: Software Gerencial (padrão) ou um produto sozinho */
+.produtos { grid-column: 1 / -1; display: flex; gap: 6px; background: #e8e9ed; border-radius: 16px; padding: 5px; width: max-content; max-width: 100%; overflow-x: auto; }
+.produtos button { border: 0; background: none; font-size: 14px; font-weight: 600; color: var(--muted); padding: 10px 18px; border-radius: 12px; cursor: pointer; white-space: nowrap; }
+.produtos button:hover { color: var(--heading); }
+.produtos button.on { background: #fff; color: var(--red); box-shadow: var(--shadow); }
 
-.planos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-.plano {
-  text-align: left; background: var(--card); border: 1.5px solid var(--border); border-radius: 16px; padding: 14px 16px;
-  cursor: pointer; transition: border-color .15s, background .15s; display: flex; flex-direction: column; gap: 6px;
-}
-.plano:hover { border-color: #d5d8de; }
-.plano.on { border-color: var(--red); background: var(--red-light); }
-.plano-l { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
-.plano-n { font-size: 15px; font-weight: 700; color: var(--heading); }
-.plano.on .plano-n { color: var(--red); }
-.plano-v { font-size: 14px; font-weight: 700; color: var(--heading); white-space: nowrap; }
-.plano-v small { font-size: 11px; font-weight: 500; color: var(--muted); }
-.plano-d { font-size: 12px; color: var(--muted); line-height: 1.4; }
-.plano-a { font-size: 12px; font-weight: 600; color: var(--red); }
+.bloco { background: var(--card); border-radius: 24px; padding: 26px 28px 28px; box-shadow: var(--shadow); }
+.bloco-t { font-size: 19px; font-weight: 700; color: var(--heading); letter-spacing: -0.01em; margin-bottom: 16px; }
 
-.inclui { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); }
-.inclui-t { font-size: 12px; font-weight: 500; color: var(--muted); margin-bottom: 8px; }
-.chips { display: flex; flex-wrap: wrap; gap: 6px; }
-.chip { font-size: 12px; color: var(--text); background: var(--field); border-radius: 999px; padding: 5px 11px; }
-.chip::before { content: '✓ '; color: var(--red); font-weight: 700; }
+/* Plano: pergunta, preço grande e a faixa de veículos */
+.plano-topo { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+.plano-q { font-size: 19px; font-weight: 600; color: var(--heading); line-height: 1.3; }
+.plano-q small { display: block; font-size: 14px; font-weight: 500; color: var(--muted); margin-top: 4px; }
+.preco { text-align: right; white-space: nowrap; }
+.preco b { font-size: 32px; font-weight: 800; color: var(--heading); letter-spacing: -0.02em; }
+.preco span { font-size: 15px; color: var(--muted); }
+.preco small { display: block; font-size: 14px; font-weight: 600; color: var(--red); margin-top: 2px; }
 
-.opcs { display: flex; flex-direction: column; gap: 8px; }
-.opc { display: flex; align-items: center; gap: 14px; border: 1.5px solid var(--border); border-radius: 16px; padding: 12px 14px; cursor: pointer; transition: border-color .15s, background .15s; }
+.faixa-box { margin-top: 22px; padding: 18px 22px 16px; border: 1px solid var(--border); border-radius: 18px; }
+.marcas { display: flex; justify-content: space-between; margin-bottom: 10px; }
+.marcas button { border: 0; background: none; font-size: 17px; font-weight: 700; color: var(--dim); cursor: pointer; padding: 2px 4px; }
+.marcas button.on { color: var(--heading); }
+.marcas button small { display: block; font-size: 11.5px; font-weight: 500; }
+.faixa { -webkit-appearance: none; appearance: none; width: 100%; height: 8px; border-radius: 999px; outline: none; cursor: pointer;
+  background: linear-gradient(90deg, var(--red) var(--p), #e5e7eb var(--p)); }
+.faixa::-webkit-slider-thumb { -webkit-appearance: none; width: 26px; height: 26px; border-radius: 50%; background: #fff; border: 3px solid var(--red); box-shadow: 0 2px 8px rgba(232,0,61,0.3); }
+.faixa::-moz-range-thumb { width: 22px; height: 22px; border-radius: 50%; background: #fff; border: 3px solid var(--red); }
+.plano-info { margin-top: 14px; font-size: 15px; color: var(--text); }
+.plano-info b { color: var(--red); }
+
+/* O que vem no plano: ✓ no que vem, ✕ riscado no que não vem */
+.recursos-t { font-size: 16px; font-weight: 700; color: var(--heading); margin: 24px 0 12px; }
+.recursos { list-style: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px 18px; }
+.recursos li { display: flex; align-items: flex-start; gap: 9px; font-size: 14.5px; color: var(--heading); line-height: 1.35; }
+.recursos li::before { content: '✓'; flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px; background: #16a34a; color: #fff; font-size: 13px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+.recursos li.nao { color: var(--dim); text-decoration: line-through; }
+.recursos li.nao::before { content: '✕'; background: #fde8ec; color: var(--red); }
+.produto-d { margin-top: 14px; font-size: 15px; color: var(--text); line-height: 1.55; }
+
+/* Adicionais */
+.opcs { display: flex; flex-direction: column; gap: 10px; }
+.opc { display: flex; align-items: center; gap: 14px; border: 1.5px solid var(--border); border-radius: 16px; padding: 14px 16px; cursor: pointer; transition: border-color .15s, background .15s; }
 .opc:hover { border-color: #d5d8de; }
 .opc.on { border-color: var(--red); background: var(--red-light); }
-.opc input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--red); flex-shrink: 0; cursor: pointer; }
+.opc input[type=checkbox] { width: 20px; height: 20px; accent-color: var(--red); flex-shrink: 0; cursor: pointer; }
 .opc-m { flex: 1; min-width: 0; }
-.opc-n { display: block; font-size: 14px; font-weight: 600; color: var(--heading); }
-.opc-d { display: block; font-size: 12px; color: var(--muted); margin-top: 1px; line-height: 1.4; }
-.opc-v { font-size: 14px; font-weight: 700; color: var(--heading); white-space: nowrap; text-align: right; }
-.opc-v small { display: block; font-size: 11px; font-weight: 500; color: var(--muted); }
-.qtd { display: inline-flex; align-items: center; gap: 2px; background: var(--field); border-radius: 10px; padding: 3px; margin-top: 8px; }
-.qtd button { width: 28px; height: 28px; border: 0; border-radius: 8px; background: #fff; color: var(--heading); font-size: 16px; font-weight: 600; cursor: pointer; }
+.opc-n { display: block; font-size: 16px; font-weight: 600; color: var(--heading); }
+.opc-n em { font-style: normal; font-size: 11.5px; font-weight: 600; color: var(--muted); background: var(--field); border-radius: 999px; padding: 2px 8px; margin-left: 6px; vertical-align: middle; }
+.opc-d { display: block; font-size: 13.5px; color: var(--muted); margin-top: 2px; line-height: 1.4; }
+.opc-v { font-size: 17px; font-weight: 700; color: var(--heading); white-space: nowrap; text-align: right; }
+.opc-v small { display: block; font-size: 12px; font-weight: 500; color: var(--muted); }
+.qtd { display: inline-flex; align-items: center; gap: 2px; background: var(--field); border-radius: 12px; padding: 3px; margin-top: 10px; }
+.qtd button { width: 32px; height: 32px; border: 0; border-radius: 9px; background: #fff; color: var(--heading); font-size: 18px; font-weight: 600; cursor: pointer; }
 .qtd button:disabled { opacity: .4; cursor: default; }
-.qtd span { min-width: 92px; text-align: center; font-size: 13px; font-weight: 600; color: var(--heading); }
+.qtd span { min-width: 104px; text-align: center; font-size: 14px; font-weight: 600; color: var(--heading); }
 
 /* Resumo: o cartão escuro com o degradê do hub */
 .resumo {
@@ -79,19 +92,19 @@ button { font-family: inherit; }
   background: radial-gradient(ellipse farthest-corner at 100% 0%, #ff2d5e 0%, #E8003D 16%, rgba(176,0,46,0.55) 34%, rgba(11,11,15,0) 58%), var(--ink);
 }
 .res-k { font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.65); }
-.res-n { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; margin-top: 2px; line-height: 1.2; }
+.res-n { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; margin-top: 2px; line-height: 1.2; }
 .res-s { font-size: 12.5px; color: rgba(255,255,255,0.7); margin-top: 4px; line-height: 1.45; }
 .tiles { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
 .tile { border-radius: 18px; padding: 14px 16px; background: rgba(255,255,255,0.08); }
 .tile-l { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
-.tile-t { font-size: 13px; font-weight: 600; }
-.tile-v { font-size: 20px; font-weight: 700; letter-spacing: -0.01em; white-space: nowrap; }
+.tile-t { font-size: 14px; font-weight: 600; }
+.tile-v { font-size: 23px; font-weight: 700; letter-spacing: -0.01em; white-space: nowrap; }
 .tile-v small { font-size: 12px; font-weight: 500; opacity: .7; }
-.tile-d { font-size: 12px; color: rgba(255,255,255,0.65); margin-top: 3px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 2px 10px; }
+.tile-d { font-size: 13px; color: rgba(255,255,255,0.65); margin-top: 3px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 2px 10px; }
 .tile.destaque .tile-l { flex-direction: column; align-items: flex-start; gap: 2px; }
 .tile.destaque .tile-t { display: flex; align-items: center; gap: 8px; }
 .tile.destaque { background: #fff; color: var(--heading); }
-.tile.destaque .tile-v { font-size: 26px; color: var(--red); }
+.tile.destaque .tile-v { font-size: 32px; color: var(--red); }
 .tile.destaque .tile-d { color: var(--muted); }
 .selo { font-size: 10.5px; font-weight: 600; color: #fff; background: var(--red); border-radius: 999px; padding: 3px 10px; white-space: nowrap; }
 .aparte { margin-top: 10px; border-radius: 16px; padding: 12px 16px; border: 1px solid rgba(255,255,255,0.14); font-size: 12.5px; line-height: 1.55; color: rgba(255,255,255,0.8); }
@@ -135,13 +148,17 @@ button { font-family: inherit; }
 .hidden { display: none !important; }
 
 @media (max-width: 960px) {
-  .pagina { grid-template-columns: 1fr; padding: 18px 16px 40px; }
+  .pagina { grid-template-columns: minmax(0, 1fr); padding: 18px 16px 40px; }
   .resumo { position: static; }
 }
+@media (max-width: 760px) { .recursos { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 560px) {
   .topo { padding: 0 16px; }
   .topo-t { display: none; }
-  .planos { grid-template-columns: 1fr; }
+  .recursos { grid-template-columns: 1fr; }
+  .plano-topo { flex-direction: column; }
+  .preco { text-align: left; }
+  .preco b { font-size: 28px; }
   .bloco { padding: 18px 16px 20px; border-radius: 20px; }
   .resumo { padding: 20px 18px; border-radius: 22px; }
 }
@@ -156,27 +173,12 @@ button { font-family: inherit; }
 </header>
 
 <div class="pagina">
+  <nav class="produtos" id="produtos" aria-label="Produto"></nav>
   <div class="passos">
-    <section class="bloco">
-      <div class="bloco-h"><span class="bloco-n">1</span><span class="bloco-t">Escolha o plano</span></div>
-      <div class="grupo-t">Software Gerencial</div>
-      <div class="planos" id="planosSoftware"></div>
-      <div class="grupo-t">Outros produtos</div>
-      <div class="planos" id="planosAvulsos"></div>
-      <div class="inclui hidden" id="inclui">
-        <div class="inclui-t">O que vem no plano</div>
-        <div class="chips" id="incluiLista"></div>
-      </div>
-    </section>
-
+    <section class="bloco" id="blocoPlano"></section>
     <section class="bloco hidden" id="blocoAdd">
-      <div class="bloco-h"><span class="bloco-n">2</span><span class="bloco-t" id="blocoAddT">Adicionais</span></div>
+      <div class="bloco-t">Adicione ao plano</div>
       <div class="opcs" id="adds"></div>
-    </section>
-
-    <section class="bloco hidden" id="blocoExtra">
-      <div class="bloco-h"><span class="bloco-n">3</span><span class="bloco-t" id="blocoExtraT">CRM e IA</span></div>
-      <div class="opcs" id="extras"></div>
     </section>
   </div>
 
@@ -286,17 +288,14 @@ function calcular(s) {
 }
 
 // ── Tela ──
-function cardPlano(id, nome, desc, mensal, anual) {
-  return '<button type="button" class="plano' + (st.base === id ? ' on' : '') + '" onclick="escolher(\'' + id + '\')">' +
-    '<span class="plano-l"><span class="plano-n">' + esc(nome) + '</span><span class="plano-v">' + brl(mensal) + '<small>/mês</small></span></span>' +
-    '<span class="plano-d">' + esc(desc) + '</span>' +
-    (anual ? '<span class="plano-a">No anual: ' + brl(anual) + '/mês</span>' : '') +
-  '</button>';
-}
+// Na calculadora só os planos que a loja costuma usar: até 25, 50 e 100 veículos
+const PLANOS_CALC = ['0.5', '1.0', '2.0'];
+const PRODUTOS = [['software', 'Software Gerencial'], ['nf', 'Nota Fiscal'], ['crm', 'CRM com WhatsApp'], ['ia', 'Agente de IA']];
+let ultimoPlano = '1.0';
 
 function linhaOpc(id, nome, desc, valor, on, extra) {
   return '<label class="opc' + (on ? ' on' : '') + '"><input type="checkbox"' + (on ? ' checked' : '') + ' onchange="marcar(\'' + id + '\', this.checked)"/>' +
-    '<span class="opc-m"><span class="opc-n">' + esc(nome) + '</span><span class="opc-d">' + esc(desc) + '</span>' + (extra || '') + '</span>' +
+    '<span class="opc-m"><span class="opc-n">' + nome + '</span><span class="opc-d">' + esc(desc) + '</span>' + (extra || '') + '</span>' +
     '<span class="opc-v">' + valor + '</span></label>';
 }
 function stepper(campo, valor, min, rotulo) {
@@ -305,66 +304,86 @@ function stepper(campo, valor, min, rotulo) {
     '<span>' + rotulo + '</span>' +
     '<button type="button" onclick="passo(\'' + campo + '\', 1, ' + min + ')" aria-label="Mais">+</button></span>';
 }
+function preco(mensal, anual) {
+  return '<div class="preco"><b>' + brl(mensal) + '</b> <span>/mês</span>' + (anual ? '<small>No anual: ' + brl(anual) + '/mês</small>' : '') + '</div>';
+}
 
 function render() {
-  document.getElementById('planosSoftware').innerHTML = Object.keys(PLANOS).map(function (k) {
-    const p = PLANOS[k], v = num(p.valor);
-    const desc = k === 'integrador' ? 'Anúncios nos portais, até ' + p.veiculos + ' veículos'
-      : 'Até ' + p.veiculos + ' veículos · ' + p.usuarios + ' usuários';
-    return cardPlano(k, p.nome || 'Plano ' + k, desc, v, Math.max(0, v - DESCONTO_ANUAL));
-  }).join('');
-  document.getElementById('planosAvulsos').innerHTML = Object.keys(AVULSOS).map(function (k) {
-    const a = AVULSOS[k];
-    return cardPlano(k, a.nome, a.desc, a.mensal, a.anual);
-  }).join('');
-
   const tipo = tipoDa(st.base);
-  const plano = PLANOS[st.base];
-  document.getElementById('inclui').classList.toggle('hidden', !plano);
-  if (plano) {
-    document.getElementById('incluiLista').innerHTML = RECURSOS_PADRAO.filter(function (r) { return plano.desmarcados.indexOf(r) === -1; })
-      .map(function (r) { return '<span class="chip">' + esc(r) + '</span>'; }).join('');
-  }
+  document.getElementById('produtos').innerHTML = PRODUTOS.map(function (p) {
+    return '<button type="button" class="' + (tipo === p[0] ? 'on' : '') + '" onclick="produto(\'' + p[0] + '\')">' + p[1] + '</button>';
+  }).join('');
+  renderPlano();
+  renderAdds();
+  renderResumo();
+}
 
-  // Passo 2: adicionais do tipo escolhido
+// Bloco do plano. No Software Gerencial a faixa de veículos não é redesenhada enquanto arrasta
+function renderPlano() {
+  const tipo = tipoDa(st.base);
+  const box = document.getElementById('blocoPlano');
   const crm = avCrmCalc(st.crmUsuarios);
-  const lista = tipo === 'software' ? ADD_SOFTWARE : tipo === 'nf' ? ADD_NF : tipo === 'crm' ? ADD_CRM : [];
+  if (tipo === 'software') {
+    if (box.dataset.tipo !== 'software') {
+      box.dataset.tipo = 'software';
+      box.innerHTML = '<div class="plano-topo"><div class="plano-q">Quantos veículos há no estoque?<small>Software Gerencial</small></div><div id="planoPreco"></div></div>' +
+        '<div class="faixa-box"><div class="marcas" id="marcas">' + PLANOS_CALC.map(function (k, i) {
+          return '<button type="button" onclick="escolherPlano(' + i + ')">' + PLANOS[k].veiculos + '<small>veículos</small></button>';
+        }).join('') + '</div>' +
+        '<input type="range" class="faixa" id="faixa" min="0" max="' + (PLANOS_CALC.length - 1) + '" step="1" aria-label="Veículos no estoque" oninput="escolherPlano(this.value)"/>' +
+        '<div class="plano-info" id="planoInfo"></div></div>' +
+        '<div class="recursos-t">O que vem no plano</div><ul class="recursos" id="recursos"></ul>';
+    }
+    const i = PLANOS_CALC.indexOf(st.base), p = PLANOS[st.base], v = num(p.valor);
+    const faixa = document.getElementById('faixa');
+    faixa.value = i;
+    faixa.style.setProperty('--p', (i * 100 / (PLANOS_CALC.length - 1)) + '%');
+    document.querySelectorAll('#marcas button').forEach(function (b, k) { b.classList.toggle('on', k === i); });
+    document.getElementById('planoPreco').innerHTML = preco(v, Math.max(0, v - DESCONTO_ANUAL));
+    document.getElementById('planoInfo').innerHTML = '<b>Plano ' + esc(st.base) + '</b> · até ' + p.veiculos + ' veículos · ' + p.usuarios + ' usuários';
+    document.getElementById('recursos').innerHTML = RECURSOS_PADRAO.map(function (r) {
+      return '<li' + (p.desmarcados.indexOf(r) !== -1 ? ' class="nao"' : '') + '>' + esc(r) + '</li>';
+    }).join('');
+    return;
+  }
+  box.dataset.tipo = tipo;
+  const a = AVULSOS[tipo];
+  let h;
+  if (tipo === 'nf') {
+    h = '<div class="plano-topo"><div class="plano-q">' + a.nome + '<small>Sem o Software Gerencial</small></div>' + preco(a.mensal, a.anual) + '</div>' +
+      '<p class="produto-d">Emissor de nota fiscal eletrônica.</p>';
+  } else if (tipo === 'crm') {
+    h = '<div class="plano-topo"><div class="plano-q">' + a.nome + '<small>Cobrado no boleto, pós-pago</small></div>' + preco(crm.valor) + '</div>' +
+      '<p class="produto-d">' + AV_TABELA.crmInclusos + ' usuários inclusos e ' + brl(AV_TABELA.crmExtra) + ' por usuário a mais. Setup de ' + brl(AV_TABELA.crmSetup) + ', pago uma vez.</p>' +
+      stepper('crmUsuarios', st.crmUsuarios, 1, crm.usuarios + ' usuários');
+  } else {
+    h = '<div class="plano-topo"><div class="plano-q">' + a.nome + '<small>Pré-vendas no WhatsApp</small></div>' + preco(AV_TABELA.iaMensal * st.franquias) + '</div>' +
+      '<p class="produto-d">Cada franquia atende até ' + AV_TABELA.iaLeads + ' leads por mês. Lead excedente: ' + brl(AV_TABELA.iaExcedente) + '. Sem fidelidade.</p>' +
+      stepper('franquias', st.franquias, 1, st.franquias + (st.franquias === 1 ? ' franquia' : ' franquias'));
+  }
+  box.innerHTML = h;
+}
+
+function renderAdds() {
+  const tipo = tipoDa(st.base);
+  const crm = avCrmCalc(st.crmUsuarios);
+  const lista = tipo === 'software' ? ADD_SOFTWARE.concat(['crmOn', 'iaOn']) : tipo === 'nf' ? ADD_NF : tipo === 'crm' ? ADD_CRM : [];
+  const aParte = ' <em>boleto à parte</em>';
   document.getElementById('blocoAdd').classList.toggle('hidden', !lista.length);
   document.getElementById('adds').innerHTML = lista.map(function (id) {
     const a = adicional(id), on = !!st.add[id];
-    if (id === 'cnpj') return linhaOpc(id, a.nome, 'Emita e receba notas em CNPJs diferentes', brl(AV_TABELA.cnpjUnit * st.cnpjQtd) + '<small>/mês</small>', on,
-      on ? '<br/>' + stepper('cnpjQtd', st.cnpjQtd, 1, st.cnpjQtd + (st.cnpjQtd === 1 ? ' CNPJ' : ' CNPJs')) : '');
-    if (id === 'crm') return linhaOpc(id, a.nome, AV_TABELA.crmInclusos + ' usuários inclusos · R$ 100,00 por usuário a mais · setup de ' + brl(AV_TABELA.crmSetup), brl(crm.valor) + '<small>/mês</small>', on,
-      on ? '<br/>' + stepper('crmUsuarios', st.crmUsuarios, 1, crm.usuarios + ' usuários') : '');
-    if (id === 'nf') return linhaOpc(id, a.nome, a.desc, brl(a.padrao) + '<small>' + (tipo === 'software' ? 'anual: ' + brl(a.padrao - DESCONTO_ANUAL) : '/mês') + '</small>', on);
+    if (id === 'crmOn') return linhaOpc(id, 'CRM com WhatsApp' + aParte, AV_TABELA.crmInclusos + ' usuários inclusos · ' + brl(AV_TABELA.crmExtra) + ' por usuário a mais · setup de ' + brl(AV_TABELA.crmSetup),
+      brl(crm.valor) + '<small>/mês</small>', st.crmOn, st.crmOn ? stepper('crmUsuarios', st.crmUsuarios, 1, crm.usuarios + ' usuários') : '');
+    if (id === 'iaOn') return linhaOpc(id, 'Agente de IA' + aParte, 'Cada franquia atende até ' + AV_TABELA.iaLeads + ' leads por mês · excedente ' + brl(AV_TABELA.iaExcedente) + ' por lead',
+      brl(AV_TABELA.iaMensal * st.franquias) + '<small>/mês</small>', st.iaOn, st.iaOn ? stepper('franquias', st.franquias, 1, st.franquias + (st.franquias === 1 ? ' franquia' : ' franquias')) : '');
+    if (id === 'cnpj') return linhaOpc(id, esc(a.nome), 'Emita e receba notas em CNPJs diferentes', brl(AV_TABELA.cnpjUnit * st.cnpjQtd) + '<small>/mês</small>', on,
+      on ? stepper('cnpjQtd', st.cnpjQtd, 1, st.cnpjQtd + (st.cnpjQtd === 1 ? ' CNPJ' : ' CNPJs')) : '');
+    if (id === 'crm') return linhaOpc(id, esc(a.nome), AV_TABELA.crmInclusos + ' usuários inclusos · ' + brl(AV_TABELA.crmExtra) + ' por usuário a mais · setup de ' + brl(AV_TABELA.crmSetup), brl(crm.valor) + '<small>/mês</small>', on,
+      on ? stepper('crmUsuarios', st.crmUsuarios, 1, crm.usuarios + ' usuários') : '');
+    if (id === 'nf') return linhaOpc(id, esc(a.nome), a.desc, brl(a.padrao) + '<small>' + (tipo === 'software' ? 'no anual: ' + brl(a.padrao - DESCONTO_ANUAL) : '/mês') + '</small>', on);
     if (id === 'ia') return linhaOpc(id, 'Agente de IA', 'Até ' + AV_TABELA.iaLeads + ' leads por mês', brl(AV_TABELA.iaMensal) + '<small>/mês</small>', on);
-    return linhaOpc(id, a.nome, a.desc, brl(a.padrao) + '<small>/mês</small>', on);
+    return linhaOpc(id, esc(a.nome), a.desc, brl(a.padrao) + '<small>/mês</small>', on);
   }).join('');
-
-  // Passo 3: CRM e IA (à parte) no Software; usuários no CRM; franquias na IA
-  const extras = document.getElementById('extras');
-  const bloco3 = document.getElementById('blocoExtra');
-  bloco3.classList.toggle('hidden', tipo === 'nf');
-  bloco3.querySelector('.bloco-n').textContent = lista.length ? '3' : '2';
-  if (tipo === 'software') {
-    document.getElementById('blocoExtraT').textContent = 'CRM e IA (boleto à parte)';
-    extras.innerHTML =
-      linhaOpc('crmOn', 'CRM com WhatsApp', AV_TABELA.crmInclusos + ' usuários inclusos · R$ 100,00 por usuário a mais · setup de ' + brl(AV_TABELA.crmSetup), brl(crm.valor) + '<small>/mês</small>', st.crmOn,
-        st.crmOn ? '<br/>' + stepper('crmUsuarios', st.crmUsuarios, 1, crm.usuarios + ' usuários') : '') +
-      linhaOpc('iaOn', 'Agente de IA', 'Cada franquia atende até ' + AV_TABELA.iaLeads + ' leads por mês · excedente ' + brl(AV_TABELA.iaExcedente) + ' por lead', brl(AV_TABELA.iaMensal * st.franquias) + '<small>/mês</small>', st.iaOn,
-        st.iaOn ? '<br/>' + stepper('franquias', st.franquias, 1, st.franquias + (st.franquias === 1 ? ' franquia' : ' franquias')) : '');
-  } else if (tipo === 'crm') {
-    document.getElementById('blocoExtraT').textContent = 'Usuários';
-    extras.innerHTML = '<div class="opc on"><span class="opc-m"><span class="opc-n">Usuários do CRM</span><span class="opc-d">' + AV_TABELA.crmInclusos +
-      ' inclusos · R$ 100,00 por usuário a mais</span>' + '<br/>' + stepper('crmUsuarios', st.crmUsuarios, 1, crm.usuarios + ' usuários') +
-      '</span><span class="opc-v">' + brl(crm.valor) + '<small>/mês</small></span></div>';
-  } else if (tipo === 'ia') {
-    document.getElementById('blocoExtraT').textContent = 'Franquias';
-    extras.innerHTML = '<div class="opc on"><span class="opc-m"><span class="opc-n">Franquias</span><span class="opc-d">Cada uma atende até ' + AV_TABELA.iaLeads +
-      ' leads por mês</span><br/>' + stepper('franquias', st.franquias, 1, st.franquias + (st.franquias === 1 ? ' franquia' : ' franquias')) +
-      '</span><span class="opc-v">' + brl(AV_TABELA.iaMensal * st.franquias) + '<small>/mês</small></span></div>';
-  }
-  renderResumo();
 }
 
 function nomeBase() {
@@ -421,10 +440,16 @@ function tile(titulo, valor, linhas, destaque) {
 }
 
 // ── Ações ──
-function escolher(base) {
-  if (tipoDa(base) !== tipoDa(st.base)) { st.add = {}; st.desc = 0; st.descTxt = ''; }
-  st.base = base;
+function produto(tipo) {
+  if (tipo === tipoDa(st.base)) return;
+  st.add = {}; st.crmOn = false; st.iaOn = false; st.desc = 0; st.descTxt = '';
+  st.base = tipo === 'software' ? ultimoPlano : tipo;
   render();
+}
+function escolherPlano(i) {
+  st.base = ultimoPlano = PLANOS_CALC[+i];
+  renderPlano();
+  renderResumo();
 }
 function marcar(id, on) {
   if (id === 'crmOn' || id === 'iaOn') st[id] = on; else st.add[id] = on;
@@ -436,7 +461,7 @@ function passo(campo, delta, min) {
 }
 function descontar(v) { st.descTxt = v; st.desc = num(v); renderResumo(); }
 function tipoDesc(t) { st.descTipo = t; renderResumo(); }
-function recomecar() { st = INICIAL(); render(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+function recomecar() { st = INICIAL(); ultimoPlano = st.base; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
 
 function textoWhats() {
   const r = calcular(st);
