@@ -1968,14 +1968,22 @@ input::placeholder, textarea::placeholder { color: var(--text-dim); font-weight:
     <div class="card">
       <div class="card-header">
         <div class="card-num">02</div>
-        <span class="card-title">Condição Especial de Lançamento</span>
+        <span class="card-title">Preço e Condição Especial</span>
       </div>
       <div class="card-body">
-        <div class="hint">Preço de tabela fixo no termo: R$ 996,00/mês para até 500 leads e R$ 5,00 por lead excedente.</div>
+        <div class="field">
+          <label for="ta_franquias">Franquias</label>
+          <input id="ta_franquias" type="number" min="1" max="100" step="1" value="1" inputmode="numeric"/>
+        </div>
+        <div class="field">
+          <label for="ta_franqTotal">Total por mês</label>
+          <input id="ta_franqTotal" type="text" readonly tabindex="-1"/>
+        </div>
+        <div class="hint">Cada franquia custa R$ 996,00/mês e atende até 500 leads. Lead excedente: R$ 5,00.</div>
         <label class="chk-line"><input type="checkbox" id="ta_promoOn" checked/> Incluir condição especial de lançamento no item 5</label>
         <div class="field" id="ta_promoDescWrap">
           <label>Desconto (%)</label>
-          <input id="ta_promoDesc" type="number" min="1" max="100" value="50"/>
+          <input id="ta_promoDesc" type="number" min="1" max="100" value="30"/>
         </div>
         <div class="field" id="ta_promoMesesWrap">
           <label>Válido nos meses</label>
@@ -5166,16 +5174,47 @@ function finStatus(html, ok) {
    TERMO DE ADESÃO IA — texto fiel ao modelo; só os campos do formulário variam
    ══════════════════════════════════════════════════════════════════ */
 const MESES_CAP = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+// Campanha de lançamento que vem preenchida no termo (o desconto padrão fica no campo ta_promoDesc)
+const TA_PROMO_MESES = 'Dezembro/2026, Janeiro e Fevereiro/2027';
+
+// Valor inteiro em reais por extenso, até 999.999 (ex.: 1992 → "Mil novecentos e noventa e dois reais")
+function reaisExtenso(n) {
+  const U = ['', 'um', 'dois', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove', 'dez', 'onze', 'doze',
+    'treze', 'quatorze', 'quinze', 'dezesseis', 'dezessete', 'dezoito', 'dezenove'];
+  const D = ['', '', 'vinte', 'trinta', 'quarenta', 'cinquenta', 'sessenta', 'setenta', 'oitenta', 'noventa'];
+  const C = ['', 'cento', 'duzentos', 'trezentos', 'quatrocentos', 'quinhentos', 'seiscentos', 'setecentos', 'oitocentos', 'novecentos'];
+  function ate999(x) {
+    if (x === 100) return 'cem';
+    const r = x % 100, partes = [];
+    if (x >= 100) partes.push(C[Math.floor(x / 100)]);
+    if (r) partes.push(r < 20 ? U[r] : D[Math.floor(r / 10)] + (r % 10 ? ' e ' + U[r % 10] : ''));
+    return partes.join(' e ');
+  }
+  const mil = Math.floor(n / 1000), resto = n % 1000;
+  let t = mil ? (mil === 1 ? 'mil' : ate999(mil) + ' mil') : '';
+  // "mil e cem", "mil e noventa", mas "mil novecentos e noventa"
+  if (resto) t += (t ? (resto < 100 || resto % 100 === 0 ? ' e ' : ' ') : '') + ate999(resto);
+  t += n === 1 ? ' real' : ' reais';
+  return t.charAt(0).toUpperCase() + t.slice(1);
+}
 
 // Conteúdo do termo. Cada trecho é [texto, negrito, itálico].
 // Blocos: h = título de seção, p = parágrafo, li = item com marcador.
 // 'pagina2: true' marca onde o modelo vira para a 2ª folha.
 function taConteudo(d) {
+  // Cada franquia: AV_TABELA.iaMensal por mês para até AV_TABELA.iaLeads leads
+  const valor = AV_TABELA.iaMensal * d.franquias;
+  const leads = (AV_TABELA.iaLeads * d.franquias).toLocaleString('pt-BR');
+  const precoValor = pBRL(valor) + ' (' + reaisExtenso(valor) + ')';
   const preco = [
     { t: 'h', r: [[d.promoOn ? '5. PREÇO E CONDIÇÃO ESPECIAL DE LANÇAMENTO' : '5. PREÇO', true]] },
-    { t: 'p', r: [['O preço da IA SDR é de '], ['R$ 996,00 (Novecentos e noventa e seis reais)', true], [' mensal, para '],
-                  ['franquia de até 500 leads', true], ['. Após este número, terá o custo de '], ['R$ 5,00 (Cinco reais)', true],
-                  [', por lead excedente.']] }
+    { t: 'p', r: d.franquias === 1
+      ? [['O preço da IA SDR é de '], [precoValor, true], [' mensal, para '],
+         ['franquia de até ' + leads + ' leads', true], ['. Após este número, terá o custo de '], ['R$ 5,00 (Cinco reais)', true],
+         [', por lead excedente.']]
+      : [['O preço da IA SDR é de '], [precoValor, true], [' mensal, referente a '],
+         [d.franquias + ' franquias de ' + pBRL(AV_TABELA.iaMensal), true], [', para '], ['até ' + leads + ' leads', true],
+         ['. Após este número, terá o custo de '], ['R$ 5,00 (Cinco reais)', true], [', por lead excedente.']] }
   ];
   if (d.promoOn) preco.push({ t: 'p', r: [['Na promoção de lançamento da ferramenta, a loja obteve um desconto de ' + d.promoDesc +
                   '%, que é válido apenas nos meses ' + d.promoMeses]] });
@@ -5192,7 +5231,9 @@ function taConteudo(d) {
     { t: 'li', r: [['Qualificação de Leads:', true], [' Coleta ativa de dados estratégicos, incluindo intenção de forma de pagamento e informações sobre veículos para troca.']] },
     { t: 'li', r: [['Transição de Atendimento:', true], [' Encaminhamento formal para consultores humanos durante o horário comercial após a triagem inicial.']] },
     { t: 'li', r: [['Otimização:', true], [' Foco na melhoria da velocidade de resposta e na organização do fluxo de entrada de clientes.']] },
-    { t: 'li', r: [['Franquia:', true], [' Atendimento de '], ['até 500 leads no mês', true], ['. Após este número, terá o '], ['custo de R$5,00 por lead excedente', true], ['.']] },
+    { t: 'li', r: [['Franquia:', true], [' Atendimento de '], ['até ' + leads + ' leads no mês', true],
+                   [d.franquias > 1 ? ' (' + d.franquias + ' franquias de ' + AV_TABELA.iaLeads + ' leads)' : ''],
+                   ['. Após este número, terá o '], ['custo de R$5,00 por lead excedente', true], ['.']] },
 
     { t: 'h', r: [['3. LIMITAÇÕES DE SERVIÇO (O QUE O AGENTE NÃO FAZ)', true]] },
     { t: 'p', r: [['Fica estabelecido que a tecnologia de IA possui fronteiras operacionais específicas:']] },
@@ -5218,6 +5259,7 @@ function taColetar() {
   return {
     nome: document.getElementById('ta_nome').value.trim(),
     doc: document.getElementById('ta_doc').value.trim(),
+    franquias: Math.min(100, Math.max(1, parseInt(document.getElementById('ta_franquias').value, 10) || 1)),
     promoOn: document.getElementById('ta_promoOn').checked,
     promoDesc: document.getElementById('ta_promoDesc').value.trim(),
     promoMeses: document.getElementById('ta_promoMeses').value.trim(),
@@ -5299,7 +5341,10 @@ function taAjustarEscala() {
   stage.style.height = (stack.offsetHeight * s) + 'px';
 }
 function taRender() {
-  document.getElementById('ta_paper').innerHTML = taPaginasHtml(taColetar()).join('');
+  const d = taColetar();
+  document.getElementById('ta_franqTotal').value = pBRL(AV_TABELA.iaMensal * d.franquias) + ' · até ' +
+    (AV_TABELA.iaLeads * d.franquias).toLocaleString('pt-BR') + ' leads';
+  document.getElementById('ta_paper').innerHTML = taPaginasHtml(d).join('');
   ['ta_promoDescWrap', 'ta_promoMesesWrap'].forEach(function (id) {
     document.getElementById(id).classList.toggle('hidden', !document.getElementById('ta_promoOn').checked);
   });
@@ -5436,10 +5481,7 @@ async function gerarTermoIa(tipo) {
   document.getElementById('ta_dia').value = hj.getDate();
   document.getElementById('ta_mes').value = MESES_CAP[m];
   document.getElementById('ta_ano').value = a;
-  // Promo padrão: mês atual + seguinte (ex.: "Outubro e Novembro/2026")
-  document.getElementById('ta_promoMeses').value = m === 11
-    ? 'Dezembro/' + a + ' e Janeiro/' + (a + 1)
-    : MESES_CAP[m] + ' e ' + MESES_CAP[m + 1] + '/' + a;
+  document.getElementById('ta_promoMeses').value = TA_PROMO_MESES;
 
   // CNPJ (14 dígitos) ou CPF (11 dígitos)
   document.getElementById('ta_doc').addEventListener('input', function (e) {
