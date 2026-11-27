@@ -50,7 +50,7 @@ function avCrmCalc(usuarios) {
 // Produtos adicionais — para incluir um novo módulo fixo, basta acrescentar aqui
 const ADICIONAIS = [
   { id: 'crm',      nome: 'CRM com WhatsApp',     desc: '3 usuários inclusos', fora: true, usuarios: true, padrao: 500,
-    obs: 'O CRM é cobrado separadamente, via boleto, na virada de cada mês, pois a cobrança é pós-paga. Cada usuário adicional possui o custo de R$ 100,00 por mês.' },
+    obs: 'O CRM é cobrado separadamente, via boleto, na virada de cada mês, pois a cobrança é pós-paga. Cada usuário adicional possui o custo de R$ 100,00 por mês. Setup de R$ 390,00 bonificado na contratação com o Software Gerencial.' },
   // padrao: valor de tabela preenchido ao marcar (continua editável)
   { id: 'ia',       nome: 'IA',                   desc: 'Agente de pré-vendas no WhatsApp — até 500 leads/mês', padrao: 996, fora: true,
     obs: 'Cobrada à parte, via boleto mensal. R$ 996,00 por mês para atender até 500 leads; leads acima desse volume no mês são cobrados a R$ 5,00 cada. Sem fidelidade — a contratação é formalizada mediante assinatura do termo.' },
