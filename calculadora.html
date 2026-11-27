@@ -436,6 +436,8 @@ function renderResumo() {
 
   if (r.tipo === 'software' || r.tipo === 'nf') {
     h += tile('Mensal', brl(r.mensal) + '<small>/mês</small>', ['Boleto/PIX ou cartão', r.adesao ? 'Adesão de ' + brl(r.adesao) : 'Sem adesão'], false, r.descMensal ? r.mensal + r.descMensal : 0) +
+      // Trimestral só aparece na condição especial, junto com o desconto
+      (st.condOn ? tile('Trimestral', brl(r.tri) + '<small>/mês</small>', ['3x no cartão ou ' + brl(r.tri * 3) + ' no boleto', 'Sem adesão'], false, r.descMensal ? r.tri + r.descMensal : 0) : '') +
       tile('Anual', '12x ' + brl(r.anual), ['ou ' + brl(r.anual * 12) + ' no boleto', r.economia > 0 ? 'Economia de ' + brl(r.economia) + ' no ano' : 'Sem adesão'], true, r.descAnual ? r.anual + r.descAnual : 0);
   } else if (r.tipo === 'crm') {
     h += tile('Mensal no boleto', brl(r.mensal) + '<small>/mês</small>', ['Pós-pago, na virada do mês', r.usuarios + ' usuários'], true, r.descMensal ? r.mensal + r.descMensal : 0);
@@ -516,6 +518,7 @@ function textoWhats() {
   const l = ['*Proposta Revenda Mais*', nomeBase() + (r.itens.length ? ' + ' + r.itens.join(', ') : ''), ''];
   if (r.tipo === 'software' || r.tipo === 'nf') {
     l.push('Mensal: ' + brl(r.mensal) + '/mês' + (r.adesao ? ' + adesão de ' + brl(r.adesao) : ''));
+    if (st.condOn) l.push('Trimestral: 3x de ' + brl(r.tri) + ' no cartão (ou ' + brl(r.tri * 3) + ' no boleto)');
     l.push('*Anual: 12x de ' + brl(r.anual) + '* (ou ' + brl(r.anual * 12) + ' no boleto)' + (r.economia > 0 ? ', economia de ' + brl(r.economia) + ' no ano' : ''));
   } else if (r.tipo === 'crm') {
     l.push('Mensal no boleto (pós-pago): ' + brl(r.mensal) + '/mês, ' + r.usuarios + ' usuários');
@@ -538,7 +541,7 @@ function dadosParaHub() {
   const r = calcular(st), tipo = tipoDa(st.base);
   const crm = avCrmCalc(st.crmUsuarios);
   const p = { tipo: tipo === 'software' ? 'software' : 'avulso', forma_pagamento: 'ambos',
-    modalidades: { mensal: true, trimestral: false, anual: true }, desconto: Math.round(r.descMensal * 100) / 100 };
+    modalidades: { mensal: true, trimestral: !!st.condOn, anual: true }, desconto: Math.round(r.descMensal * 100) / 100 };
   if (tipo === 'software') {
     p.plano = st.base;
     p.adicionais = ADD_SOFTWARE.filter(function (id) { return st.add[id]; }).map(function (id) {
