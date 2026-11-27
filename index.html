@@ -747,7 +747,6 @@ input::placeholder, textarea::placeholder { color: var(--text-dim); font-weight:
 .ia-status:empty { display: none; }
 .ia-lista { margin: 6px 0 0; padding-left: 18px; }
 .ia-lista li { margin: 2px 0; }
-.crm-campo label .crm-emoji { display: none; }
 .crm-campo label small { font-weight: 500; color: var(--text-dim); text-transform: none; letter-spacing: 0; margin-left: 6px; }
 .crm-campo textarea { min-height: 64px; }
 .crm-campo.falta textarea { border-color: rgba(232,0,61,0.45); background: var(--red-light); }
@@ -3780,14 +3779,14 @@ const IA_NAO_IDENTIFICADO = 'Não identificado na reunião';
 
 // Ficha do lead no formato do CRM — a ordem aqui é a ordem em que aparece e é copiada
 const CRM_CAMPOS = [
-  { id: 'dor_principal',       emoji: '🎯', titulo: 'Dor Principal',        pergunta: 'Qual o principal problema do cliente?' },
-  { id: 'processo_atual',      emoji: '🔄', titulo: 'Processo Atual',       pergunta: 'Como ele resolve isso hoje?' },
-  { id: 'impacto',             emoji: '📈', titulo: 'Impacto',              pergunta: 'Qual o impacto dessa dor no negócio?' },
-  { id: 'solucao_apresentada', emoji: '💡', titulo: 'Solução Apresentada',  pergunta: 'O que foi apresentado para ajudar?' },
-  { id: 'contexto_empresa',    emoji: '🏢', titulo: 'Contexto da Empresa',  pergunta: 'Tempo de mercado e momento atual da operação.' },
-  { id: 'decisor',             emoji: '👤', titulo: 'Decisor',              pergunta: 'Quem aprova a contratação?' },
-  { id: 'influenciador',       emoji: '🤝', titulo: 'Influenciador',        pergunta: 'Quem influencia a decisão?' },
-  { id: 'valor_agregado',      emoji: '⭐', titulo: 'Valor Agregado',       pergunta: 'Qual orientação, dica ou melhoria foi entregue?' }
+  { id: 'dor_principal',       titulo: 'Dor Principal',        pergunta: 'Qual o principal problema do cliente?' },
+  { id: 'processo_atual',      titulo: 'Processo Atual',       pergunta: 'Como ele resolve isso hoje?' },
+  { id: 'impacto',             titulo: 'Impacto',              pergunta: 'Qual o impacto dessa dor no negócio?' },
+  { id: 'solucao_apresentada', titulo: 'Solução Apresentada',  pergunta: 'O que foi apresentado para ajudar?' },
+  { id: 'contexto_empresa',    titulo: 'Contexto da Empresa',  pergunta: 'Tempo de mercado e momento atual da operação.' },
+  { id: 'decisor',             titulo: 'Decisor',              pergunta: 'Quem aprova a contratação?' },
+  { id: 'influenciador',       titulo: 'Influenciador',        pergunta: 'Quem influencia a decisão?' },
+  { id: 'valor_agregado',      titulo: 'Valor Agregado',       pergunta: 'Qual orientação, dica ou melhoria foi entregue?' }
 ];
 const CRM_LEAD = [
   { id: 'empresa',  titulo: 'Empresa' },
@@ -4127,11 +4126,11 @@ function crmMontar(r) {
   }).join('');
   document.getElementById('crmCampos').innerHTML = CRM_CAMPOS.map(function (c) {
     const v = iaTxt(crm[c.id]);
-    return '<div class="field span2 crm-campo' + (v ? '' : ' falta') + '"><label><span class="crm-emoji">' + c.emoji + '</span>' + esc(c.titulo) +
+    return '<div class="field span2 crm-campo' + (v ? '' : ' falta') + '"><label>' + esc(c.titulo) +
       '<small>' + esc(c.pergunta) + '</small></label>' +
       '<textarea id="crm_' + c.id + '" placeholder="' + IA_NAO_IDENTIFICADO + '" oninput="this.parentNode.classList.toggle(\'falta\', !this.value.trim())">' + esc(v) + '</textarea></div>';
   }).join('') +
-  '<div class="field span2 crm-campo"><label><span class="crm-emoji">📌</span>Próximos Passos</label>' +
+  '<div class="field span2 crm-campo"><label>Próximos Passos</label>' +
     '<textarea id="crm_proximos" placeholder="—">' + esc(iaTxt(r.proximos_passos)) + '</textarea></div>';
   document.getElementById('cardCrm').classList.remove('hidden');
 }
@@ -4139,11 +4138,11 @@ function crmMontar(r) {
 function crmTexto() {
   const val = function (id) { const e = document.getElementById('crm_' + id); return e ? e.value.trim() : ''; };
   const blocos = CRM_CAMPOS.map(function (c) {
-    return c.emoji + ' ' + c.titulo + '\n' + (val(c.id) || IA_NAO_IDENTIFICADO);
+    return c.titulo + '\n' + (val(c.id) || IA_NAO_IDENTIFICADO);
   });
-  if (val('proximos')) blocos.push('📌 Próximos Passos\n' + val('proximos'));
+  if (val('proximos')) blocos.push('Próximos Passos\n' + val('proximos'));
   const contato = CRM_LEAD.filter(function (c) { return val(c.id); }).map(function (c) { return c.titulo + ': ' + val(c.id); });
-  if (contato.length) blocos.push('📇 Dados do Lead\n' + contato.join('\n'));
+  if (contato.length) blocos.push('Dados do Lead\n' + contato.join('\n'));
   return blocos.join('\n\n');
 }
 
