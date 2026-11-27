@@ -959,7 +959,7 @@ input::placeholder, textarea::placeholder { color: var(--text-dim); font-weight:
 .ctl-conta { margin-left: auto; font-size: 13px; color: var(--text-muted); }
 .ctl-lojas { padding: 16px 26px 0; display: flex; flex-direction: column; gap: 6px; }
 .ctl-linha {
-  display: grid; grid-template-columns: 84px 1fr 186px 146px 96px 24px; gap: 8px; align-items: center;
+  display: grid; grid-template-columns: 72px 1fr 172px 130px 84px 28px 24px; gap: 8px; align-items: center;
   padding: 6px; border-radius: 14px;
 }
 .ctl-linha input, .ctl-linha select { margin: 0; padding: 10px 12px; font-size: 14px; border-radius: 10px; }
@@ -968,7 +968,29 @@ input::placeholder, textarea::placeholder { color: var(--text-dim); font-weight:
 .ctl-linha[data-st="Proposta aceita"] { background: #e7f6ec; }
 .ctl-linha[data-st="Proposta enviada"] { background: #fff0e3; }
 .ctl-linha[data-st="Enviado mensagem"] { background: #fff9d9; }
-.ctl-linha[data-st] input, .ctl-linha[data-st] select { background-color: rgba(255,255,255,0.75); }
+.ctl-linha[data-cor="verde"]    { background: #e7f6ec; }
+.ctl-linha[data-cor="laranja"]  { background: #fff0e3; }
+.ctl-linha[data-cor="amarelo"]  { background: #fff9d9; }
+.ctl-linha[data-cor="vermelho"] { background: #fde8ec; }
+.ctl-linha[data-cor="azul"]     { background: #e6f0fd; }
+.ctl-linha[data-cor="roxo"]     { background: #f1eafd; }
+.ctl-linha[data-cor="cinza"]    { background: #eeeff2; }
+.ctl-linha[data-cor="nenhuma"]  { background: transparent; }
+.ctl-linha[data-st] input, .ctl-linha[data-st] select,
+.ctl-linha[data-cor] input, .ctl-linha[data-cor] select { background-color: rgba(255,255,255,0.75); }
+/* Cor da linha: bolinha; as opções aparecem com o nome */
+.ctl-linha select.ctl-cor {
+  width: 28px; height: 28px; padding: 0; border-radius: 50%; cursor: pointer;
+  color: transparent; background-image: none; background-color: #fff; border: 2px solid #d5d8de;
+}
+.ctl-cor option { color: var(--text); background: #fff; }
+.ctl-linha select.ctl-cor[data-cor="verde"]    { background-color: #22a352; border-color: #22a352; }
+.ctl-linha select.ctl-cor[data-cor="laranja"]  { background-color: #f08a24; border-color: #f08a24; }
+.ctl-linha select.ctl-cor[data-cor="amarelo"]  { background-color: #e8c21a; border-color: #e8c21a; }
+.ctl-linha select.ctl-cor[data-cor="vermelho"] { background-color: #E8003D; border-color: #E8003D; }
+.ctl-linha select.ctl-cor[data-cor="azul"]     { background-color: #2f7de1; border-color: #2f7de1; }
+.ctl-linha select.ctl-cor[data-cor="roxo"]     { background-color: #7c4ddb; border-color: #7c4ddb; }
+.ctl-linha select.ctl-cor[data-cor="cinza"]    { background-color: #8a8f98; border-color: #8a8f98; }
 .ctl-vazio { font-size: 13px; color: var(--text-muted); padding: 4px 6px 6px; }
 .ctl-add { padding: 12px 26px 24px; }
 .ctl-add .btn-ghost { width: 100%; }
@@ -986,12 +1008,13 @@ input::placeholder, textarea::placeholder { color: var(--text-dim); font-weight:
   .ctl-add { padding: 12px 14px 20px; }
   .ctl-linha.cab { display: none; }
   .ctl-linha {
-    grid-template-columns: 1fr 1fr 24px; padding: 10px; background: #f8f9fb;
-    grid-template-areas: "id id del" "loja loja loja" "link link link" "termo obs obs";
+    grid-template-columns: 1fr 1fr 28px 24px; padding: 10px; background: #f8f9fb;
+    grid-template-areas: "id id cor del" "loja loja loja loja" "link link link link" "termo obs obs obs";
   }
   .ctl-linha > :nth-child(1) { grid-area: id; } .ctl-linha > :nth-child(2) { grid-area: loja; }
   .ctl-linha > :nth-child(3) { grid-area: link; } .ctl-linha > :nth-child(4) { grid-area: termo; }
-  .ctl-linha > :nth-child(5) { grid-area: obs; } .ctl-linha > :nth-child(6) { grid-area: del; }
+  .ctl-linha > :nth-child(5) { grid-area: obs; } .ctl-linha > :nth-child(6) { grid-area: cor; }
+  .ctl-linha > :nth-child(7) { grid-area: del; }
   .ctl-quem { margin-left: 0; width: 100%; }
   .ctl-calc input { width: 58px; }
   .ctl-calc th, .ctl-calc td { padding: 6px 4px; }
@@ -5610,6 +5633,9 @@ async function copiarLinkPerfil() {
 const CTL_CHAVE = 'rm_controle';   // nome + PIN neste aparelho, para não pedir toda vez
 const CTL_LINK = ['', 'Enviado mensagem', 'Proposta enviada', 'Proposta aceita'];
 const CTL_TERMO = ['', 'Aguardando', 'Assinado'];
+// Cor da linha escolhida à mão; vazia = cor automática pelo link de pagamento
+const CTL_CORES = [['', 'Automática'], ['verde', 'Verde'], ['laranja', 'Laranja'], ['amarelo', 'Amarelo'], ['vermelho', 'Vermelho'],
+  ['azul', 'Azul'], ['roxo', 'Roxo'], ['cinza', 'Cinza'], ['nenhuma', 'Sem cor']];
 // Linhas da calculadora e o peso de cada uma no resultado do mês (somam 100%)
 const CTL_LINHAS = [
   { k: 'novas', nome: 'Lojas novas', peso: 0.5 },
@@ -5713,17 +5739,21 @@ function ctlOpcoes(lista, atual) {
 function ctlRender() {
   const m = ctlMes();
   const linhas = m.lojas.map(function (l, i) {
-    return '<div class="ctl-linha" data-i="' + i + '"' + (l.link ? ' data-st="' + ctlAttr(l.link) + '"' : '') + '>' +
+    const cor = l.cor ? ' data-cor="' + ctlAttr(l.cor) + '"' : '';
+    return '<div class="ctl-linha" data-i="' + i + '"' + (l.link ? ' data-st="' + ctlAttr(l.link) + '"' : '') + cor + '>' +
       '<input data-k="id" value="' + ctlAttr(l.id || '') + '" placeholder="ID" inputmode="numeric" aria-label="ID"/>' +
       '<input data-k="loja" value="' + ctlAttr(l.loja || '') + '" placeholder="Loja" aria-label="Loja"/>' +
       '<select data-k="link" aria-label="Link de pagamento">' + ctlOpcoes(CTL_LINK, l.link || '') + '</select>' +
       '<select data-k="termo" aria-label="Termo de adesão">' + ctlOpcoes(CTL_TERMO, l.termo || '') + '</select>' +
       '<input data-k="obs" value="' + ctlAttr(l.obs || '') + '" placeholder="Obs." list="ctlObsLista" aria-label="Obs."/>' +
+      '<select class="ctl-cor" data-k="cor"' + cor + ' title="Cor da linha" aria-label="Cor da linha">' +
+        CTL_CORES.map(function (c) { return '<option value="' + c[0] + '"' + (c[0] === (l.cor || '') ? ' selected' : '') + '>' + c[1] + '</option>'; }).join('') +
+      '</select>' +
       '<button type="button" class="addon-del" onclick="ctlDelLoja(' + i + ')" aria-label="Remover loja">&times;</button>' +
     '</div>';
   }).join('');
   document.getElementById('ctlLojas').innerHTML = m.lojas.length
-    ? '<div class="ctl-linha cab"><span>ID</span><span>Loja</span><span>Link de pagamento</span><span>Termo de adesão</span><span>Obs.</span><span></span></div>' + linhas
+    ? '<div class="ctl-linha cab"><span>ID</span><span>Loja</span><span>Link de pagamento</span><span>Termo de adesão</span><span>Obs.</span><span>Cor</span><span></span></div>' + linhas
     : '<div class="ctl-vazio">Nenhuma loja neste mês.</div>';
 
   document.getElementById('ctlCalc').innerHTML =
@@ -5769,7 +5799,7 @@ function ctlCalcular() {
 }
 
 function ctlAddLoja() {
-  ctlMes().lojas.push({ id: '', loja: '', link: '', termo: '', obs: '' });
+  ctlMes().lojas.push({ id: '', loja: '', link: '', termo: '', obs: '', cor: '' });
   ctlRender();
   ctlAgendar();
   const ids = document.querySelectorAll('#ctlLojas .ctl-linha:not(.cab) input[data-k="id"]');
@@ -5829,6 +5859,9 @@ document.getElementById('ctlLojas').addEventListener('input', function (e) {
   l[e.target.dataset.k] = e.target.value;
   if (e.target.dataset.k === 'link') {
     if (l.link) linha.dataset.st = l.link; else delete linha.dataset.st;
+  }
+  if (e.target.dataset.k === 'cor') {
+    [linha, e.target].forEach(function (el) { if (l.cor) el.dataset.cor = l.cor; else delete el.dataset.cor; });
   }
   ctlCalcular();
   ctlAgendar();
