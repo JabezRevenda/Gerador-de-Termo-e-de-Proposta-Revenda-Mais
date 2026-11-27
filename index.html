@@ -2049,9 +2049,10 @@ input::placeholder, textarea::placeholder { color: var(--text-dim); font-weight:
       <div class="import-top">
         <div class="import-txt">
           <div class="import-t">Suba a transcrição da reunião</div>
-          <div class="import-d">Arquivo .txt, .vtt, .srt ou .docx (Meet, Zoom, Teams), ou cole o texto abaixo. Sai a ficha do lead no formato do CRM e a Proposta Comercial preenchida.</div>
+          <div class="import-d">Arquivo .txt, .vtt, .srt ou .docx (Meet, Zoom, Teams), ou cole o texto abaixo. Não gravou? Clique em <b>Falar a reunião</b> e conte como foi. Sai a ficha do lead no formato do CRM e a Proposta Comercial preenchida.</div>
         </div>
         <div class="import-acoes">
+          <button type="button" class="import-btn sec hidden" id="iaFalarBtn" onclick="iaFalar()">Falar a reunião</button>
           <button type="button" class="import-btn" onclick="document.getElementById('iaArquivo').click()">Subir transcrição</button>
         </div>
         <input type="file" id="iaArquivo" accept=".txt,.vtt,.srt,.md,.docx,text/plain" class="hidden"/>
@@ -3948,6 +3949,7 @@ function iaMensagem(transcricao) {
 }
 
 async function iaAnalisar() {
+  if (iaRec) iaFalar();   // estava ditando: para antes de mandar
   const transcricao = document.getElementById('iaTexto').value.trim();
   if (transcricao.length < 80) {
     iaStatus('Cole ou suba a transcrição da reunião antes de gerar.');
@@ -4168,6 +4170,52 @@ function crmBaixar() {
   document.getElementById('iaTexto').addEventListener('input', iaContar);
   aceitarArquivoSolto(document.getElementById('iaBox'), iaLerArquivo);
 })();
+
+/* ── Falar a reunião: ditado pelo microfone, quando a reunião não foi gravada ──────
+   Usa o reconhecimento de voz do próprio navegador (Chrome, Edge, Safari): sem custo e sem
+   servidor nosso. O texto vai caindo na caixa da transcrição; depois é só Gerar ficha. */
+const IaVoz = window.SpeechRecognition || window.webkitSpeechRecognition;
+let iaRec = null;
+if (IaVoz) document.getElementById('iaFalarBtn').classList.remove('hidden');
+
+function iaFalar() {
+  const btn = document.getElementById('iaFalarBtn');
+  if (iaRec) { iaRec.parar = true; iaRec.stop(); return; }
+  const ta = document.getElementById('iaTexto');
+  const rec = new IaVoz();
+  rec.lang = 'pt-BR';
+  rec.continuous = true;
+  rec.interimResults = true;
+  let base = ta.value.trim() ? ta.value.trim() + '\n' : '';
+  rec.onresult = function (e) {
+    let parcial = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const t = e.results[i][0].transcript;
+      if (e.results[i].isFinal) base += t.trim() + ' '; else parcial += t;
+    }
+    ta.value = base + parcial;
+    iaContar();
+  };
+  rec.onerror = function (e) {
+    if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+      rec.parar = true;
+      iaStatus('O navegador bloqueou o microfone. Libere o microfone para este site e tente de novo.');
+    }
+  };
+  // O navegador encerra sozinho depois de um silêncio; enquanto a pessoa não clicar em Parar, volta a ouvir
+  rec.onend = function () {
+    if (!rec.parar) { try { rec.start(); return; } catch (x) { /* não deu para retomar */ } }
+    ta.value = base.trim();
+    iaContar();
+    iaRec = null;
+    btn.textContent = 'Falar a reunião';
+    iaStatus(ta.value ? 'Pronto. Confira o texto e clique em <b>Gerar ficha e proposta</b>.' : '', true);
+  };
+  rec.start();
+  iaRec = rec;
+  btn.textContent = 'Parar de falar';
+  iaStatus('<b>Ouvindo…</b> Conte como foi a reunião: quem é o cliente, a dor, o que foi apresentado, valores e próximos passos. Clique em <b>Parar de falar</b> quando terminar.', true);
+}
 
 /* ══════════════════════════════════════════════════════════════════
    PROPOSTA DE RENOVAÇÃO — o cliente compara mensal x anual com os valores dele
