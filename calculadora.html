@@ -112,6 +112,10 @@ button { font-family: inherit; }
 .aparte-l { display: flex; justify-content: space-between; gap: 10px; }
 
 .desc { margin-top: 14px; display: flex; gap: 8px; align-items: center; }
+.cond { display: block; margin: 14px auto 0; border: 0; background: none; color: rgba(255,255,255,0.4); font-size: 12px; font-weight: 500; cursor: pointer; padding: 4px 8px; }
+.cond:hover { color: rgba(255,255,255,0.75); }
+.tile-de { font-size: 12.5px; color: rgba(255,255,255,0.5); text-decoration: line-through; margin-bottom: 2px; }
+.tile.destaque .tile-de { color: var(--dim); }
 .desc label { font-size: 12.5px; color: rgba(255,255,255,0.7); flex-shrink: 0; }
 .desc input { flex: 1; min-width: 0; font: 600 14px 'Poppins', sans-serif; color: #fff; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.16); border-radius: 12px; padding: 10px 12px; outline: none; }
 .desc input:focus { border-color: #fff; }
@@ -206,8 +210,18 @@ const AVULSOS = {
 };
 // Adicionais que aparecem em cada tipo de plano (ids de ADICIONAIS, em precos.js)
 const ADD_SOFTWARE = ['nf', 'renave', 'cnpj', 'assin', 'vistoria', 'integra', 'concil'];
-const ADD_NF = ['renave', 'cnpj', 'crm'];
-const ADD_CRM = ['nf', 'ia'];
+// Produtos avulsos se combinam: CRM + Nota Fiscal (+ Renave) + IA com franquias, e assim por diante
+function addsAvulso(tipo, add) {
+  if (tipo === 'nf') return ['renave', 'cnpj', 'crm', 'ia'];
+  const nf = add.nf ? ['nf', 'renave'].concat(tipo === 'ia' && !add.crm ? ['cnpj'] : []) : ['nf'];
+  return tipo === 'crm' ? nf.concat(['ia']) : ['crm'].concat(nf);
+}
+// Qual proposta do hub sai: com Nota Fiscal → modalidades; com CRM → boleto mensal com setup; só IA → boleto
+function efetivo(s) {
+  const tipo = tipoDa(s.base);
+  if (tipo !== 'ia') return tipo;
+  return s.add.crm ? 'crm' : s.add.nf ? 'nf' : 'ia';
+}
 
 function brl(v) {
   return 'R$ ' + (v || 0).toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
@@ -220,7 +234,7 @@ function adicional(id) { return ADICIONAIS.find(function (a) { return a.id === i
 function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
 
 const INICIAL = function () {
-  return { base: '1.0', add: {}, cnpjQtd: 1, crmOn: false, crmUsuarios: AV_TABELA.crmInclusos, iaOn: false, franquias: 1, desc: 0, descTxt: '', descTipo: 'R$', cliente: '' };
+  return { base: '1.0', add: {}, cnpjQtd: 1, crmOn: false, crmUsuarios: AV_TABELA.crmInclusos, iaOn: false, franquias: 1, desc: 0, descTxt: '', descTipo: 'R$', condOn: false, cliente: '' };
 };
 let st = INICIAL();
 
@@ -236,41 +250,65 @@ function calcular(s) {
   const emReais = function (mensalRef) { if (s.descTipo === '%') descR = mensalRef * Math.min(s.desc, 100) / 100; };
   const crm = avCrmCalc(s.crmUsuarios);
 
-  if (tipo === 'software' || tipo === 'nf') {
-    let baseM, baseA;
-    if (tipo === 'software') { baseM = num(PLANOS[s.base].valor); baseA = Math.max(0, baseM - DESCONTO_ANUAL); }
-    else { baseM = AV_TABELA.nfMensal; baseA = AV_TABELA.nfAnual; }
+  if (tipo === 'software') {
+    const baseM = num(PLANOS[s.base].valor), baseA = Math.max(0, baseM - DESCONTO_ANUAL);
     let addM = 0, addA = 0;
-    (tipo === 'software' ? ADD_SOFTWARE : ADD_NF).forEach(function (id) {
+    ADD_SOFTWARE.forEach(function (id) {
       if (!s.add[id]) return;
       const a = adicional(id);
       let m = a.padrao || 0, an = m;
       if (id === 'nf') an = Math.max(0, m - DESCONTO_ANUAL);
       if (id === 'cnpj') { m = an = AV_TABELA.cnpjUnit * s.cnpjQtd; }
-      if (id === 'crm') { m = an = crm.valor; r.setup = AV_TABELA.crmSetup; }   // no avulso de NF o CRM entra no total
       addM += m; addA += an;
-      r.itens.push(a.nome + (id === 'cnpj' ? ' (' + s.cnpjQtd + ')' : id === 'crm' ? ' (' + crm.usuarios + ' usuários)' : ''));
+      r.itens.push(a.nome + (id === 'cnpj' ? ' (' + s.cnpjQtd + ')' : ''));
     });
-    // Software: o desconto abate só o plano. Nota Fiscal: abate o total (como no hub)
-    emReais(tipo === 'software' ? baseM : baseM + addM);
-    const descM = descDe(tipo === 'software' ? baseM : baseM + addM);
-    const descA = descDe(tipo === 'software' ? baseA : baseA + addA);
+    emReais(baseM);   // no Software o desconto abate só o plano
+    const descM = descDe(baseM), descA = descDe(baseA);
     r.mensal = baseM + addM - descM;
     r.tri = r.mensal;
     r.anual = baseA + addA - descA;
-    r.adesao = tipo === 'software' ? ADESAO_FIXA : 0;
+    r.adesao = ADESAO_FIXA;
     r.economia = (r.mensal - r.anual) * 12 + r.adesao;
-    r.descMensal = descM;
-    if (tipo === 'software') {
-      if (s.crmOn) { r.aParte.push({ nome: 'CRM com WhatsApp (' + crm.usuarios + ' usuários)', valor: crm.valor }); r.setup = AV_TABELA.crmSetup; }
-      if (s.iaOn) r.aParte.push({ nome: 'Agente de IA (' + s.franquias + (s.franquias === 1 ? ' franquia' : ' franquias') + ')', valor: AV_TABELA.iaMensal * s.franquias });
-    }
+    r.descMensal = descM; r.descAnual = descA;
+    // Com o Software Gerencial o setup do CRM é bonificado
+    if (s.crmOn) { r.aParte.push({ nome: 'CRM com WhatsApp (' + crm.usuarios + ' usuários)', valor: crm.valor }); r.setupBonificado = true; }
+    if (s.iaOn) r.aParte.push({ nome: 'Agente de IA (' + s.franquias + (s.franquias === 1 ? ' franquia' : ' franquias') + ')', valor: AV_TABELA.iaMensal * s.franquias });
+    r.temIA = s.iaOn;
     return r;
   }
-  if (tipo === 'crm') {
+
+  // Avulsos combinados
+  const ef = efetivo(s);
+  const temNF = tipo === 'nf' || !!s.add.nf, temCRM = tipo === 'crm' || !!s.add.crm, temIA = tipo === 'ia' || !!s.add.ia;
+  const vIA = AV_TABELA.iaMensal * s.franquias;
+  const nomeIA = 'Agente de IA (' + s.franquias + (s.franquias === 1 ? ' franquia' : ' franquias') + ')';
+  r.tipo = ef;
+  r.temIA = temIA;
+  r.leads = AV_TABELA.iaLeads * s.franquias;
+  if (ef === 'nf') {
+    let add = 0;
+    if (tipo !== 'nf') r.itens.push('Nota Fiscal');
+    if (s.add.renave) { add += AV_TABELA.renave; r.itens.push('Renave'); }
+    if (s.add.cnpj) { add += AV_TABELA.cnpjUnit * s.cnpjQtd; r.itens.push('CNPJ Adicional (' + s.cnpjQtd + ')'); }
+    if (temCRM) { add += crm.valor; r.itens.push('CRM (' + crm.usuarios + ' usuários)'); r.setup = AV_TABELA.crmSetup; }
+    if (temIA) { add += vIA; if (tipo !== 'ia') r.itens.push(nomeIA); }
+    if (tipo === 'ia') r.itens.unshift(nomeIA);
+    emReais(AV_TABELA.nfMensal + add);   // na Nota Fiscal o desconto abate o total
+    const descM = descDe(AV_TABELA.nfMensal + add), descA = descDe(AV_TABELA.nfAnual + add);
+    r.mensal = AV_TABELA.nfMensal + add - descM;
+    r.tri = r.mensal;
+    r.anual = AV_TABELA.nfAnual + add - descA;
+    r.adesao = 0;
+    r.economia = (r.mensal - r.anual) * 12;
+    r.descMensal = descM; r.descAnual = descA;
+    return r;
+  }
+  if (ef === 'crm') {
     let bruto = crm.valor;
-    if (s.add.nf) { bruto += AV_TABELA.nfMensal; r.itens.push('Nota Fiscal'); }
-    if (s.add.ia) { bruto += AV_TABELA.iaMensal; r.itens.push('Agente de IA'); }
+    if (tipo === 'ia') r.itens.push('CRM (' + crm.usuarios + ' usuários)');
+    if (temNF) { bruto += AV_TABELA.nfMensal; r.itens.push('Nota Fiscal'); }
+    if (temNF && s.add.renave) { bruto += AV_TABELA.renave; r.itens.push('Renave'); }
+    if (temIA) { bruto += vIA; if (tipo !== 'ia') r.itens.push(nomeIA); }
     emReais(bruto);
     r.descMensal = descDe(bruto);
     r.mensal = bruto - r.descMensal;
@@ -278,12 +316,9 @@ function calcular(s) {
     r.usuarios = crm.usuarios;
     return r;
   }
-  // IA
-  const bruto = AV_TABELA.iaMensal * s.franquias;
-  emReais(bruto);
-  r.descMensal = descDe(bruto);
-  r.mensal = bruto - r.descMensal;
-  r.leads = AV_TABELA.iaLeads * s.franquias;
+  emReais(vIA);
+  r.descMensal = descDe(vIA);
+  r.mensal = vIA - r.descMensal;
   return r;
 }
 
@@ -367,12 +402,12 @@ function renderPlano() {
 function renderAdds() {
   const tipo = tipoDa(st.base);
   const crm = avCrmCalc(st.crmUsuarios);
-  const lista = tipo === 'software' ? ADD_SOFTWARE.concat(['crmOn', 'iaOn']) : tipo === 'nf' ? ADD_NF : tipo === 'crm' ? ADD_CRM : [];
+  const lista = tipo === 'software' ? ADD_SOFTWARE.concat(['crmOn', 'iaOn']) : addsAvulso(tipo, st.add);
   const aParte = ' <em>boleto à parte</em>';
   document.getElementById('blocoAdd').classList.toggle('hidden', !lista.length);
   document.getElementById('adds').innerHTML = lista.map(function (id) {
     const a = adicional(id), on = !!st.add[id];
-    if (id === 'crmOn') return linhaOpc(id, 'CRM com WhatsApp' + aParte, AV_TABELA.crmInclusos + ' usuários inclusos · ' + brl(AV_TABELA.crmExtra) + ' por usuário a mais · setup de ' + brl(AV_TABELA.crmSetup),
+    if (id === 'crmOn') return linhaOpc(id, 'CRM com WhatsApp' + aParte, AV_TABELA.crmInclusos + ' usuários inclusos · ' + brl(AV_TABELA.crmExtra) + ' por usuário a mais · setup bonificado',
       brl(crm.valor) + '<small>/mês</small>', st.crmOn, st.crmOn ? stepper('crmUsuarios', st.crmUsuarios, 1, crm.usuarios + ' usuários') : '');
     if (id === 'iaOn') return linhaOpc(id, 'Agente de IA' + aParte, 'Cada franquia atende até ' + AV_TABELA.iaLeads + ' leads por mês · excedente ' + brl(AV_TABELA.iaExcedente) + ' por lead',
       brl(AV_TABELA.iaMensal * st.franquias) + '<small>/mês</small>', st.iaOn, st.iaOn ? stepper('franquias', st.franquias, 1, st.franquias + (st.franquias === 1 ? ' franquia' : ' franquias')) : '');
@@ -381,7 +416,9 @@ function renderAdds() {
     if (id === 'crm') return linhaOpc(id, esc(a.nome), AV_TABELA.crmInclusos + ' usuários inclusos · ' + brl(AV_TABELA.crmExtra) + ' por usuário a mais · setup de ' + brl(AV_TABELA.crmSetup), brl(crm.valor) + '<small>/mês</small>', on,
       on ? stepper('crmUsuarios', st.crmUsuarios, 1, crm.usuarios + ' usuários') : '');
     if (id === 'nf') return linhaOpc(id, esc(a.nome), a.desc, brl(a.padrao) + '<small>' + (tipo === 'software' ? 'no anual: ' + brl(a.padrao - DESCONTO_ANUAL) : '/mês') + '</small>', on);
-    if (id === 'ia') return linhaOpc(id, 'Agente de IA', 'Até ' + AV_TABELA.iaLeads + ' leads por mês', brl(AV_TABELA.iaMensal) + '<small>/mês</small>', on);
+    if (id === 'ia') return linhaOpc(id, 'Agente de IA', 'Cada franquia atende até ' + AV_TABELA.iaLeads + ' leads por mês · excedente ' + brl(AV_TABELA.iaExcedente) + ' por lead',
+      brl(AV_TABELA.iaMensal * st.franquias) + '<small>/mês</small>', on, on ? stepper('franquias', st.franquias, 1, st.franquias + (st.franquias === 1 ? ' franquia' : ' franquias')) : '');
+    if (id === 'renave' && tipo !== 'software') return linhaOpc(id, esc(a.nome), 'Junto com a Nota Fiscal · ' + a.desc, brl(a.padrao) + '<small>/mês</small>', on);
     return linhaOpc(id, esc(a.nome), a.desc, brl(a.padrao) + '<small>/mês</small>', on);
   }).join('');
 }
@@ -398,33 +435,34 @@ function renderResumo() {
     '<div class="res-s">' + esc(sub) + (r.itens.length ? '<br/>+ ' + esc(r.itens.join(', ')) : '') + '</div><div class="tiles">';
 
   if (r.tipo === 'software' || r.tipo === 'nf') {
-    h += tile('Mensal', brl(r.mensal) + '<small>/mês</small>', ['Boleto/PIX ou cartão', r.adesao ? 'Adesão de ' + brl(r.adesao) : 'Sem adesão'], false) +
-      tile('Trimestral', brl(r.tri) + '<small>/mês</small>', ['3x no cartão ou ' + brl(r.tri * 3) + ' no boleto', 'Sem adesão'], false) +
-      tile('Anual', '12x ' + brl(r.anual), ['ou ' + brl(r.anual * 12) + ' no boleto', r.economia > 0 ? 'Economia de ' + brl(r.economia) + ' no ano' : 'Sem adesão'], true);
+    h += tile('Mensal', brl(r.mensal) + '<small>/mês</small>', ['Boleto/PIX ou cartão', r.adesao ? 'Adesão de ' + brl(r.adesao) : 'Sem adesão'], false, r.descMensal ? r.mensal + r.descMensal : 0) +
+      tile('Anual', '12x ' + brl(r.anual), ['ou ' + brl(r.anual * 12) + ' no boleto', r.economia > 0 ? 'Economia de ' + brl(r.economia) + ' no ano' : 'Sem adesão'], true, r.descAnual ? r.anual + r.descAnual : 0);
   } else if (r.tipo === 'crm') {
-    h += tile('Mensal no boleto', brl(r.mensal) + '<small>/mês</small>', ['Pós-pago, na virada do mês', r.usuarios + ' usuários'], true);
+    h += tile('Mensal no boleto', brl(r.mensal) + '<small>/mês</small>', ['Pós-pago, na virada do mês', r.usuarios + ' usuários'], true, r.descMensal ? r.mensal + r.descMensal : 0);
   } else {
-    h += tile('Mensal no boleto', brl(r.mensal) + '<small>/mês</small>', ['Até ' + r.leads.toLocaleString('pt-BR') + ' leads por mês', 'Sem fidelidade'], true);
+    h += tile('Mensal no boleto', brl(r.mensal) + '<small>/mês</small>', ['Até ' + r.leads.toLocaleString('pt-BR') + ' leads por mês', 'Sem fidelidade'], true, r.descMensal ? r.mensal + r.descMensal : 0);
   }
   h += '</div>';
 
-  if (r.aParte.length || r.setup || r.tipo === 'ia') {
+  if (r.aParte.length || r.setup || r.setupBonificado || r.temIA) {
     h += '<div class="aparte">' +
       (r.aParte.length ? '<div>Cobrado à parte, no boleto mensal:</div>' + r.aParte.map(function (a) {
         return '<div class="aparte-l"><span>' + esc(a.nome) + '</span><b>' + brl(a.valor) + '/mês</b></div>';
       }).join('') : '') +
       (r.setup ? '<div class="aparte-l"><span>Setup do CRM (uma vez)</span><b>' + brl(r.setup) + '</b></div>' : '') +
-      (r.tipo === 'ia' || st.iaOn ? '<div class="aparte-l"><span>Lead acima da franquia</span><b>' + brl(AV_TABELA.iaExcedente) + ' cada</b></div>' : '') +
+      (r.setupBonificado ? '<div class="aparte-l"><span>Setup do CRM</span><b><s style="opacity:.6;font-weight:500">' + brl(AV_TABELA.crmSetup) + '</s> bonificado</b></div>' : '') +
+      (r.temIA ? '<div class="aparte-l"><span>Lead acima da franquia</span><b>' + brl(AV_TABELA.iaExcedente) + ' cada</b></div>' : '') +
     '</div>';
   }
 
-  h += '<div class="desc"><label for="desc">Desconto</label>' +
+  h += '<div class="desc' + (st.condOn ? '' : ' hidden') + '"><label for="desc">Desconto</label>' +
     '<input id="desc" inputmode="decimal" placeholder="0" value="' + esc(st.descTxt) + '" oninput="descontar(this.value)"/>' +
     '<div class="desc-tipo"><button type="button" class="' + (st.descTipo === 'R$' ? 'on' : '') + '" onclick="tipoDesc(\'R$\')">R$</button>' +
     '<button type="button" class="' + (st.descTipo === '%' ? 'on' : '') + '" onclick="tipoDesc(\'%\')">%</button></div></div>' +
     '<div class="acoes"><input class="cliente" id="cliente" placeholder="Nome do cliente / loja" autocomplete="off" value="' + esc(st.cliente) + '" oninput="st.cliente = this.value"/>' +
     '<button type="button" class="acao pri" id="btnPdf" onclick="gerarPdf()">Gerar proposta (PDF)</button>' +
-    '<button type="button" class="acao sec" onclick="copiarWhats()">Copiar para o WhatsApp</button></div>';
+    '<button type="button" class="acao sec" onclick="copiarWhats()">Copiar para o WhatsApp</button></div>' +
+    '<button type="button" class="cond" onclick="condicao()">' + (st.condOn ? 'Fechar condição especial' : 'Condição especial') + '</button>';
 
   document.getElementById('barraCelT').innerHTML = esc(nomeBase()) + '<b>' +
     (r.tipo === 'software' || r.tipo === 'nf' ? 'Anual 12x ' + brl(r.anual) : brl(r.mensal) + '/mês') + '</b>';
@@ -433,8 +471,8 @@ function renderResumo() {
   box.innerHTML = h;
   if (foco) { const d = document.getElementById(foco); d.focus(); d.setSelectionRange(d.value.length, d.value.length); }
 }
-function tile(titulo, valor, linhas, destaque) {
-  return '<div class="tile' + (destaque ? ' destaque' : '') + '"><div class="tile-l"><span class="tile-t">' + titulo +
+function tile(titulo, valor, linhas, destaque, de) {
+  return '<div class="tile' + (destaque ? ' destaque' : '') + '">' + (de ? '<div class="tile-de">de ' + brl(de) + '</div>' : '') + '<div class="tile-l"><span class="tile-t">' + titulo +
     (destaque && tipoDa(st.base) !== 'crm' && tipoDa(st.base) !== 'ia' ? ' <span class="selo">Melhor oferta</span>' : '') + '</span>' +
     '<span class="tile-v">' + valor + '</span></div><div class="tile-d"><span>' + linhas[0] + '</span><span>' + linhas[1] + '</span></div></div>';
 }
@@ -442,7 +480,7 @@ function tile(titulo, valor, linhas, destaque) {
 // ── Ações ──
 function produto(tipo) {
   if (tipo === tipoDa(st.base)) return;
-  st.add = {}; st.crmOn = false; st.iaOn = false; st.desc = 0; st.descTxt = '';
+  st.add = {}; st.crmOn = false; st.iaOn = false; st.desc = 0; st.descTxt = ''; st.condOn = false;
   st.base = tipo === 'software' ? ultimoPlano : tipo;
   render();
 }
@@ -453,6 +491,9 @@ function escolherPlano(i) {
 }
 function marcar(id, on) {
   if (id === 'crmOn' || id === 'iaOn') st[id] = on; else st.add[id] = on;
+  // Renave e CNPJ adicional vão junto com a Nota Fiscal
+  if (tipoDa(st.base) !== 'software' && tipoDa(st.base) !== 'nf' && !st.add.nf) { st.add.renave = false; st.add.cnpj = false; }
+  if (tipoDa(st.base) === 'ia' && st.add.crm) st.add.cnpj = false;
   render();
 }
 function passo(campo, delta, min) {
@@ -461,6 +502,13 @@ function passo(campo, delta, min) {
 }
 function descontar(v) { st.descTxt = v; st.desc = num(v); renderResumo(); }
 function tipoDesc(t) { st.descTipo = t; renderResumo(); }
+// "Condição especial": o campo de desconto fica guardado até o vendedor abrir
+function condicao() {
+  st.condOn = !st.condOn;
+  if (!st.condOn) { st.desc = 0; st.descTxt = ''; }
+  renderResumo();
+  if (st.condOn) document.getElementById('desc').focus();
+}
 function recomecar() { st = INICIAL(); ultimoPlano = st.base; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
 
 function textoWhats() {
@@ -468,7 +516,6 @@ function textoWhats() {
   const l = ['*Proposta Revenda Mais*', nomeBase() + (r.itens.length ? ' + ' + r.itens.join(', ') : ''), ''];
   if (r.tipo === 'software' || r.tipo === 'nf') {
     l.push('Mensal: ' + brl(r.mensal) + '/mês' + (r.adesao ? ' + adesão de ' + brl(r.adesao) : ''));
-    l.push('Trimestral: 3x de ' + brl(r.tri) + ' no cartão (ou ' + brl(r.tri * 3) + ' no boleto)');
     l.push('*Anual: 12x de ' + brl(r.anual) + '* (ou ' + brl(r.anual * 12) + ' no boleto)' + (r.economia > 0 ? ', economia de ' + brl(r.economia) + ' no ano' : ''));
   } else if (r.tipo === 'crm') {
     l.push('Mensal no boleto (pós-pago): ' + brl(r.mensal) + '/mês, ' + r.usuarios + ' usuários');
@@ -477,6 +524,7 @@ function textoWhats() {
   }
   if (r.aParte.length) l.push('', 'À parte, no boleto mensal: ' + r.aParte.map(function (a) { return a.nome + ' ' + brl(a.valor); }).join('; '));
   if (r.setup) l.push('Setup do CRM: ' + brl(r.setup) + ' (uma vez)');
+  if (r.setupBonificado) l.push('Setup do CRM (' + brl(AV_TABELA.crmSetup) + '): bonificado');
   return l.join('\n');
 }
 function copiarWhats() {
@@ -490,7 +538,7 @@ function dadosParaHub() {
   const r = calcular(st), tipo = tipoDa(st.base);
   const crm = avCrmCalc(st.crmUsuarios);
   const p = { tipo: tipo === 'software' ? 'software' : 'avulso', forma_pagamento: 'ambos',
-    modalidades: { mensal: true, trimestral: true, anual: true }, desconto: Math.round(r.descMensal * 100) / 100 };
+    modalidades: { mensal: true, trimestral: false, anual: true }, desconto: Math.round(r.descMensal * 100) / 100 };
   if (tipo === 'software') {
     p.plano = st.base;
     p.adicionais = ADD_SOFTWARE.filter(function (id) { return st.add[id]; }).map(function (id) {
@@ -500,9 +548,12 @@ function dadosParaHub() {
     if (st.iaOn) p.adicionais.push({ id: 'ia', valor_mensal: AV_TABELA.iaMensal * st.franquias });
     p.crm_usuarios = crm.usuarios;
   } else {
-    p.avulso_plano = tipo;
-    p.avulso_adicionais = (tipo === 'nf' ? ADD_NF : tipo === 'crm' ? ADD_CRM : []).filter(function (id) { return st.add[id]; })
-      .map(function (id) { return tipo === 'crm' && id === 'nf' ? 'nfe' : id; });
+    const ef = efetivo(st);
+    const temNF = tipo === 'nf' || !!st.add.nf, temCRM = tipo === 'crm' || !!st.add.crm, temIA = tipo === 'ia' || !!st.add.ia;
+    p.avulso_plano = ef;
+    p.avulso_adicionais = ef === 'nf'
+      ? [st.add.renave && 'renave', st.add.cnpj && 'cnpj', temCRM && 'crm', temIA && 'ia'].filter(Boolean)
+      : ef === 'crm' ? [temNF && 'nfe', temNF && st.add.renave && 'renave', temIA && 'ia'].filter(Boolean) : [];
     p.cnpj_qtd = st.cnpjQtd;
     p.crm_usuarios = crm.usuarios;
     p.ia_franquias = st.franquias;

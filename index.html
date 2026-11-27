@@ -1583,13 +1583,24 @@ input::placeholder, textarea::placeholder { color: var(--text-dim); font-weight:
             </div>
             <div class="addon-val"><span class="addon-fix">R$ 400,00</span></div>
           </div>
+          <div class="addon hidden" id="av_row_crm_renave">
+            <input type="checkbox" id="av_ck_crm_renave" onchange="onAvAddonChange()"/>
+            <div class="addon-main">
+              <div class="addon-nome">RENAVE</div>
+              <div class="addon-desc">Junto com a NF-e · valor fixo mensal</div>
+            </div>
+            <div class="addon-val"><span class="addon-fix">R$ 30,00</span></div>
+          </div>
           <div class="addon" id="av_row_ia">
             <input type="checkbox" id="av_ck_ia" onchange="onAvAddonChange()"/>
             <div class="addon-main">
               <div class="addon-nome">IA</div>
-              <div class="addon-desc">Até 500 leads/mês, excedente R$ 5,00 por lead, sem fidelidade</div>
+              <div class="addon-desc">Cada franquia atende até 500 leads/mês · excedente R$ 5,00 por lead · sem fidelidade</div>
+              <div class="crm-nested">
+                Franquias: <input id="av_ia_add_franquias" class="mini-num" type="number" min="1" value="1" onchange="onAvAddonChange()" oninput="onAvAddonChange()"/>
+              </div>
             </div>
-            <div class="addon-val"><span class="addon-fix">R$ 996,00</span></div>
+            <div class="addon-val"><span class="addon-fix" id="av_ia_add_val">R$ 996,00</span></div>
           </div>
         </div>
 
@@ -1631,6 +1642,17 @@ input::placeholder, textarea::placeholder { color: var(--text-dim); font-weight:
               </div>
             </div>
             <div class="addon-val"><span class="addon-fix" id="av_crm_addon_val">R$ 500,00</span></div>
+          </div>
+          <div class="addon" id="av_row_nf_ia">
+            <input type="checkbox" id="av_ck_nf_ia" onchange="onAvAddonChange()"/>
+            <div class="addon-main">
+              <div class="addon-nome">IA</div>
+              <div class="addon-desc">Cada franquia atende até 500 leads/mês · excedente R$ 5,00 por lead · sem fidelidade</div>
+              <div class="crm-nested">
+                Franquias: <input id="av_nf_ia_franquias" class="mini-num" type="number" min="1" value="1" onchange="onAvAddonChange()" oninput="onAvAddonChange()"/>
+              </div>
+            </div>
+            <div class="addon-val"><span class="addon-fix" id="av_nf_ia_val">R$ 996,00</span></div>
           </div>
         </div>
 
@@ -2816,7 +2838,17 @@ function onAvPlanoChange() {
   pRender();
 }
 
+// Franquias da IA num campo do formulário (mínimo 1)
+function avFranquias(id) {
+  return Math.min(100, Math.max(1, parseInt(document.getElementById(id).value, 10) || 1));
+}
 function onAvAddonChange() {
+  // RENAVE no CRM só faz sentido com a NF-e marcada
+  const nfe = document.getElementById('av_ck_nfe').checked;
+  document.getElementById('av_row_crm_renave').classList.toggle('hidden', !nfe);
+  if (!nfe) document.getElementById('av_ck_crm_renave').checked = false;
+  document.getElementById('av_ia_add_val').textContent = pBRL(AV_TABELA.iaMensal * avFranquias('av_ia_add_franquias'));
+  document.getElementById('av_nf_ia_val').textContent = pBRL(AV_TABELA.iaMensal * avFranquias('av_nf_ia_franquias'));
   const c = avCrmCalc(document.getElementById('av_crm_addon_usuarios').value);
   document.getElementById('av_crm_addon_val').textContent = pBRL(c.valor);
   document.getElementById('av_crm_addon_desc').textContent = c.extra > 0
@@ -3301,8 +3333,11 @@ function avColetar() {
   if (plano === 'crm') {
     const calc = avCrmCalc(document.getElementById('av_crm_usuarios').value);
     const nfeOn = document.getElementById('av_ck_nfe').checked;
+    const renaveOn = nfeOn && document.getElementById('av_ck_crm_renave').checked;
     const iaOn = document.getElementById('av_ck_ia').checked;
-    const somaAdd = (nfeOn ? AV_TABELA.nfMensal : 0) + (iaOn ? AV_TABELA.iaMensal : 0);
+    const iaFranquias = avFranquias('av_ia_add_franquias');
+    const iaValor = iaOn ? AV_TABELA.iaMensal * iaFranquias : 0;
+    const somaAdd = (nfeOn ? AV_TABELA.nfMensal : 0) + (renaveOn ? AV_TABELA.renave : 0) + iaValor;
     const bruto = calc.valor + somaAdd;
     // Desconto abate só o valor mensal calculado (nunca o setup), travando em R$ 0,00
     const desconto = Math.min(pParse(document.getElementById('av_crm_desconto').value), bruto);
@@ -3310,7 +3345,7 @@ function avColetar() {
     return Object.assign(base, {
       crmUsuarios: calc.usuarios, crmExtra: calc.extra, crmBaseCalc: calc.valor,
       crmSetup: AV_TABELA.crmSetup,
-      nfeOn: nfeOn, iaOn: iaOn, somaAdd: somaAdd,
+      nfeOn: nfeOn, renaveOn: renaveOn, iaOn: iaOn, iaFranquias: iaFranquias, iaValor: iaValor, somaAdd: somaAdd,
       bruto: bruto, desconto: desconto, total: total,
       mensalidade: total
     });
@@ -3334,7 +3369,10 @@ function avColetar() {
   const crmOn = document.getElementById('av_ck_crm').checked;
   const crmCalc = crmOn ? avCrmCalc(document.getElementById('av_crm_addon_usuarios').value) : { usuarios: 0, extra: 0, valor: 0 };
   const cnpjCalc = avCnpjCalc();
-  const somaAdd = (renaveOn ? AV_TABELA.renave : 0) + (cnpjOn ? cnpjCalc.valor : 0) + (crmOn ? crmCalc.valor : 0);
+  const iaOn = document.getElementById('av_ck_nf_ia').checked;
+  const iaFranquias = avFranquias('av_nf_ia_franquias');
+  const iaValor = iaOn ? AV_TABELA.iaMensal * iaFranquias : 0;
+  const somaAdd = (renaveOn ? AV_TABELA.renave : 0) + (cnpjOn ? cnpjCalc.valor : 0) + (crmOn ? crmCalc.valor : 0) + iaValor;
   const crmSetupShown = crmOn ? AV_TABELA.crmSetup : 0;
   const descontoInput = pParse(document.getElementById('av_nf_desconto').value);
 
@@ -3347,7 +3385,7 @@ function avColetar() {
   const totalAnual = Math.max(0, anualBruto - Math.min(descontoInput, anualBruto));
 
   return Object.assign(base, {
-    renaveOn: renaveOn, crmOn: crmOn, crmUsuarios: crmCalc.usuarios, crmExtra: crmCalc.extra, crmAddonValor: crmCalc.valor,
+    renaveOn: renaveOn, crmOn: crmOn, iaOn: iaOn, iaFranquias: iaFranquias, iaValor: iaValor, crmUsuarios: crmCalc.usuarios, crmExtra: crmCalc.extra, crmAddonValor: crmCalc.valor,
     cnpjOn: cnpjOn, cnpjQtd: cnpjCalc.qtd, cnpjValor: cnpjCalc.valor, cnpjTabela: cnpjCalc.tabela, cnpjManual: cnpjCalc.manual,
     crmSetupShown: crmSetupShown,
     somaAdd: somaAdd, desconto: descontoInput,
@@ -3362,8 +3400,10 @@ function avColetar() {
 }
 
 /* ── Montagem do documento (fluxo avulso) ───────────────────────────── */
-function iaNotaHtml() {
-  return '<div class="pp-note"><b>IA:</b> ' + pBRL(AV_TABELA.iaMensal) + ' por mês para atender até ' + AV_TABELA.iaLeads +
+function iaNotaHtml(franquias) {
+  const f = franquias || 1;
+  return '<div class="pp-note"><b>IA:</b> ' + pBRL(AV_TABELA.iaMensal) + ' por mês por franquia; ' +
+    (f > 1 ? f + ' franquias atendem até ' + (AV_TABELA.iaLeads * f).toLocaleString('pt-BR') : 'atende até ' + AV_TABELA.iaLeads) +
     ' leads. Leads acima desse volume no mês são cobrados a ' + pBRL(AV_TABELA.iaExcedente) + ' cada. ' +
     'Sem fidelidade — a contratação é formalizada mediante assinatura do termo.</div>';
 }
@@ -3386,17 +3426,18 @@ function avMontarPapel(d) {
       '<div class="pp-row"><span>Base CRM (3 usuários)</span><span>' + pBRL(AV_TABELA.crmBase) + '</span></div>' +
       (d.crmExtra > 0 ? '<div class="pp-row"><span>' + d.crmExtra + ' usuário(s) adicional(is) × ' + pBRL(AV_TABELA.crmExtra) + '</span><span>' + pBRL(d.crmExtra * AV_TABELA.crmExtra) + '</span></div>' : '') +
       (d.nfeOn ? '<div class="pp-row"><span>NF-e (adicional)</span><span>' + pBRL(AV_TABELA.nfMensal) + '</span></div>' : '') +
-      (d.iaOn ? '<div class="pp-row"><span>IA — até ' + AV_TABELA.iaLeads + ' leads (adicional)</span><span>' + pBRL(AV_TABELA.iaMensal) + '</span></div>' : '') +
+      (d.renaveOn ? '<div class="pp-row"><span>RENAVE (adicional)</span><span>' + pBRL(AV_TABELA.renave) + '</span></div>' : '') +
+      (d.iaOn ? '<div class="pp-row"><span>IA — ' + (d.iaFranquias > 1 ? d.iaFranquias + ' franquias, ' : '') + 'até ' + (AV_TABELA.iaLeads * d.iaFranquias).toLocaleString('pt-BR') + ' leads (adicional)</span><span>' + pBRL(d.iaValor) + '</span></div>' : '') +
       (d.desconto > 0 ? '<div class="pp-row desc"><span>Desconto comercial</span><span>− ' + pBRL(d.desconto) + '</span></div>' : '') +
       '<div class="pp-row"><span><b>Valor mensal</b></span><span><b>' + pBRL(d.total) + '</b></span></div>' +
       '<div class="pp-row"><span>Taxa de Setup (pagamento único)</span><span>' + pBRL(d.crmSetup) + '</span></div>' +
-      (d.iaOn ? '<div class="pp-row"><span>IA — lead excedente (acima de ' + AV_TABELA.iaLeads + '/mês)</span><span>' + pBRL(AV_TABELA.iaExcedente) + ' por lead</span></div>' : '');
+      (d.iaOn ? '<div class="pp-row"><span>IA — lead excedente (acima de ' + (AV_TABELA.iaLeads * d.iaFranquias).toLocaleString('pt-BR') + '/mês)</span><span>' + pBRL(AV_TABELA.iaExcedente) + ' por lead</span></div>' : '');
 
     secaoInvestimento =
       '<div class="pp-sec">Investimento</div><div class="pp-inv">' + linhas + '</div>' +
       '<div class="pp-pay"><span>Forma de pagamento: <b>Pós-pago, exclusivamente via boleto</b></span></div>';
     notasHtml = '<div class="pp-note"><b>CRM:</b> cobrado separadamente, via boleto, na virada de cada mês, pois a cobrança é pós-paga.</div>' +
-      (d.iaOn ? iaNotaHtml() : '');
+      (d.iaOn ? iaNotaHtml(d.iaFranquias) : '');
   } else if (d.avPlano === 'ia') {
     secaoPlano =
       '<div class="pp-sec">Solução Contratada</div>' +
@@ -3414,7 +3455,7 @@ function avMontarPapel(d) {
     secaoInvestimento =
       '<div class="pp-sec">Investimento</div><div class="pp-inv">' + linhas + '</div>' +
       '<div class="pp-pay"><span>Forma de pagamento: <b>' + esc(d.forma) + '</b></span><span>Sem fidelidade</span></div>';
-    notasHtml = iaNotaHtml();
+    notasHtml = iaNotaHtml(d.franquias);
   } else {
     secaoPlano =
       '<div class="pp-sec">Solução Contratada</div>' +
@@ -3442,6 +3483,8 @@ function avMontarPapel(d) {
             ' — emissão e recebimento de notas em CNPJs distintos',
       valor: d.cnpjValor
     });
+    if (d.iaOn) itensAdd.push({ nome: 'IA', desc: (d.iaFranquias > 1 ? d.iaFranquias + ' franquias, ' : '') + 'até ' +
+      (AV_TABELA.iaLeads * d.iaFranquias).toLocaleString('pt-BR') + ' leads/mês · excedente ' + pBRL(AV_TABELA.iaExcedente) + ' por lead', valor: d.iaValor });
     if (d.crmOn) itensAdd.push({ nome: 'CRM', desc: d.crmUsuarios + ' usuário' + (d.crmUsuarios === 1 ? '' : 's') + (d.crmExtra > 0 ? ' (3 inclusos + ' + d.crmExtra + ' extra)' : ' (3 inclusos)'), valor: d.crmAddonValor });
     if (itensAdd.length) {
       addonsHtml = '<div class="pp-sec">Produtos Adicionais</div><div class="pp-addons">' +
@@ -3453,6 +3496,7 @@ function avMontarPapel(d) {
     if (d.crmOn) {
       notasHtml = '<div class="pp-note"><b>CRM:</b> cobrado separadamente, via boleto, na virada de cada mês (pós-pago). Taxa de setup de ' + pBRL(d.crmSetupShown) + ' paga uma única vez, à parte.</div>';
     }
+    if (d.iaOn) notasHtml += iaNotaHtml(d.iaFranquias);
   }
 
   return '' +
@@ -3551,7 +3595,7 @@ function pRender() {
       document.getElementById('p_totalView').textContent = pBRL(d.total);
       document.getElementById('p_totalSub').innerHTML =
         'Setup de ' + pBRL(d.crmSetup) + ' (pagamento único)' +
-        (d.iaOn ? '<br/>IA: excedente de ' + pBRL(AV_TABELA.iaExcedente) + ' por lead acima de ' + AV_TABELA.iaLeads : '') +
+        (d.iaOn ? '<br/>IA: excedente de ' + pBRL(AV_TABELA.iaExcedente) + ' por lead acima de ' + (AV_TABELA.iaLeads * d.iaFranquias).toLocaleString('pt-BR') : '') +
         (d.desconto > 0 ? '<br/>Desconto de ' + pBRL(d.desconto) + ' aplicado' : '');
     } else if (d.avPlano === 'ia') {
       document.getElementById('p_totalView').textContent = pBRL(d.total);
@@ -3787,7 +3831,7 @@ function iaCatalogo() {
     'Regras de preço: trimestral tem o mesmo valor mensal do plano; anual sai R$ ' + DESCONTO_ANUAL + ' mais barato por mês; adesão de R$ ' + ADESAO_FIXA + ' só no mensal. O desconto é um valor único em R$ por mês, que abate igual em todas as modalidades.',
     'Produtos adicionais do Software Gerencial (campo adicionais, pelo id):',
     adicionais,
-    'CRM: ' + AV_TABELA.crmInclusos + ' usuários inclusos e R$ ' + AV_TABELA.crmExtra + ' por usuário a mais (informe crm_usuarios).',
+    'CRM: ' + AV_TABELA.crmInclusos + ' usuários inclusos e R$ ' + AV_TABELA.crmExtra + ' por usuário a mais (informe crm_usuarios). Com o Software Gerencial o setup do CRM é bonificado.',
     '',
     'Tipo "avulso" — quando o cliente NÃO leva o Software Gerencial, só um destes como produto principal (campo avulso_plano):',
     '- "crm": CRM com WhatsApp, R$ ' + AV_TABELA.crmBase + '/mês com ' + AV_TABELA.crmInclusos + ' usuários (+R$ ' + AV_TABELA.crmExtra + ' por extra) e setup de R$ ' + AV_TABELA.crmSetup + '. Pós-pago, só boleto, sem modalidades. Adicionais possíveis: "nfe" (R$ ' + AV_TABELA.nfMensal + ') e "ia".',
@@ -4057,12 +4101,16 @@ function iaPreencherProposta(p) {
     if (plano === 'crm') {
       if (p.crm_usuarios > 0) el('av_crm_usuarios').value = p.crm_usuarios;
       el('av_ck_nfe').checked = tem('nfe');
+      el('av_ck_crm_renave').checked = tem('nfe') && tem('renave');
       el('av_ck_ia').checked = tem('ia');
+      el('av_ia_add_franquias').value = Math.max(1, parseInt(p.ia_franquias, 10) || 1);
       pSetMoney('av_crm_desconto', Number(p.desconto) || 0);
     } else if (plano === 'nf') {
       el('av_ck_renave').checked = tem('renave');
       el('av_ck_cnpj').checked = tem('cnpj');
       el('av_ck_crm').checked = tem('crm');
+      el('av_ck_nf_ia').checked = tem('ia');
+      el('av_nf_ia_franquias').value = Math.max(1, parseInt(p.ia_franquias, 10) || 1);
       if (p.cnpj_qtd > 0) el('av_cnpj_qtd').value = p.cnpj_qtd;
       if (tem('crm') && p.crm_usuarios > 0) el('av_crm_addon_usuarios').value = p.crm_usuarios;
       onAvCnpjQtdChange();
