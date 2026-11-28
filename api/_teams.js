@@ -51,7 +51,7 @@ export async function registrar(c) {
     return { id: id, processar: false };
   }
   if (c.evento === 'transcricao') {
-    const t = txt(c.transcricao);
+    const t = txt(pedido().iaLimparLegenda(String(c.transcricao || '')));   // .vtt do Teams vira só quem falou e o quê
     if (t.length < 80) { await falhou(m, 'A transcrição chegou vazia ou curta demais.'); return { id: id, processar: false }; }
     m.transcricao = t;
     m.status = 'recebida';
