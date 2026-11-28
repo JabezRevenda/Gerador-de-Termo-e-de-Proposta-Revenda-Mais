@@ -6,7 +6,7 @@ import { scryptSync, randomBytes, timingSafeEqual } from 'node:crypto';
 
 export const blob = { get, put };   // trocado por um falso no teste (testes/controle.test.js)
 
-const LIMITE = 300000;   // bytes por vendedor; anos de histórico cabem com folga
+const LIMITE = 2000000;   // caracteres por vendedor: renovações, calculadora e até 100 reuniões com feedback
 
 function resposta(status, corpo) {
   return Response.json(corpo, { status: status });
