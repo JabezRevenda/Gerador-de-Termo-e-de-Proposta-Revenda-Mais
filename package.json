@@ -5,6 +5,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "1.6.0",
     "@vercel/blob": "2.9.0",
+    "@vercel/functions": "3.11.3",
     "openai": "7.53.0"
   }
 }

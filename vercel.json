@@ -2,6 +2,14 @@
   "functions": {
     "api/analisar-reuniao.js": {
       "maxDuration": 300
+    },
+    "api/teams.js": {
+      "maxDuration": 300,
+      "includeFiles": "{precos.js,ia-pedido.js}"
+    },
+    "api/gestor.js": {
+      "maxDuration": 300,
+      "includeFiles": "{precos.js,ia-pedido.js}"
     }
   },
   "cleanUrls": true

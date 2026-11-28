@@ -3,6 +3,8 @@
 // Depois de entrar, o navegador recebe uma chave assinada que vale 12 horas.
 import { list, get } from '@vercel/blob';
 import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
+import { waitUntil } from '@vercel/functions';
+import { listarReunioes, processar, lerReuniao } from './_teams.js';
 
 export const blob = { list, get };   // trocado por um falso no teste (testes/gestor.test.js)
 
@@ -80,11 +82,20 @@ export async function POST(request) {
   if (corpo.acao === 'dados') {
     if (!chaveValida(corpo.chave)) return resposta(401, { erro: 'Sessão expirada. Entre de novo.' });
     try {
-      return resposta(200, { vendedores: await lerTodos() });
+      const [vendedores, teams] = await Promise.all([lerTodos(), listarReunioes()]);
+      return resposta(200, { vendedores: vendedores, teams: teams });
     } catch (e) {
       console.error(e);
       return resposta(502, { erro: 'Não consegui ler os dados agora. Tente de novo.' });
     }
+  }
+  // Reunião do Teams com erro: analisa de novo (ou só entrega, se a IA já leu)
+  if (corpo.acao === 'reprocessar') {
+    if (!chaveValida(corpo.chave)) return resposta(401, { erro: 'Sessão expirada. Entre de novo.' });
+    const m = await lerReuniao(corpo.id);
+    if (!m || !(m.transcricao || m.resultado)) return resposta(404, { erro: 'Essa reunião não tem transcrição guardada para tentar de novo.' });
+    waitUntil(processar(m.id).catch(function (e) { console.error(e); }));
+    return resposta(202, { ok: true });
   }
   return resposta(400, { erro: 'Ação inválida.' });
 }

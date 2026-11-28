@@ -64,8 +64,29 @@ export async function POST(request) {
     return resposta(401, { erro: 'PIN errado para "' + atual.arq.nome + '". Se não for você, use nome e sobrenome.' });
   }
 
+  // E-mail do perfil do hub: é por ele que as reuniões do Teams acham o vendedor (api/_teams.js)
+  const email = typeof corpo.email === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(corpo.email.trim()) ? corpo.email.trim().toLowerCase() : '';
+
   if (corpo.acao === 'ler') {
-    return resposta(200, { dados: atual ? atual.arq.dados : {}, etag: atual ? atual.etag : null, nome: atual ? atual.arq.nome : nome });
+    let etag = atual ? atual.etag : null;
+    if (!atual && email) {   // primeiro acesso já cria o arquivo com o e-mail: as reuniões do Teams têm onde cair
+      const sal = randomBytes(16).toString('hex');
+      try {
+        const r = await blob.put(caminho, JSON.stringify({ nome: nome, email: email, sal: sal, hash: hashPin(pin, sal), dados: { meses: {} } }), {
+          access: 'private', contentType: 'application/json', addRandomSuffix: false, allowOverwrite: false
+        });
+        return resposta(200, { dados: { meses: {} }, etag: r.etag, nome: nome });
+      } catch (e) { /* outro aparelho criou ao mesmo tempo: segue como antes */ }
+    }
+    if (atual && email && atual.arq.email !== email) {   // guarda o e-mail ao entrar, se mudou
+      try {
+        const r = await blob.put(caminho, JSON.stringify(Object.assign({}, atual.arq, { email: email })), {
+          access: 'private', contentType: 'application/json', addRandomSuffix: false, allowOverwrite: true, ifMatch: atual.etag
+        });
+        etag = r.etag;
+      } catch (e) { /* fica para o próximo salvamento */ }
+    }
+    return resposta(200, { dados: atual ? atual.arq.dados : {}, etag: etag, nome: atual ? atual.arq.nome : nome });
   }
 
   if (corpo.acao !== 'salvar') return resposta(400, { erro: 'Ação inválida.' });
@@ -76,7 +97,8 @@ export async function POST(request) {
   }
 
   const sal = atual ? atual.arq.sal : randomBytes(16).toString('hex');
-  const arq = { nome: atual ? atual.arq.nome : nome, sal: sal, hash: atual ? atual.arq.hash : hashPin(pin, sal), dados: corpo.dados };
+  const arq = { nome: atual ? atual.arq.nome : nome, email: email || (atual && atual.arq.email) || '', sal: sal,
+    hash: atual ? atual.arq.hash : hashPin(pin, sal), dados: corpo.dados };
   try {
     const r = await blob.put(caminho, JSON.stringify(arq), {
       access: 'private', contentType: 'application/json', addRandomSuffix: false,

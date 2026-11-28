@@ -46,4 +46,9 @@ assert.equal(r.status, 409);
 assert.equal((await chamar({ acao: 'ler', nome: 'João', pin: '12' })).status, 400);
 assert.equal((await chamar({ acao: 'ler', nome: '', pin: '1234' })).status, 400);
 assert.equal((await chamar({ acao: 'salvar', nome: 'Ana', pin: '1234', dados: [] })).status, 400);
+// Primeiro acesso com e-mail já cria o arquivo (para as reuniões do Teams acharem o vendedor)
+r = await chamar({ acao: 'ler', nome: 'Carla Dias', pin: '4321', email: 'Carla@RevendaMais.com.br' });
+assert.equal(r.status, 200); assert.ok(r.json.etag);
+assert.equal(JSON.parse(mem.get('controle/carla-dias.json').corpo).email, 'carla@revendamais.com.br');
+assert.equal((await chamar({ acao: 'ler', nome: 'Carla Dias', pin: '0000' })).status, 401);   // e o PIN dela já vale
 console.log('ok: api/controle');

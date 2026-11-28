@@ -4,19 +4,22 @@ import assert from 'node:assert/strict';
 process.env.GESTOR_USUARIO = 'Gestor';
 process.env.GESTOR_SENHA = 'senha-forte-123';
 const { POST, blob } = await import('../api/gestor.js');
+const teams = await import('../api/_teams.js');
 
 const arquivos = {
   'controle/ana.json': { nome: 'Ana', sal: 'x', hash: 'y', dados: { meses: { '2026-11': { lojas: [{ id: '1', loja: 'A', link: 'Proposta aceita' }], calc: {} } },
     reunioes: [{ id: 'r1', data: '2026-11-20T10:00:00Z', cliente: 'Prime', ficha: 'texto longo', feedback: { nota: 7 } }] } },
   'controle/bruno.json': { nome: 'Bruno', sal: 'x', hash: 'y', dados: { meses: {} } }
 };
-blob.list = async function (op) {
+arquivos['teams/r9.json'] = { id: 'r9', email: 'x@y.com', titulo: 'Reunião X', criadoEm: new Date().toISOString(), status: 'erro', motivo: 'falhou', transcricao: 'texto' };
+blob.list = teams.blob.list = async function (op) {
+  if (op.prefix === 'teams/') return { blobs: [{ pathname: 'teams/r9.json' }], hasMore: false };
   assert.equal(op.prefix, 'controle/');
   return op.cursor ? { blobs: [{ pathname: 'controle/bruno.json' }], hasMore: false }
     : { blobs: [{ pathname: 'controle/ana.json' }], hasMore: true, cursor: 'c2' };
 };
-blob.get = async function (caminho) {
-  return { statusCode: 200, stream: new Response(JSON.stringify(arquivos[caminho])).body };
+blob.get = teams.blob.get = async function (caminho) {
+  return { statusCode: 200, stream: new Response(JSON.stringify(arquivos[caminho])).body, blob: { etag: 'e' } };
 };
 async function chamar(corpo) {
   const r = await POST(new Request('http://x/api/gestor', { method: 'POST', body: JSON.stringify(corpo) }));
@@ -37,6 +40,8 @@ const ana = r.json.vendedores[0];
 assert.equal(ana.reunioes[0].feedback.nota, 7);
 assert.equal(JSON.stringify(r.json).includes('hash'), false);    // não devolve o PIN
 assert.equal(JSON.stringify(r.json).includes('texto longo'), false);   // nem a ficha
+assert.equal(r.json.teams[0].situacao, 'erro'); assert.equal(r.json.teams[0].podeTentar, true);
+assert.equal(JSON.stringify(r.json.teams).includes('"texto"'), false);   // nem a transcrição
 
 process.env.GESTOR_SENHA = 'outra';   // trocou a senha: a chave antiga deixa de valer
 assert.equal((await chamar({ acao: 'dados', chave: chave })).status, 401);
