@@ -1,5 +1,5 @@
-// Tabela de preços da Revenda Mais — usada pelo hub (index.html) e pela calculadora (calculadora.html).
-// Mudou um preço? Mude só aqui que vale nos dois.
+// Tabelas da Revenda Mais usadas pelo hub (index.html), pela calculadora (calculadora.html)
+// e pelo painel do gestor (gestor.html). Mudou um preço ou um peso? Mude só aqui.
 
 const RECURSOS_PADRAO = [
   'Gestão completa do estoque',
@@ -61,4 +61,12 @@ const ADICIONAIS = [
   { id: 'renave',   nome: 'Renave',               desc: 'Transferência eletrônica de veículos', padrao: 30 },
   { id: 'integra',  nome: 'Integrações',          desc: 'Conexão com sistemas e portais parceiros', padrao: 100 },
   { id: 'concil',   nome: 'Conciliação Bancária', desc: 'Gestão e controle financeiro', padrao: 100 }
+];
+
+// Controle do mês: linhas da calculadora de metas e o peso de cada uma no resultado (somam 100%)
+const CTL_LINHAS = [
+  { k: 'novas', nome: 'Lojas novas', peso: 0.5 },
+  { k: 'ia',    nome: 'IA',          peso: 0.1 },
+  { k: 'renov', nome: 'Renovações',  peso: 0.2 },
+  { k: 'reun',  nome: 'Reuniões',    peso: 0.2 }
 ];
