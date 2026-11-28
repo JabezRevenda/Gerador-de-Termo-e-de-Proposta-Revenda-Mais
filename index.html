@@ -755,6 +755,19 @@ input::placeholder, textarea::placeholder { color: var(--text-dim); font-weight:
 .ia-status:empty { display: none; }
 .ia-lista { margin: 6px 0 0; padding-left: 18px; }
 .ia-lista li { margin: 2px 0; }
+/* Botão de copiar no canto do texto (como no Claude e no ChatGPT) */
+.copia { position: relative; }
+.copiar {
+  position: absolute; top: 10px; right: 10px; z-index: 1; display: inline-flex; align-items: center; gap: 6px;
+  font-family: 'Poppins', sans-serif; font-size: 12px; font-weight: 600; color: var(--text-muted);
+  background: rgba(255,255,255,0.92); border: 1px solid var(--border); border-radius: 10px; padding: 6px 10px; cursor: pointer;
+  transition: color .15s, border-color .15s;
+}
+.copiar:hover { color: var(--text-heading); border-color: #d5d8de; }
+.copiar.ok { color: var(--success); border-color: rgba(5,150,105,0.35); }
+.copia .crm-ficha { padding-top: 46px; }
+.copia .reu-ficha { padding-top: 42px; }
+.fb.copia .copiar { top: 14px; right: 22px; }
 .crm-ficha { min-height: 480px; font-size: 14px; line-height: 1.65; }
 /* Feedback da reunião (SPIN + Gap Selling) */
 .fb { padding: 18px 26px 26px; }
@@ -2183,7 +2196,7 @@ html, body { overflow-x: clip; }
       </div>
       <div class="card-body">
         <div class="hint">A ficha inteira, pronta para ler e colar no CRM. Ajuste o que precisar direto no texto. O que não apareceu na conversa fica como <b>não identificado</b>.</div>
-        <div class="field span2"><textarea id="crm_ficha" class="crm-ficha" aria-label="Ficha do lead"></textarea></div>
+        <div class="field span2 copia"><button type="button" class="copiar" onclick="copiarTexto(this, crmTexto()); reuniaoAtualizarFicha()" title="Copiar"><svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg><span>Copiar</span></button><textarea id="crm_ficha" class="crm-ficha" aria-label="Ficha do lead"></textarea></div>
         <div class="btn-row" style="grid-column:span 2;margin:4px 0 0">
           <button type="button" class="btn btn-pdf" onclick="crmCopiar()">Copiar ficha para o CRM</button>
           <button type="button" class="btn btn-docx" onclick="crmBaixar()">Baixar .txt</button>
@@ -2198,7 +2211,8 @@ html, body { overflow-x: clip; }
         <span class="card-title">Feedback da reunião</span>
         <span class="ctl-conta">SPIN e Gap Selling</span>
       </div>
-      <div class="fb">
+      <div class="fb copia">
+        <button type="button" class="copiar" onclick="copiarTexto(this, fbTexto(iaUltimo && iaUltimo.feedback))" title="Copiar"><svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg><span>Copiar</span></button>
         <div id="fbBox"></div>
         <div class="fb-guardado" id="fbGuardado"></div>
       </div>
@@ -4301,6 +4315,33 @@ function fbHtml(fb) {
     (iaTxt(fb.dica_proxima_reuniao) ? '<div class="fb-dica"><b>Para a próxima reunião:</b> ' + esc(fb.dica_proxima_reuniao) + '</div>' : '');
 }
 
+// Copia e troca o botão por "Copiado" por um instante
+async function copiarTexto(btn, texto) {
+  try { await navigator.clipboard.writeText(texto || ''); } catch (e) { return showToast('Não deu para copiar automaticamente', 'error'); }
+  const rotulo = btn.querySelector('span');
+  btn.classList.add('ok'); rotulo.textContent = 'Copiado';
+  clearTimeout(btn.copiado);
+  btn.copiado = setTimeout(function () { btn.classList.remove('ok'); rotulo.textContent = 'Copiar'; }, 1800);
+}
+// Feedback em texto corrido, para colar onde quiser
+function fbTexto(fb) {
+  if (!fb) return '';
+  const spin = fb.spin || {}, gap = fb.gap || {};
+  const lista = function (t, itens, num) {
+    itens = (itens || []).map(iaTxt).filter(Boolean);
+    return itens.length ? t + '\n' + itens.map(function (x, i) { return (num ? (i + 1) + '. ' : '- ') + x; }).join('\n') : '';
+  };
+  return [
+    'Feedback da reunião: nota ' + (Number(fb.nota) || 0) + '/10' + (FB_RITMO[fb.ritmo] ? ' (' + FB_RITMO[fb.ritmo] + ')' : ''),
+    iaTxt(fb.resumo),
+    'SPIN Selling\nSituação: ' + (iaTxt(spin.situacao) || '—') + '\nProblema: ' + (iaTxt(spin.problema) || '—') +
+      '\nImplicação: ' + (iaTxt(spin.implicacao) || '—') + '\nNecessidade de solução: ' + (iaTxt(spin.necessidade) || '—'),
+    'Gap Selling\nEstado atual: ' + (iaTxt(gap.estado_atual) || '—') + '\nEstado futuro: ' + (iaTxt(gap.estado_futuro) || '—') + '\nImpacto e causa: ' + (iaTxt(gap.impacto) || '—'),
+    lista('O que funcionou', fb.pontos_fortes), lista('Onde melhorar', fb.pontos_melhoria), lista('Perguntas que faltaram', fb.perguntas_que_faltaram, true),
+    iaTxt(fb.dica_proxima_reuniao) ? 'Para a próxima reunião: ' + iaTxt(fb.dica_proxima_reuniao) : ''
+  ].filter(Boolean).join('\n\n');
+}
+
 /* ── Histórico: cada reunião analisada (ficha + feedback) fica no Controle do vendedor ── */
 const REUNIOES_MAX = 100;
 let reuniaoAtual = null;   // id da reunião guardada nesta análise
@@ -4356,7 +4397,7 @@ function ctlRenderReunioes() {
     return '<details class="reu"><summary><span class="reu-d">' + new Date(x.data).toLocaleDateString('pt-BR') + '</span><b>' + esc(x.cliente) + '</b>' +
       (nota !== null ? '<span class="reu-nota">' + nota + '/10</span>' : '') + '</summary>' +
       '<div class="reu-corpo">' + fbHtml(x.feedback) +
-        '<div class="fb-t">Ficha do lead</div><div class="reu-ficha">' + esc(x.ficha) + '</div>' +
+        '<div class="fb-t">Ficha do lead</div><div class="copia"><button type="button" class="copiar" onclick="copiarTexto(this, this.nextElementSibling.textContent)" title="Copiar"><svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg><span>Copiar</span></button><div class="reu-ficha">' + esc(x.ficha) + '</div></div>' +
         '<p style="margin-top:10px"><button type="button" class="ctl-sair" onclick="reuniaoExcluir(\'' + ctlAttr(x.id) + '\')">Excluir do histórico</button></p></div></details>';
   }).join('') : '<div class="ctl-vazio">As reuniões analisadas na aba CRM aparecem aqui, com a ficha e o feedback.</div>';
 }
