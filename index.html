@@ -755,6 +755,44 @@ input::placeholder, textarea::placeholder { color: var(--text-dim); font-weight:
 .ia-status:empty { display: none; }
 .ia-lista { margin: 6px 0 0; padding-left: 18px; }
 .ia-lista li { margin: 2px 0; }
+.crm-ficha { min-height: 480px; font-size: 14px; line-height: 1.65; }
+/* Feedback da reunião (SPIN + Gap Selling) */
+.fb { padding: 18px 26px 26px; }
+.fb-topo { display: flex; gap: 18px; align-items: flex-start; margin-bottom: 20px; }
+.fb-nota { flex-shrink: 0; width: 92px; height: 92px; border-radius: 22px; color: #fff; font-size: 34px; font-weight: 800; letter-spacing: -0.02em;
+  display: flex; align-items: baseline; justify-content: center; padding-top: 20px;
+  background: radial-gradient(ellipse farthest-corner at 100% 0%, #ff2d5e 0%, #E8003D 30%, rgba(176,0,46,0.6) 55%, rgba(11,11,15,0) 85%), #0b0b0f; }
+.fb-nota small { font-size: 14px; font-weight: 600; opacity: .7; margin-left: 2px; }
+.fb-ritmo { display: inline-block; font-size: 12px; font-weight: 600; border-radius: 999px; padding: 4px 12px; background: #e7f6ec; color: #15803d; }
+.fb-ritmo.raso, .fb-ritmo.prolixo { background: #fff4e5; color: #b45309; }
+.fb-aviso { display: inline-block; font-size: 12px; color: var(--text-muted); margin-left: 8px; }
+.fb-resumo { font-size: 14.5px; line-height: 1.6; color: var(--text-heading); margin-top: 8px; }
+.fb-t { font-size: 14px; font-weight: 700; color: var(--text-heading); margin: 18px 0 8px; }
+.fb-grade { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.fb-grade.tres { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.fb-caixa { background: #f5f6f8; border-radius: 14px; padding: 12px 14px; font-size: 13.5px; line-height: 1.5; color: var(--text); }
+.fb-caixa b { display: block; font-size: 12px; font-weight: 600; color: var(--red); margin-bottom: 3px; }
+.fb-lista { margin: 0; padding-left: 20px; font-size: 14px; line-height: 1.6; color: var(--text); }
+.fb-lista li { margin-bottom: 4px; }
+.fb-dica { margin-top: 18px; background: var(--red-light); border-radius: 14px; padding: 12px 16px; font-size: 14px; line-height: 1.55; color: var(--text-heading); }
+.fb-guardado { margin-top: 16px; font-size: 13px; color: var(--text-muted); }
+.fb-guardado button { font: inherit; font-weight: 600; color: var(--red); background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; }
+/* Histórico de reuniões no Controle */
+.reu-lista { padding: 12px 26px 24px; display: flex; flex-direction: column; gap: 8px; }
+.reu { border: 1px solid var(--border); border-radius: 16px; }
+.reu summary { display: flex; align-items: center; gap: 12px; padding: 12px 16px; cursor: pointer; list-style: none; font-size: 14px; }
+.reu summary::-webkit-details-marker { display: none; }
+.reu-d { font-size: 12.5px; color: var(--text-muted); min-width: 78px; }
+.reu summary b { flex: 1; min-width: 0; color: var(--text-heading); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.reu-nota { font-weight: 700; color: var(--red); }
+.reu-corpo { padding: 0 16px 16px; }
+.reu-corpo .fb-nota { width: 72px; height: 72px; font-size: 26px; padding-top: 16px; border-radius: 18px; }
+.reu-ficha { white-space: pre-wrap; font: 13px/1.6 'Poppins', sans-serif; color: var(--text); background: #f5f6f8; border-radius: 14px; padding: 12px 14px; max-height: 320px; overflow: auto; }
+@media (max-width: 700px) {
+  .fb, .reu-lista { padding-left: 14px; padding-right: 14px; }
+  .fb-grade, .fb-grade.tres { grid-template-columns: 1fr; }
+  .fb-nota { width: 72px; height: 72px; font-size: 26px; padding-top: 16px; }
+}
 .crm-campo label small { font-weight: 500; color: var(--text-dim); text-transform: none; letter-spacing: 0; margin-left: 6px; }
 .crm-campo textarea { min-height: 64px; }
 .crm-campo.falta textarea { border-color: rgba(232,0,61,0.45); background: var(--red-light); }
@@ -2137,13 +2175,25 @@ input::placeholder, textarea::placeholder { color: var(--text-dim); font-weight:
         <span class="card-title">Ficha do Lead</span>
       </div>
       <div class="card-body">
-        <div class="hint">Confira, ajuste o que precisar e copie para o CRM. O que não apareceu na conversa fica marcado como <b>não identificado</b>.</div>
-        <div id="crmLead" style="display:contents"></div>
-        <div id="crmCampos" style="display:contents"></div>
+        <div class="hint">A ficha inteira, pronta para ler e colar no CRM. Ajuste o que precisar direto no texto. O que não apareceu na conversa fica como <b>não identificado</b>.</div>
+        <div class="field span2"><textarea id="crm_ficha" class="crm-ficha" aria-label="Ficha do lead"></textarea></div>
         <div class="btn-row" style="grid-column:span 2;margin:4px 0 0">
           <button type="button" class="btn btn-pdf" onclick="crmCopiar()">Copiar ficha para o CRM</button>
           <button type="button" class="btn btn-docx" onclick="crmBaixar()">Baixar .txt</button>
         </div>
+      </div>
+    </div>
+
+    <!-- Card 3: feedback da condução da reunião (só o vendedor vê) -->
+    <div class="card hidden" id="cardFeedback">
+      <div class="card-header">
+        <div class="card-num">03</div>
+        <span class="card-title">Feedback da reunião</span>
+        <span class="ctl-conta">SPIN e Gap Selling</span>
+      </div>
+      <div class="fb">
+        <div id="fbBox"></div>
+        <div class="fb-guardado" id="fbGuardado"></div>
       </div>
     </div>
 
@@ -2195,6 +2245,11 @@ input::placeholder, textarea::placeholder { color: var(--text-dim); font-weight:
       <div class="card">
         <div class="card-header"><span class="card-title">Calculadora</span></div>
         <div class="ctl-calc-wrap"><table class="ctl-calc" id="ctlCalc"></table></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><span class="card-title">Reuniões</span><span class="ctl-conta" id="reuMedia"></span></div>
+        <div class="reu-lista" id="reuLista"></div>
       </div>
     </div>
     <datalist id="ctlObsLista"><option value="Mensal"></option><option value="Trimestral"></option><option value="Anual"></option></datalist>
@@ -3849,7 +3904,8 @@ function iaInstrucoes() {
     'Você é assistente do time comercial da Revenda Mais. Vai receber a transcrição de uma reunião de vendas com um lojista e deve devolver, no JSON pedido:',
     '1) "proposta": os dados para montar a proposta comercial com o que foi alinhado na reunião;',
     '2) "lead" e "crm": a documentação do lead para o CRM;',
-    '3) "proximos_passos", "pontos_em_aberto" e "observacoes".',
+    '3) "proximos_passos", "pontos_em_aberto" e "observacoes";',
+    '4) "feedback": avaliação da condução da reunião pelo vendedor da Revenda Mais, para ele melhorar as próximas.',
     '',
     'Regras:',
     '- Use só o que aparece na transcrição. Não invente nomes, números, valores, cargos nem combinados. Se algo não foi dito, deixe o texto vazio ("") ou o número 0.',
@@ -3864,6 +3920,18 @@ function iaInstrucoes() {
     '- pontos_em_aberto: o que faltou descobrir ou confirmar (ex.: quem é o decisor, prazo de decisão), em frases curtas — servem de roteiro para o próximo contato.',
     '- proximos_passos: o que ficou combinado para depois da reunião (envio da proposta, nova reunião, data).',
     '- observacoes: avisos para o vendedor conferir na proposta (escolhas que você teve que fazer). Vazio se não houver.',
+    '',
+    'Feedback (use SPIN Selling, Gap Selling e boas práticas de venda consultiva; escreva para o vendedor, em "você"; direto e construtivo, sem elogio vazio):',
+    '- tipo_texto: "transcricao" se o texto traz a conversa (falas do vendedor e do cliente); "resumo" se é um relato ou ditado do vendedor sobre a reunião. No resumo, avalie só o que dá para saber e diga isso no campo resumo.',
+    '- nota: de 0 a 10 para a condução (investigação, conexão da solução com a dor, clareza da proposta, próximo passo combinado). Seja exigente: 9 ou 10 só para reunião exemplar.',
+    '- ritmo: "prolixo" se o vendedor falou demais, apresentou funcionalidades sem ligar à dor ou se repetiu; "raso" se investigou pouco, foi cedo para preço ou não explorou implicações; senão "equilibrado".',
+    '- resumo: 2 ou 3 frases, como um gestor comercial descreveria a reunião.',
+    '- spin: situacao, problema, implicacao e necessidade, 1 ou 2 frases cada: o que o vendedor perguntou e o que faltou perguntar.',
+    '- gap: estado_atual (entendeu como a loja opera hoje?), estado_futuro (onde o cliente quer chegar?), impacto (mediu o tamanho do problema e a causa?). 1 ou 2 frases cada.',
+    '- pontos_fortes: até 3, específicos, citando o que aconteceu na reunião.',
+    '- pontos_melhoria: até 5, acionáveis: o que fazer diferente e, quando couber, um exemplo de frase ou pergunta.',
+    '- perguntas_que_faltaram: até 5 perguntas prontas para usar no próximo contato com este cliente.',
+    '- dica_proxima_reuniao: 1 frase com a principal mudança para a próxima reunião.',
     '',
     iaCatalogo()
   ].join('\n');
@@ -3901,7 +3969,19 @@ function iaSchema() {
     crm: obj(crm),
     proximos_passos: str,
     pontos_em_aberto: { type: 'array', items: str },
-    observacoes: str
+    observacoes: str,
+    feedback: obj({
+      tipo_texto: { type: 'string', enum: ['transcricao', 'resumo'] },
+      nota: { type: 'integer' },
+      ritmo: { type: 'string', enum: ['raso', 'equilibrado', 'prolixo'] },
+      resumo: str,
+      spin: obj({ situacao: str, problema: str, implicacao: str, necessidade: str }),
+      gap: obj({ estado_atual: str, estado_futuro: str, impacto: str }),
+      pontos_fortes: { type: 'array', items: str },
+      pontos_melhoria: { type: 'array', items: str },
+      perguntas_que_faltaram: { type: 'array', items: str },
+      dica_proxima_reuniao: str
+    })
   });
 }
 
@@ -4040,6 +4120,10 @@ function iaAplicar(r) {
   const p = r.proposta || {};
   const resumo = iaPreencherProposta(p);
   crmMontar(r);
+  document.getElementById('fbBox').innerHTML = fbHtml(r.feedback);
+  document.getElementById('cardFeedback').classList.toggle('hidden', !r.feedback);
+  document.getElementById('fbGuardado').innerHTML = '';
+  if (r.feedback) reuniaoGuardar(r);
 
   const faltam = CRM_CAMPOS.filter(function (c) { return !iaTxt((r.crm || {})[c.id]); }).map(function (c) { return c.titulo; });
   const abertos = (r.pontos_em_aberto || []).filter(Boolean);
@@ -4135,45 +4219,38 @@ function iaPreencherProposta(p) {
 }
 
 /* ── Ficha do CRM ──────────────────────────────────────────────────── */
-function crmMontar(r) {
+// A ficha inteira num texto só (mesmo formato que vai para o CRM)
+function crmFichaTexto(r) {
   const lead = r.lead || {}, crm = r.crm || {};
-  document.getElementById('crmLead').innerHTML = CRM_LEAD.map(function (c) {
-    return '<div class="field crm-campo"><label>' + esc(c.titulo) + '</label>' +
-      '<input id="crm_' + c.id + '" type="text" value="' + esc(iaTxt(lead[c.id])).replace(/"/g, '&quot;') + '" placeholder="—"/></div>';
-  }).join('');
-  document.getElementById('crmCampos').innerHTML = CRM_CAMPOS.map(function (c) {
-    const v = iaTxt(crm[c.id]);
-    return '<div class="field span2 crm-campo' + (v ? '' : ' falta') + '"><label>' + esc(c.titulo) +
-      '<small>' + esc(c.pergunta) + '</small></label>' +
-      '<textarea id="crm_' + c.id + '" placeholder="' + IA_NAO_IDENTIFICADO + '" oninput="this.parentNode.classList.toggle(\'falta\', !this.value.trim())">' + esc(v) + '</textarea></div>';
-  }).join('') +
-  '<div class="field span2 crm-campo"><label>Próximos Passos</label>' +
-    '<textarea id="crm_proximos" placeholder="—">' + esc(iaTxt(r.proximos_passos)) + '</textarea></div>';
-  document.getElementById('cardCrm').classList.remove('hidden');
-}
-
-function crmTexto() {
-  const val = function (id) { const e = document.getElementById('crm_' + id); return e ? e.value.trim() : ''; };
-  const blocos = CRM_CAMPOS.map(function (c) {
-    return c.titulo + '\n' + (val(c.id) || IA_NAO_IDENTIFICADO);
-  });
-  if (val('proximos')) blocos.push('Próximos Passos\n' + val('proximos'));
-  const contato = CRM_LEAD.filter(function (c) { return val(c.id); }).map(function (c) { return c.titulo + ': ' + val(c.id); });
+  const blocos = CRM_CAMPOS.map(function (c) { return c.titulo + '\n' + (iaTxt(crm[c.id]) || IA_NAO_IDENTIFICADO); });
+  if (iaTxt(r.proximos_passos)) blocos.push('Próximos Passos\n' + iaTxt(r.proximos_passos));
+  const contato = CRM_LEAD.filter(function (c) { return iaTxt(lead[c.id]); }).map(function (c) { return c.titulo + ': ' + iaTxt(lead[c.id]); });
   if (contato.length) blocos.push('Dados do Lead\n' + contato.join('\n'));
   return blocos.join('\n\n');
+}
+function crmMontar(r) {
+  const ta = document.getElementById('crm_ficha');
+  ta.value = crmFichaTexto(r);
+  ta.rows = Math.max(12, ta.value.split('\n').length + 2);
+  document.getElementById('cardCrm').classList.remove('hidden');
+}
+function crmTexto() {
+  return document.getElementById('crm_ficha').value.trim();
 }
 
 async function crmCopiar() {
   try {
     await navigator.clipboard.writeText(crmTexto());
-    showToast('Ficha copiada — é só colar no CRM', 'success');
+    reuniaoAtualizarFicha();
+    showToast('Ficha copiada. É só colar no CRM.', 'success');
   } catch (e) {
     showToast('Não deu para copiar automaticamente', 'error');
   }
 }
 
 function crmBaixar() {
-  const empresa = (document.getElementById('crm_empresa') || {}).value || document.getElementById('p_cliente').value || 'Lead';
+  reuniaoAtualizarFicha();
+  const empresa = iaTxt(((iaUltimo || {}).lead || {}).empresa) || document.getElementById('p_cliente').value || 'Lead';
   const blob = new Blob([crmTexto()], { type: 'text/plain;charset=utf-8' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -4188,6 +4265,94 @@ function crmBaixar() {
   document.getElementById('iaTexto').addEventListener('input', iaContar);
   aceitarArquivoSolto(document.getElementById('iaBox'), iaLerArquivo);
 })();
+
+/* ── Feedback da reunião: SPIN e Gap Selling ─────────────────────────── */
+const FB_RITMO = { raso: 'Raso', equilibrado: 'Equilibrado', prolixo: 'Prolixo' };
+function fbLista(titulo, itens, numerada) {
+  itens = (itens || []).map(iaTxt).filter(Boolean);
+  if (!itens.length) return '';
+  const tag = numerada ? 'ol' : 'ul';
+  return '<div class="fb-t">' + titulo + '</div><' + tag + ' class="fb-lista">' +
+    itens.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</' + tag + '>';
+}
+function fbHtml(fb) {
+  if (!fb) return '';
+  const spin = fb.spin || {}, gap = fb.gap || {};
+  const caixa = function (t, v) { return '<div class="fb-caixa"><b>' + t + '</b>' + esc(iaTxt(v) || '—') + '</div>'; };
+  const nota = Math.max(0, Math.min(10, Number(fb.nota) || 0));
+  return '<div class="fb-topo"><div class="fb-nota">' + nota + '<small>/10</small></div><div>' +
+      (FB_RITMO[fb.ritmo] ? '<span class="fb-ritmo ' + fb.ritmo + '">' + FB_RITMO[fb.ritmo] + '</span>' : '') +
+      (fb.tipo_texto === 'resumo' ? '<span class="fb-aviso">Avaliado a partir de um resumo, não da conversa</span>' : '') +
+      '<p class="fb-resumo">' + esc(iaTxt(fb.resumo)) + '</p></div></div>' +
+    '<div class="fb-t">SPIN Selling</div><div class="fb-grade">' +
+      caixa('Situação', spin.situacao) + caixa('Problema', spin.problema) + caixa('Implicação', spin.implicacao) + caixa('Necessidade de solução', spin.necessidade) + '</div>' +
+    '<div class="fb-t">Gap Selling</div><div class="fb-grade tres">' +
+      caixa('Estado atual', gap.estado_atual) + caixa('Estado futuro', gap.estado_futuro) + caixa('Impacto e causa', gap.impacto) + '</div>' +
+    fbLista('O que funcionou', fb.pontos_fortes) +
+    fbLista('Onde melhorar', fb.pontos_melhoria) +
+    fbLista('Perguntas que faltaram', fb.perguntas_que_faltaram, true) +
+    (iaTxt(fb.dica_proxima_reuniao) ? '<div class="fb-dica"><b>Para a próxima reunião:</b> ' + esc(fb.dica_proxima_reuniao) + '</div>' : '');
+}
+
+/* ── Histórico: cada reunião analisada (ficha + feedback) fica no Controle do vendedor ── */
+const REUNIOES_MAX = 100;
+let reuniaoAtual = null;   // id da reunião guardada nesta análise
+
+async function reuniaoGuardar(r) {
+  reuniaoAtual = null;
+  const salvo = ctlLerSalvo();
+  if (!(ctl && ctl.pin) && !(salvo && salvo.pin)) return reuniaoAviso('entrar');
+  if (!ctl || !ctl.pin) ctl = { nome: salvo.nome, pin: salvo.pin };
+  reuniaoAviso('salvando');
+  await ctlCarregar(true);   // pega a versão mais nova antes de gravar
+  if (!ctl || !ctl.dados) return reuniaoAviso('entrar');
+  const lead = r.lead || {};
+  const item = {
+    id: Date.now().toString(36), data: new Date().toISOString(),
+    cliente: iaTxt(lead.empresa) || iaTxt((r.proposta || {}).cliente) || 'Sem nome', contato: iaTxt(lead.contato),
+    ficha: crmTexto(), feedback: r.feedback
+  };
+  ctl.dados.reunioes = [item].concat(ctl.dados.reunioes || []).slice(0, REUNIOES_MAX);
+  clearTimeout(ctlTimer); ctlTimer = null;
+  if (await ctlSalvar()) { reuniaoAtual = item.id; reuniaoAviso('ok'); ctlRenderReunioes(); }
+  else reuniaoAviso('erro');
+}
+function reuniaoAviso(tipo) {
+  document.getElementById('fbGuardado').innerHTML = {
+    salvando: 'Guardando no seu histórico…',
+    ok: 'Reunião e feedback guardados no seu histórico, na aba Controle.',
+    erro: 'Não consegui guardar no histórico agora. <button type="button" onclick="reuniaoGuardar(iaUltimo)">Tentar de novo</button>',
+    entrar: 'Para guardar esta reunião no seu histórico, <button type="button" onclick="trocarAba(\'controle\')">entre no Controle</button> com nome e PIN e depois <button type="button" onclick="reuniaoGuardar(iaUltimo)">guarde aqui</button>.'
+  }[tipo];
+}
+// A ficha foi ajustada antes de copiar: a cópia guardada acompanha
+function reuniaoAtualizarFicha() {
+  if (!reuniaoAtual || !ctl || !ctl.dados) return;
+  const it = (ctl.dados.reunioes || []).find(function (x) { return x.id === reuniaoAtual; });
+  if (it && it.ficha !== crmTexto()) { it.ficha = crmTexto(); ctlAgendar(); }
+}
+function reuniaoExcluir(id) {
+  if (!ctl || !ctl.dados || !window.confirm('Excluir esta reunião do histórico?')) return;
+  ctl.dados.reunioes = (ctl.dados.reunioes || []).filter(function (x) { return x.id !== id; });
+  ctlRenderReunioes();
+  ctlAgendar();
+}
+function ctlRenderReunioes() {
+  const box = document.getElementById('reuLista');
+  if (!box || !ctl || !ctl.dados) return;
+  const rs = ctl.dados.reunioes || [];
+  const notas = rs.slice(0, 10).map(function (x) { return x.feedback ? Number(x.feedback.nota) : NaN; }).filter(function (n) { return isFinite(n); });
+  document.getElementById('reuMedia').textContent = notas.length
+    ? 'Média das últimas ' + notas.length + ': ' + (notas.reduce(function (a, b) { return a + b; }, 0) / notas.length).toFixed(1).replace('.', ',') : '';
+  box.innerHTML = rs.length ? rs.map(function (x) {
+    const nota = x.feedback && isFinite(Number(x.feedback.nota)) ? Number(x.feedback.nota) : null;
+    return '<details class="reu"><summary><span class="reu-d">' + new Date(x.data).toLocaleDateString('pt-BR') + '</span><b>' + esc(x.cliente) + '</b>' +
+      (nota !== null ? '<span class="reu-nota">' + nota + '/10</span>' : '') + '</summary>' +
+      '<div class="reu-corpo">' + fbHtml(x.feedback) +
+        '<div class="fb-t">Ficha do lead</div><div class="reu-ficha">' + esc(x.ficha) + '</div>' +
+        '<p style="margin-top:10px"><button type="button" class="ctl-sair" onclick="reuniaoExcluir(\'' + ctlAttr(x.id) + '\')">Excluir do histórico</button></p></div></details>';
+  }).join('') : '<div class="ctl-vazio">As reuniões analisadas na aba CRM aparecem aqui, com a ficha e o feedback.</div>';
+}
 
 /* ── Falar a reunião: ditado pelo microfone, quando a reunião não foi gravada ──────
    Usa o reconhecimento de voz do próprio navegador (Chrome, Edge, Safari): sem custo e sem
@@ -5861,6 +6026,7 @@ function ctlRender() {
     }).join('') +
     '</tbody><tfoot><tr><td colspan="4">Realizado mensal</td><td id="ctlTotal"></td></tr></tfoot>';
   ctlCalcular();
+  ctlRenderReunioes();
 }
 
 function ctlNum(v) { const n = parseFloat(v); return isFinite(n) ? n : 0; }
@@ -5932,6 +6098,7 @@ async function ctlSalvar() {
     const r = await ctlApi({ acao: 'salvar', dados: ctl.dados, etag: ctl.etag });
     ctl.etag = r.etag;
     if (!ctlDeNovo) ctlStatus('Salvo');
+    return true;
   } catch (e) {
     if (e.status === 409) {
       ctlDeNovo = false;
@@ -5941,6 +6108,7 @@ async function ctlSalvar() {
       return ctlCarregar(false);
     }
     ctlStatus('Não salvou: ' + esc(e.message) + ' <button type="button" onclick="ctlSalvar()">Tentar de novo</button>', true);
+    return false;
   } finally {
     ctlSalvando = false;
     if (ctlDeNovo) { ctlDeNovo = false; ctlSalvar(); }
