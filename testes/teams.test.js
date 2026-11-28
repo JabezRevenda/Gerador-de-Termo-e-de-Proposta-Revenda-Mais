@@ -97,4 +97,9 @@ assert.equal(JSON.stringify(lista).includes('trinta e cinco'), false);   // o pa
 await chamar({ evento: 'transcricao', id: 'R1', email: 'marina@revendamais.com.br', transcricao: transcricao });
 await T.processar('R1');
 assert.equal(ler('controle/marina.json').dados.reunioes.filter(function (x) { return x.id === 'teams-R1'; }).length, 1);
+// Legenda .vtt do Teams chega limpa (sem horários)
+await chamar({ evento: 'transcricao', id: 'R7', email: 'marina@revendamais.com.br', transcricao:
+  'WEBVTT\n\n1\n00:00:01.000 --> 00:00:04.000\n<v Marina>Bom dia, Paulo, tudo bem com a loja?</v>\n\n2\n00:00:05.000 --> 00:00:09.000\n<v Paulo>Tudo, estamos com uns trinta e cinco carros no pátio.</v>' });
+m = ler('teams/R7.json');
+assert.equal(m.transcricao, 'Marina: Bom dia, Paulo, tudo bem com a loja?\nPaulo: Tudo, estamos com uns trinta e cinco carros no pátio.');
 console.log('ok: api/teams');

@@ -158,3 +158,14 @@ function crmFichaTexto(r) {
   if (contato.length) blocos.push('Dados do Lead\n' + contato.join('\n'));
   return blocos.join('\n\n');
 }
+
+// Legenda .vtt/.srt (Meet, Zoom, Teams): tira numeração e horários, deixa só quem falou e o quê
+function iaLimparLegenda(txt) {
+  if (!/-->/.test(txt)) return txt.replace(/\r/g, '');
+  return txt.replace(/\r/g, '').split('\n').filter(function (l) {
+    const t = l.trim();
+    return t && t !== 'WEBVTT' && !/^\d+$/.test(t) && !/-->/.test(t) && !/^(NOTE|STYLE|Kind:|Language:)/.test(t);
+  }).map(function (l) {
+    return l.replace(/<v\s+([^>]+)>/g, '$1: ').replace(/<[^>]+>/g, '');
+  }).join('\n');
+}
