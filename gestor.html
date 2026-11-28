@@ -103,6 +103,13 @@ tr.linha.aberta td { background: var(--red-light); }
   .kpi-v { font-size: 24px; }
   .melhoria { flex-direction: column; gap: 2px; }
 }
+/* iPhone: o Safari dá zoom ao tocar num campo com letra menor que 16px, e aí a página passa a
+   rolar para o lado. No celular todo campo fica com 16px. E nada pode alargar a página. */
+html, body { overflow-x: clip; }
+@media (max-width: 999px) {
+  input, select, textarea { font-size: 16px !important; }
+  input[type=date], input[type=month] { min-width: 0; max-width: 100%; }
+}
 </style>
 </head>
 <body>
