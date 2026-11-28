@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="robots" content="noindex"/>
+<title>Painel do Gestor · Revenda Mais</title>
+<link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAClUlEQVR4nO2Vz0sUYRjHv8/7zrjmktEP1NV2tqyTBGErdRyi2HZHQ1AmxHv/QFCHLtq5zkHQpQyC3WO4modkC4JAb3XokOJu6mo/DEF3h5l5nw67GxgrunqIYD7Hme/zfJ/3eZ9nBggICAj4x1AjYgYoA1vspbORUQTwwcuqaz62p/FB9PvqAGNMEB6ouUi85YzsuOBJXzCJuifUWdIWq8+x/ORGGra8hYx/qAJmYWpXkfMWY8neY5AvFNCjgUB1QhmABwXJyG+zf7urMD3DMDVCzmuoAIYtAWAeC6IP8+6yceNSM7RsSMh2hxVcVj8BVvViJYlTIQi4UCXH56HOr9npOcT1OLqr+p3zsaMABujv4Vkx+uNNQFYStRGAkvLvs8tPAYBJ+6MVyhEtMuxvi/KgLuQTQaQpcElBDbctTU3t5kP1Hn6LWoNElHBZtQJ0rVmIiABhm/17kXz24W7trFGMpUZ1Fs8FkSwrtQniSR1ik4F3S/liug/zbs2PauYAsNB9vfWo1zTRIrSbR0hCkIDHPhxW2FLe3fZ89hHD1MaRU+O7rpkpCTlvOZYabYaYaBW60EiCWaHEPkrsvyfXHTm5MlNgQFQLqEz5ipF62SZDI5vKg8PqC4FfN0GUHeYPkUI2vZ+pruSzJSHjL0eTiTBpiTL7OoPMkBAXwySx4btv3hbCiU/IMNLVgVuPJXvXDMv9FRvw1qLWqyWj//jOpIf7DvD5ZGjdsB7z2SEuGlb+Y4/dVBWaGgAUo6k7fM7mNcNyFmNWR+VdXJ+FqdW2olHSsGUlvuIBAN+NgeHV0/2XK/lBVL0HtdplXTmh6akfylnsLEw/q7cRh6GhfNzgP6IBiGHLutfJGBNsHrzdAQEBAf8tvwE3BR3LW/W6yQAAAABJRU5ErkJggg=="/>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --red: #E8003D; --red-dark: #B5002F; --red-light: rgba(232,0,61,0.07);
+  --ink: #0b0b0f; --bg: #f2f3f6; --card: #fff; --border: #eceef2; --field: #f5f6f8;
+  --text: #1f2937; --heading: #111827; --muted: #6b7280; --dim: #9ca3af;
+  --green: #15803d; --amber: #b45309;
+  --shadow: 0 1px 2px rgba(17,24,39,0.04), 0 8px 28px rgba(17,24,39,0.06);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+button, input { font-family: inherit; }
+.hidden { display: none !important; }
+
+.topo { position: sticky; top: 0; z-index: 10; height: 64px; padding: 0 28px; background: rgba(255,255,255,0.94);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 16px; }
+.topo img { height: 26px; display: block; }
+.topo-t { font-size: 14px; font-weight: 500; color: var(--muted); padding-left: 16px; border-left: 1px solid var(--border); }
+.topo-sair { margin-left: auto; font-size: 13px; font-weight: 600; color: var(--muted); background: none; border: 0; cursor: pointer; padding: 8px 10px; border-radius: 10px; }
+.topo-sair:hover { color: var(--heading); background: var(--field); }
+
+/* Login */
+.login { max-width: 400px; margin: 10vh auto 0; background: var(--card); border-radius: 24px; padding: 30px 28px; box-shadow: var(--shadow); }
+.login h1 { font-size: 24px; font-weight: 700; color: var(--heading); letter-spacing: -0.02em; }
+.login p { font-size: 14px; color: var(--muted); margin: 4px 0 20px; }
+.campo { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.campo label { font-size: 13px; font-weight: 500; color: var(--text); }
+.campo input { font-size: 15px; color: var(--heading); background: var(--field); border: 1.5px solid transparent; border-radius: 14px; padding: 13px 16px; outline: none; }
+.campo input:focus { background: #fff; border-color: var(--red); box-shadow: 0 0 0 4px rgba(232,0,61,0.1); }
+.btn { width: 100%; border: 0; border-radius: 14px; padding: 14px; font-size: 15px; font-weight: 600; color: #fff; background: var(--red); cursor: pointer; }
+.btn:hover { background: var(--red-dark); }
+.btn:disabled { opacity: .6; cursor: wait; }
+.erro { font-size: 13px; color: #dc2626; margin-bottom: 12px; }
+
+/* Painel */
+.pagina { max-width: 1240px; margin: 0 auto; padding: 24px 28px 60px; }
+.barra { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 18px; }
+.barra h1 { font-size: 28px; font-weight: 800; color: var(--heading); letter-spacing: -0.02em; margin-right: auto; }
+.barra input[type=month] { font-size: 14px; color: var(--heading); background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 9px 12px; }
+.barra small { font-size: 13px; color: var(--muted); }
+.atualizar { font-size: 13px; font-weight: 600; color: var(--heading); background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 9px 14px; cursor: pointer; }
+.atualizar:hover { color: var(--red); }
+
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 18px; }
+.kpi { background: var(--card); border-radius: 20px; padding: 18px 20px; box-shadow: var(--shadow); }
+.kpi:first-child { color: #fff; background: radial-gradient(ellipse farthest-corner at 100% 0%, #ff2d5e 0%, #E8003D 20%, rgba(176,0,46,0.6) 45%, rgba(11,11,15,0) 75%), var(--ink); }
+.kpi-l { font-size: 13px; font-weight: 500; color: var(--muted); }
+.kpi:first-child .kpi-l { color: rgba(255,255,255,0.7); }
+.kpi-v { font-size: 30px; font-weight: 800; color: var(--heading); letter-spacing: -0.02em; margin-top: 4px; }
+.kpi:first-child .kpi-v { color: #fff; }
+.kpi-d { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+.kpi:first-child .kpi-d { color: rgba(255,255,255,0.65); }
+
+.card { background: var(--card); border-radius: 24px; box-shadow: var(--shadow); margin-bottom: 18px; overflow: hidden; }
+.card-h { padding: 20px 24px 6px; font-size: 18px; font-weight: 700; color: var(--heading); display: flex; align-items: baseline; gap: 10px; }
+.card-h small { font-size: 13px; font-weight: 500; color: var(--muted); }
+.tabela-wrap { overflow-x: auto; padding: 8px 12px 16px; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th { text-align: left; font-size: 12px; font-weight: 500; color: var(--muted); padding: 8px 12px; white-space: nowrap; }
+td { padding: 12px; border-top: 1px solid var(--border); white-space: nowrap; color: var(--text); }
+td.nome { font-weight: 600; color: var(--heading); }
+tr.linha { cursor: pointer; }
+tr.linha:hover td { background: #fafafb; }
+tr.linha.aberta td { background: var(--red-light); }
+.nota { font-weight: 700; color: var(--heading); }
+.sobe { color: var(--green); font-weight: 600; }
+.desce { color: #dc2626; font-weight: 600; }
+.pill { display: inline-block; font-size: 12px; font-weight: 600; border-radius: 999px; padding: 3px 10px; background: #e7f6ec; color: var(--green); }
+.pill.raso, .pill.prolixo { background: #fff4e5; color: var(--amber); }
+.vazio { padding: 8px 24px 22px; font-size: 14px; color: var(--muted); }
+
+/* Detalhe de um vendedor */
+.det td { padding: 0; background: #fafafb; white-space: normal; }
+.det-corpo { padding: 16px 20px 20px; display: flex; flex-direction: column; gap: 10px; }
+.reu { background: #fff; border: 1px solid var(--border); border-radius: 16px; }
+.reu summary { display: flex; align-items: center; gap: 12px; padding: 12px 16px; cursor: pointer; list-style: none; font-size: 14px; }
+.reu summary::-webkit-details-marker { display: none; }
+.reu-d { font-size: 12.5px; color: var(--muted); min-width: 78px; }
+.reu summary b { flex: 1; min-width: 0; font-weight: 600; color: var(--heading); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.reu-c { padding: 0 16px 16px; font-size: 14px; line-height: 1.6; color: var(--text); }
+.reu-c h4 { font-size: 13px; font-weight: 700; color: var(--heading); margin: 12px 0 4px; }
+.reu-c ul, .reu-c ol { padding-left: 20px; }
+.dica { margin-top: 12px; background: var(--red-light); border-radius: 12px; padding: 10px 14px; color: var(--heading); }
+
+.melhorias { padding: 6px 24px 22px; display: flex; flex-direction: column; gap: 8px; }
+.melhoria { display: flex; gap: 12px; font-size: 14px; line-height: 1.5; background: var(--field); border-radius: 14px; padding: 12px 14px; }
+.melhoria b { flex-shrink: 0; min-width: 110px; font-weight: 600; color: var(--red); }
+
+@media (max-width: 900px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) {
+  .topo { padding: 0 16px; }
+  .topo-t { display: none; }
+  .pagina { padding: 18px 16px 40px; }
+  .barra h1 { font-size: 22px; width: 100%; }
+  .kpi-v { font-size: 24px; }
+  .melhoria { flex-direction: column; gap: 2px; }
+}
+</style>
+</head>
+<body>
+
+<header class="topo">
+  <img src="logo-revenda-mais.png" alt="Revenda Mais"/>
+  <span class="topo-t">Painel do gestor</span>
+  <button type="button" class="topo-sair hidden" id="btnSair" onclick="sair()">Sair</button>
+</header>
+
+<form class="login" id="telaLogin" onsubmit="event.preventDefault(); entrar()">
+  <h1>Painel do gestor</h1>
+  <p>Acompanhe as reuniões, os feedbacks e as metas do time.</p>
+  <div class="campo"><label for="usuario">Usuário</label><input id="usuario" autocomplete="username" required/></div>
+  <div class="campo"><label for="senha">Senha</label><input id="senha" type="password" autocomplete="current-password" required/></div>
+  <div class="erro hidden" id="erro"></div>
+  <button type="submit" class="btn" id="btnEntrar">Entrar</button>
+</form>
+
+<main class="pagina hidden" id="telaPainel">
+  <div class="barra">
+    <h1>Time comercial</h1>
+    <small id="atualizado"></small>
+    <input type="month" id="mes" aria-label="Mês" onchange="render()"/>
+    <button type="button" class="atualizar" onclick="carregar()">Atualizar</button>
+  </div>
+  <div class="kpis" id="kpis"></div>
+  <section class="card">
+    <div class="card-h">Vendedores <small>clique numa linha para ver as reuniões do mês</small></div>
+    <div class="tabela-wrap"><table id="tabela"></table></div>
+  </section>
+  <section class="card">
+    <div class="card-h">Onde o time precisa melhorar <small>pontos de melhoria das reuniões do mês</small></div>
+    <div class="melhorias" id="melhorias"></div>
+  </section>
+</main>
+
+<script src="precos.js"></script>
+<script>
+/* Painel do gestor. Os dados vêm de api/gestor.js (o Controle de cada vendedor no Blob).
+   A chave de acesso fica neste navegador por até 12 horas. */
+const CHAVE = 'rm_gestor';
+const RITMO = { raso: 'Raso', equilibrado: 'Equilibrado', prolixo: 'Prolixo' };
+let sessao = null;       // { chave, expira }
+let vendedores = [];
+let aberto = null;       // vendedor com o detalhe aberto
+
+function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+function fmt(n, casas) { return n.toFixed(casas).replace('.', ','); }
+function mesAtual() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); }
+function media(ns) { return ns.length ? ns.reduce(function (a, b) { return a + b; }, 0) / ns.length : null; }
+function nota(r) { const n = r.feedback ? Number(r.feedback.nota) : NaN; return isFinite(n) ? n : null; }
+
+async function api(corpo) {
+  const r = await fetch('/api/gestor', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(corpo) });
+  let j = {};
+  try { j = await r.json(); } catch (e) { /* sem JSON */ }
+  if (!r.ok) throw Object.assign(new Error(j.erro || 'Sem conexão com o servidor.'), { status: r.status });
+  return j;
+}
+
+async function entrar() {
+  const btn = document.getElementById('btnEntrar');
+  btn.disabled = true; mostrarErro('');
+  try {
+    sessao = await api({ acao: 'entrar', usuario: document.getElementById('usuario').value, senha: document.getElementById('senha').value });
+    try { localStorage.setItem(CHAVE, JSON.stringify(sessao)); } catch (e) { /* vale só nesta aba */ }
+    document.getElementById('senha').value = '';
+    await carregar();
+  } catch (e) {
+    mostrarErro(e.message);
+  } finally { btn.disabled = false; }
+}
+function mostrarErro(msg) {
+  const el = document.getElementById('erro');
+  el.textContent = msg; el.classList.toggle('hidden', !msg);
+}
+function sair() {
+  sessao = null; vendedores = [];
+  try { localStorage.removeItem(CHAVE); } catch (e) { /* sem storage */ }
+  document.getElementById('telaPainel').classList.add('hidden');
+  document.getElementById('btnSair').classList.add('hidden');
+  document.getElementById('telaLogin').classList.remove('hidden');
+}
+
+async function carregar() {
+  try {
+    const r = await api({ acao: 'dados', chave: sessao.chave });
+    vendedores = r.vendedores;
+    document.getElementById('telaLogin').classList.add('hidden');
+    document.getElementById('telaPainel').classList.remove('hidden');
+    document.getElementById('btnSair').classList.remove('hidden');
+    document.getElementById('atualizado').textContent = 'Atualizado às ' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    render();
+  } catch (e) {
+    sair();
+    mostrarErro(e.status === 401 ? 'Sessão expirada. Entre de novo.' : e.message);
+  }
+}
+
+// Resultado da calculadora de metas do mês, com os pesos de precos.js
+function realizado(calc) {
+  if (!calc) return null;
+  let total = 0, tem = false;
+  CTL_LINHAS.forEach(function (c) {
+    const v = calc[c.k] || {}, meta = parseFloat(v.meta) || 0;
+    if (meta > 0) { tem = true; total += (parseFloat(v.real) || 0) / meta * c.peso; }
+  });
+  return tem ? total : null;
+}
+
+function resumoVendedor(v, mes) {
+  const doMes = v.reunioes.filter(function (r) { return String(r.data).slice(0, 7) === mes; });
+  const notasMes = doMes.map(nota).filter(function (n) { return n !== null; });
+  // Tendência: média das 5 reuniões mais recentes contra as 5 anteriores (todas as datas)
+  const todas = v.reunioes.map(nota).filter(function (n) { return n !== null; });
+  const recentes = media(todas.slice(0, 5)), anteriores = media(todas.slice(5, 10));
+  const ritmos = {};
+  doMes.forEach(function (r) { const k = r.feedback && r.feedback.ritmo; if (k) ritmos[k] = (ritmos[k] || 0) + 1; });
+  const ritmo = Object.keys(ritmos).sort(function (a, b) { return ritmos[b] - ritmos[a]; })[0] || null;
+  const m = (v.meses || {})[mes] || {};
+  const lojas = m.lojas || [];
+  return {
+    reunioes: doMes, media: media(notasMes), tendencia: recentes !== null && anteriores !== null ? recentes - anteriores : null,
+    ritmo: ritmo, lojas: lojas.length, aceitas: lojas.filter(function (l) { return l.link === 'Proposta aceita'; }).length,
+    realizado: realizado(m.calc)
+  };
+}
+
+function render() {
+  const mesEl = document.getElementById('mes');
+  if (!mesEl.value) mesEl.value = mesAtual();
+  const mes = mesEl.value;
+  const linhas = vendedores.map(function (v) { return { v: v, r: resumoVendedor(v, mes) }; });
+
+  // Indicadores do time
+  const reunioes = [].concat.apply([], linhas.map(function (l) { return l.r.reunioes; }));
+  const notas = reunioes.map(nota).filter(function (n) { return n !== null; });
+  const foraRitmo = reunioes.filter(function (r) { return r.feedback && (r.feedback.ritmo === 'raso' || r.feedback.ritmo === 'prolixo'); }).length;
+  const lojas = linhas.reduce(function (a, l) { return a + l.r.lojas; }, 0), aceitas = linhas.reduce(function (a, l) { return a + l.r.aceitas; }, 0);
+  const kpi = function (l, v, d) { return '<div class="kpi"><div class="kpi-l">' + l + '</div><div class="kpi-v">' + v + '</div><div class="kpi-d">' + d + '</div></div>'; };
+  document.getElementById('kpis').innerHTML =
+    kpi('Nota média das reuniões', notas.length ? fmt(media(notas), 1) : '—', notas.length ? 'de 0 a 10, no mês' : 'sem reuniões no mês') +
+    kpi('Reuniões analisadas', reunioes.length, vendedores.length + (vendedores.length === 1 ? ' vendedor' : ' vendedores')) +
+    kpi('Rasas ou prolixas', reunioes.length ? Math.round(foraRitmo / reunioes.length * 100) + '%' : '—', foraRitmo + ' de ' + reunioes.length) +
+    kpi('Renovações aceitas', aceitas + ' de ' + lojas, 'lojas no controle do mês');
+
+  // Tabela por vendedor
+  document.getElementById('tabela').innerHTML = vendedores.length
+    ? '<thead><tr><th>Vendedor</th><th>Reuniões</th><th>Nota média</th><th>Tendência</th><th>Ritmo mais comum</th><th>Renovações</th><th>Realizado mensal</th></tr></thead><tbody>' +
+      linhas.map(function (l, i) {
+        const r = l.r, abre = aberto === l.v.nome;
+        const t = r.tendencia === null ? '—' : r.tendencia > 0.05 ? '<span class="sobe">↑ ' + fmt(r.tendencia, 1) + '</span>'
+          : r.tendencia < -0.05 ? '<span class="desce">↓ ' + fmt(-r.tendencia, 1) + '</span>' : 'estável';
+        return '<tr class="linha' + (abre ? ' aberta' : '') + '" onclick="abrir(' + i + ')"><td class="nome">' + esc(l.v.nome) + '</td>' +
+          '<td>' + r.reunioes.length + '</td><td class="nota">' + (r.media === null ? '—' : fmt(r.media, 1)) + '</td><td>' + t + '</td>' +
+          '<td>' + (r.ritmo ? '<span class="pill ' + r.ritmo + '">' + RITMO[r.ritmo] + '</span>' : '—') + '</td>' +
+          '<td>' + (r.lojas ? r.aceitas + ' de ' + r.lojas + ' aceitas' : '—') + '</td>' +
+          '<td>' + (r.realizado === null ? '—' : Math.round(r.realizado * 100) + '%') + '</td></tr>' +
+          (abre ? '<tr class="det"><td colspan="7"><div class="det-corpo">' + detalhe(r.reunioes) + '</div></td></tr>' : '');
+      }).join('') + '</tbody>'
+    : '<tbody><tr><td class="vazio">Nenhum vendedor entrou no Controle ainda.</td></tr></tbody>';
+
+  // Pontos de melhoria do mês, do mais recente para o mais antigo
+  const pontos = [];
+  linhas.forEach(function (l) {
+    l.r.reunioes.forEach(function (r) {
+      ((r.feedback || {}).pontos_melhoria || []).forEach(function (p) { if (p) pontos.push({ quem: l.v.nome, data: r.data, txt: p }); });
+    });
+  });
+  pontos.sort(function (a, b) { return String(b.data).localeCompare(String(a.data)); });
+  document.getElementById('melhorias').innerHTML = pontos.length
+    ? pontos.slice(0, 15).map(function (p) { return '<div class="melhoria"><b>' + esc(p.quem) + '</b><span>' + esc(p.txt) + '</span></div>'; }).join('')
+    : '<div class="vazio" style="padding:0">Os pontos de melhoria aparecem aqui quando houver reuniões analisadas no mês.</div>';
+}
+
+function detalhe(reunioes) {
+  if (!reunioes.length) return '<div class="vazio" style="padding:0">Nenhuma reunião analisada neste mês.</div>';
+  const lista = function (t, itens, ol) {
+    itens = (itens || []).filter(Boolean);
+    return itens.length ? '<h4>' + t + '</h4><' + (ol ? 'ol' : 'ul') + '>' + itens.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</' + (ol ? 'ol' : 'ul') + '>' : '';
+  };
+  return reunioes.map(function (r) {
+    const f = r.feedback || {}, n = nota(r);
+    return '<details class="reu"><summary><span class="reu-d">' + new Date(r.data).toLocaleDateString('pt-BR') + '</span><b>' + esc(r.cliente) + '</b>' +
+      (f.ritmo ? '<span class="pill ' + f.ritmo + '">' + RITMO[f.ritmo] + '</span>' : '') + (n !== null ? '<span class="nota">' + n + '/10</span>' : '') + '</summary>' +
+      '<div class="reu-c">' + (f.resumo ? '<p>' + esc(f.resumo) + '</p>' : '') +
+        lista('Onde melhorar', f.pontos_melhoria) + lista('Perguntas que faltaram', f.perguntas_que_faltaram, true) + lista('O que funcionou', f.pontos_fortes) +
+        (f.dica_proxima_reuniao ? '<div class="dica"><b>Para a próxima:</b> ' + esc(f.dica_proxima_reuniao) + '</div>' : '') +
+      '</div></details>';
+  }).join('');
+}
+function abrir(i) {
+  aberto = aberto === vendedores[i].nome ? null : vendedores[i].nome;
+  render();
+}
+
+// Já entrou neste navegador nas últimas 12 horas? Abre direto
+(function () {
+  try { sessao = JSON.parse(localStorage.getItem(CHAVE) || 'null'); } catch (e) { sessao = null; }
+  if (sessao && sessao.expira > Date.now()) carregar(); else sessao = null;
+})();
+</script>
+</body>
+</html>

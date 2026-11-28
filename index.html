@@ -5894,13 +5894,7 @@ const CTL_TERMO = ['', 'Aguardando', 'Assinado'];
 // Cor da linha escolhida à mão; vazia = cor automática pelo link de pagamento
 const CTL_CORES = [['', 'Automática'], ['verde', 'Verde'], ['laranja', 'Laranja'], ['amarelo', 'Amarelo'], ['vermelho', 'Vermelho'],
   ['azul', 'Azul'], ['roxo', 'Roxo'], ['cinza', 'Cinza'], ['nenhuma', 'Sem cor']];
-// Linhas da calculadora e o peso de cada uma no resultado do mês (somam 100%)
-const CTL_LINHAS = [
-  { k: 'novas', nome: 'Lojas novas', peso: 0.5 },
-  { k: 'ia',    nome: 'IA',          peso: 0.1 },
-  { k: 'renov', nome: 'Renovações',  peso: 0.2 },
-  { k: 'reun',  nome: 'Reuniões',    peso: 0.2 }
-];
+// Linhas da calculadora e pesos: CTL_LINHAS, em precos.js
 let ctl = null;          // { nome, pin, dados: { meses: { 'AAAA-MM': { lojas, calc } } }, etag }
 let ctlTimer = null, ctlSalvando = false, ctlDeNovo = false;
 
